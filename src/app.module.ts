@@ -34,6 +34,7 @@ import { SeoBlocksModule } from './seo-blocks/seo-blocks.module'
 import { PriceModule } from './price/price.module'
 import { DiscountModule } from './discount/discount.module'
 import { DiscountConditionModule } from './discount-condition/discount-condition.module'
+import { PostModule } from './posts/post.module'
 
 const config = configuration()
 
@@ -73,7 +74,8 @@ const config = configuration()
     SeoBlocksModule,
     DiscountModule,
     DiscountConditionModule,
-    PriceModule
+    PriceModule,
+    PostModule
   ],
   controllers: [AppController],
   providers: [AppService]
