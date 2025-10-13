@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsEnum, IsString } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
 
-export class CreateAboutUsDto {
+export class CreateMainPageDto {
   @ApiPropertyOptional({ example: '123' })
   @IsString()
   @Optional()

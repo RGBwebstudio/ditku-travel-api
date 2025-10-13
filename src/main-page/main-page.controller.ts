@@ -11,27 +11,27 @@ import {
   Req,
   UseGuards
 } from '@nestjs/common'
-import { AboutUsService } from './about-us.service'
-import { CreateAboutUsDto } from './dto/create-about-us.dto'
-import { UpdateAboutUsDto } from './dto/update-about-us.dto'
+import { MainPageService } from './main-page.service'
+import { CreateMainPageDto } from './dto/create-main-page.dto'
+import { UpdateMainPageDto } from './dto/update-main-page.dto'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
 import { Request } from 'express'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AuthAdminGuard } from 'src/auth/auth-admin.guard'
 
-@ApiTags('Про нас')
-@Controller('about-us')
-export class AboutUsController {
-  constructor(private readonly aboutUsService: AboutUsService) {}
+@ApiTags('Головна сторінка')
+@Controller('main-page')
+export class MainPageController {
+  constructor(private readonly mainPageService: MainPageService) {}
 
   @Get()
   @ApiResponse({
     status: 200,
     description: 'SUCCESS - Успішно отримано частину сутностей'
   })
-  @ApiOperation({ summary: 'Отримати весь контент про нас' })
+  @ApiOperation({ summary: 'Отримати весь контент головної сторінки' })
   findAll(@Query() { take, skip }: TakeAndSkipDto) {
-    return this.aboutUsService.findAll(take, skip)
+    return this.mainPageService.findAll(take, skip)
   }
 
   @Get(':lang')
@@ -43,9 +43,9 @@ export class AboutUsController {
     status: 404,
     description: 'NOT_FOUND - Сутність не знайдено'
   })
-  @ApiOperation({ summary: 'Отримати контент про нас' })
+  @ApiOperation({ summary: 'Отримати контент головної сторінки' })
   findOne(@Req() req: Request) {
-    return this.aboutUsService.findOne(req.lang)
+    return this.mainPageService.findOne(req.lang)
   }
 
   @Post()
@@ -58,9 +58,9 @@ export class AboutUsController {
     status: 400,
     description: 'NOT_CREATED - Cутність не створено'
   })
-  @ApiOperation({ summary: 'Створення контенту про нас' })
-  create(@Body() createAboutUsDto: CreateAboutUsDto) {
-    return this.aboutUsService.create(createAboutUsDto)
+  @ApiOperation({ summary: 'Створення контенту головної сторінки' })
+  create(@Body() createMainPageDto: CreateMainPageDto) {
+    return this.mainPageService.create(createMainPageDto)
   }
 
   @Patch()
@@ -73,9 +73,9 @@ export class AboutUsController {
     status: 404,
     description: 'NOT_FOUND - Сутність не знайдено'
   })
-  @ApiOperation({ summary: 'Оновити контент про нас' })
-  update(@Body() updateAboutUsDto: UpdateAboutUsDto) {
-    return this.aboutUsService.update(updateAboutUsDto)
+  @ApiOperation({ summary: 'Оновити контент головної сторінки' })
+  update(@Body() updateMainPageDto: UpdateMainPageDto) {
+    return this.mainPageService.update(updateMainPageDto)
   }
 
   @Delete(':id')
@@ -92,8 +92,8 @@ export class AboutUsController {
     status: 400,
     description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена'
   })
-  @ApiOperation({ summary: 'Видалити контент про нас' })
+  @ApiOperation({ summary: 'Видалити контент головної сторінки' })
   delete(@Param('id', ParseIntPipe) id: number) {
-    return this.aboutUsService.delete(id)
+    return this.mainPageService.delete(id)
   }
 }

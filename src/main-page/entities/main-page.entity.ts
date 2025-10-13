@@ -8,7 +8,7 @@ import {
 import { LANG } from 'src/common/enums/translation.enum'
 
 @Entity()
-export class AboutUs {
+export class MainPage {
   @PrimaryGeneratedColumn()
   id: number
 

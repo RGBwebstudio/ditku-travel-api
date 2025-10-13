@@ -21,7 +21,7 @@ import { RatingModule } from './product-rating/rating.module'
 import { StockModule } from './stock/stock.module'
 import { ProductPromotionModule } from './product-promotion/product-promotion.module'
 import { MeasurementModule } from './measurement/measurement.module'
-import { AboutUsModule } from './about-us/about-us.module'
+import { MainPageModule } from './main-page/main-page.module'
 import { PrivacyPolicyModule } from './privacy-policy/privacy-policy.module'
 import { TermsOfUseModule } from './terms-of-use/terms-of-use.module'
 import { CookieModule } from './cookie/cookie.module'
@@ -61,7 +61,7 @@ const config = configuration()
     RatingModule,
     StockModule,
     ProductPromotionModule,
-    AboutUsModule,
+    MainPageModule,
     DAPModule,
     ContactsModule,
     PrivacyPolicyModule,

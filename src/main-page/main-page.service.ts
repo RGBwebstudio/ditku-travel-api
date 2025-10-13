@@ -4,37 +4,37 @@ import {
   Logger,
   NotFoundException
 } from '@nestjs/common'
-import { CreateAboutUsDto } from './dto/create-about-us.dto'
-import { UpdateAboutUsDto } from './dto/update-about-us.dto'
+import { CreateMainPageDto } from './dto/create-main-page.dto'
+import { UpdateMainPageDto } from './dto/update-main-page.dto'
 import { InjectRepository } from '@nestjs/typeorm'
-import { AboutUs } from './entities/about-us.entity'
+import { MainPage } from './entities/main-page.entity'
 import { Repository } from 'typeorm'
 import { LANG } from 'src/common/enums/translation.enum'
 
 @Injectable()
-export class AboutUsService {
-  private readonly logger = new Logger(AboutUsService.name)
+export class MainPageService {
+  private readonly logger = new Logger(MainPageService.name)
 
   constructor(
-    @InjectRepository(AboutUs)
-    private readonly countryRepo: Repository<AboutUs>
+    @InjectRepository(MainPage)
+    private readonly countryRepo: Repository<MainPage>
   ) {}
 
-  async create(dto: CreateAboutUsDto): Promise<AboutUs> {
+  async create(dto: CreateMainPageDto): Promise<MainPage> {
     const entity = this.countryRepo.create(dto)
     try {
       const savedEntity = await this.countryRepo.save(entity)
       return savedEntity
     } catch (error) {
-      this.logger.error(`Error creating country: ${error.message}`)
-      throw new BadRequestException('entity of product-promotion NOT_CREATED')
+      this.logger.error(`Error creating main-page: ${error.message}`)
+      throw new BadRequestException('entity of main-page NOT_CREATED')
     }
   }
 
   async findAll(
     take: number,
     skip: number
-  ): Promise<{ entities: AboutUs[]; count: number }> {
+  ): Promise<{ entities: MainPage[]; count: number }> {
     const entities = await this.countryRepo.find({
       take,
       skip,
@@ -46,17 +46,17 @@ export class AboutUsService {
     return { entities, count }
   }
 
-  async findOne(lang: LANG): Promise<AboutUs> {
+  async findOne(lang: LANG): Promise<MainPage> {
     const entity = await this.countryRepo.findOne({
       where: { lang }
     })
 
-    if (!entity) throw new NotFoundException('entity of about-us NOT_FOUND')
+    if (!entity) throw new NotFoundException('entity of main-page NOT_FOUND')
 
     return entity
   }
 
-  async update(dto: UpdateAboutUsDto): Promise<AboutUs | null> {
+  async update(dto: UpdateMainPageDto): Promise<MainPage | null> {
     const { lang } = dto
     const result = await this.countryRepo.update({ lang }, dto)
 
@@ -74,14 +74,14 @@ export class AboutUsService {
     try {
       const result = await this.countryRepo.delete(id)
       if (result.affected === 0) {
-        throw new NotFoundException('entity of about-us NOT_FOUND')
+        throw new NotFoundException('entity of main-page NOT_FOUND')
       }
     } catch (err) {
       if (err.code === '23503') {
-        throw new BadRequestException('entity of about-us HAS_CHILDS')
+        throw new BadRequestException('entity of main-page HAS_CHILDS')
       }
 
-      this.logger.error(`Error while deleting about us entity \n ${err}`)
+      this.logger.error(`Error while deleting main-page entity \n ${err}`)
       throw err
     }
 
