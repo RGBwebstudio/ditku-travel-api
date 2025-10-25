@@ -1,29 +1,26 @@
 import {
-  Column,
-  CreateDateColumn,
   Entity,
-  OneToMany,
   PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  CreateDateColumn,
   UpdateDateColumn
 } from 'typeorm'
-import { FaqTranslate } from './faq-translate.entity'
+import { Product } from 'src/product/entities/product.entity'
 
 @Entity()
-export class Faq {
+export class FormatGroup {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column()
-  show_in_product: boolean
 
   @Column()
   title: string
 
   @Column()
-  text: string
+  value: string
 
-  @OneToMany(() => FaqTranslate, (translates) => translates.entity_id)
-  translates: FaqTranslate[]
+  @ManyToMany(() => Product, (product) => product.format_groups)
+  products: Product[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date

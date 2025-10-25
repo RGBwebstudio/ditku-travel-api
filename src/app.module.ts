@@ -15,6 +15,9 @@ import { OrderModule } from './order/order.module'
 import { ParameterModule } from './parameter/parameter.module'
 import { ParameterCategoryModule } from './parameter-category/parameter-category.module'
 import { ProductModule } from './product/product.module'
+import { FormatGroupModule } from './format-group/format-group.module'
+import { RoadmapModule } from './roadmap/roadmap.module'
+import { CityModule } from './city/city.module'
 import { UserModule } from './user/user.module'
 import { CountryModule } from './country/country.module'
 import { RatingModule } from './product-rating/rating.module'
@@ -55,6 +58,9 @@ const config = configuration()
     ParameterModule,
     ParameterCategoryModule,
     ProductModule,
+    FormatGroupModule,
+    RoadmapModule,
+    CityModule,
     UserModule,
     UserModule,
     CountryModule,

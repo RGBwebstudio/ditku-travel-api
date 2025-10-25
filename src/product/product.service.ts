@@ -78,6 +78,7 @@ export class ProductService {
         'segment_discount_price_type'
       )
       .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('category_id.images', 'category_images')
       .leftJoinAndSelect('product.promotion_id', 'promotion_id')
       .leftJoinAndSelect('product.images', 'images')
@@ -125,6 +126,7 @@ export class ProductService {
           'segment_discount_price_type'
         )
         .leftJoinAndSelect('product.category_id', 'category_id')
+        .leftJoinAndSelect('product.format_groups', 'format_groups')
         .leftJoinAndSelect('category_id.images', 'category_images')
         .leftJoinAndSelect('product.promotion_id', 'promotion_id')
         .leftJoinAndSelect('product.images', 'images')
@@ -205,6 +207,7 @@ export class ProductService {
     const result = await this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
@@ -325,6 +328,7 @@ export class ProductService {
     const result = await this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
@@ -444,6 +448,7 @@ export class ProductService {
     const queryBuilder = this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
@@ -557,6 +562,7 @@ export class ProductService {
         'parent_id',
         'images',
         'translates',
+        'format_groups',
         'nomenclature_id',
         'nomenclature_id.product_group_id',
         'nomenclature_id.price_id',
@@ -616,6 +622,7 @@ export class ProductService {
         'parent_id',
         'images',
         'translates',
+        'format_groups',
         'nomenclature_id',
         'nomenclature_id.product_group_id',
         'nomenclature_id.price_id',
@@ -706,6 +713,7 @@ export class ProductService {
         'brand_id',
         'brand_id.translates',
         'promotion_id',
+        'format_groups',
         'promotion_id.translates',
         'stock'
       ]
@@ -750,6 +758,7 @@ export class ProductService {
           'brand_id.translates',
           'promotion_id',
           'promotion_id.translates',
+          'format_groups',
           'stock'
         ]
       })
@@ -845,6 +854,7 @@ export class ProductService {
     const result = await this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
@@ -929,6 +939,7 @@ export class ProductService {
       .createQueryBuilder('product')
       .innerJoin('product.recommendedBy', 'recommendedBy')
       .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.measurement_id', 'measurement_id')
@@ -993,6 +1004,7 @@ export class ProductService {
     const result = await this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.measurement_id', 'measurement_id')
@@ -1055,6 +1067,7 @@ export class ProductService {
     const result = await this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
@@ -1183,6 +1196,7 @@ export class ProductService {
           'measurement_id',
           'brand_id',
           'promotion_id',
+          'format_groups',
           'ratings',
           'stock'
         ]

@@ -2,28 +2,24 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm'
-import { FaqTranslate } from './faq-translate.entity'
+import { LANG } from 'src/common/enums/translation.enum'
 
 @Entity()
-export class Faq {
+export class Content {
   @PrimaryGeneratedColumn()
   id: number
 
   @Column()
-  show_in_product: boolean
+  tag: string
 
-  @Column()
-  title: string
+  @Column({ type: 'jsonb', default: '{}' })
+  value: string
 
-  @Column()
-  text: string
-
-  @OneToMany(() => FaqTranslate, (translates) => translates.entity_id)
-  translates: FaqTranslate[]
+  @Column({ enum: LANG, default: LANG.UA })
+  lang: LANG
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date

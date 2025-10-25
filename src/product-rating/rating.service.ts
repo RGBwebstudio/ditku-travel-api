@@ -39,7 +39,7 @@ export class RatingService {
 
     const mappedEntity = applyTranslations([entity], lang)
 
-    return mappedEntity[0] as Rating
+    return mappedEntity[0]
   }
 
   async getUserEstimate(productId: number, req: AuthenticatedRequest) {
@@ -83,8 +83,13 @@ export class RatingService {
     if (existingRating) {
       existingRating.rating = dto.rating
 
+      // If provided, update textual review as well
+      if (typeof dto.review !== 'undefined') {
+        existingRating.review = dto.review
+      }
+
       try {
-        return (await this.ratingRepo.save(existingRating)) as Rating
+        return await this.ratingRepo.save(existingRating)
       } catch (error) {
         this.logger.error(`Error while updating existing rating: ${error}`)
         throw new BadRequestException('rating is NOT_UPDATED')
@@ -97,7 +102,7 @@ export class RatingService {
     })
 
     try {
-      return (await this.ratingRepo.save(data)) as Rating
+      return await this.ratingRepo.save(data)
     } catch (error) {
       this.logger.error(`Error while creating rating: ${error}`)
       throw new BadRequestException('rating is NOT_CREATED')

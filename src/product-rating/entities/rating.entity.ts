@@ -20,6 +20,9 @@ export class Rating {
   @Column({ type: 'decimal', precision: 2, scale: 1, default: 5.0 })
   rating: string
 
+  @Column({ type: 'text', nullable: true })
+  review: string
+
   @ManyToOne(() => Product, (product) => product.ratings, {
     onDelete: 'CASCADE'
   })

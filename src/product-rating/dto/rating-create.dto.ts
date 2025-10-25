@@ -13,6 +13,11 @@ export class RatingCreateDto {
   @IsString()
   rating: string
 
+  @ApiPropertyOptional({ example: 'Чудовий товар, сподобався!' })
+  @IsString()
+  @IsOptional()
+  review: string
+
   @ApiProperty({ example: 1 })
   @IsInt()
   @Validate(IsExist, ['product', 'id'])

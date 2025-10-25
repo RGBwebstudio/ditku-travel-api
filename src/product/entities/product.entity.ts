@@ -15,6 +15,7 @@ import {
 import { Category } from 'src/category/entities/category.entity'
 import { CartItem } from 'src/cart/entities/cart-item.entity'
 import { Parameter } from 'src/parameter/entities/parameter.entity'
+import { FormatGroup } from 'src/format-group/entities/format-group.entity'
 import { ProductTranslate } from './product-translate.entity'
 import { ProductImage } from './product-image.entity'
 import { Rating } from 'src/product-rating/entities/rating.entity'
@@ -36,7 +37,7 @@ export class Product {
   custom_id: string
 
   @Column()
-  is_top_product: boolean
+  is_top: boolean
 
   @Column()
   is_hidden: boolean
@@ -51,6 +52,9 @@ export class Product {
   title: string
 
   @Column()
+  subtitle: string
+
+  @Column()
   seo_title: string
 
   @Column({ type: 'text', default: '' })
@@ -63,16 +67,10 @@ export class Product {
   price: string
 
   @Column({ type: 'text' })
-  description_1: string
+  discover: string
 
   @Column({ type: 'text' })
-  description_2: string
-
-  @Column({ type: 'text' })
-  description_3: string
-
-  @Column({ type: 'text' })
-  description_4: string
+  skills: string
 
   @Column({ default: 0 })
   order_in_list: number
@@ -132,6 +130,20 @@ export class Product {
     inverseJoinColumn: { name: 'parameter_id', referencedColumnName: 'id' }
   })
   parameters: Parameter[]
+
+  @ManyToMany(
+    () => FormatGroup,
+    (formatGroup: FormatGroup) => formatGroup.products,
+    {
+      onDelete: 'CASCADE'
+    }
+  )
+  @JoinTable({
+    name: 'product_format_group',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'group_format_id', referencedColumnName: 'id' }
+  })
+  format_groups: FormatGroup[]
 
   @ManyToMany(() => Product, (product: Product) => product.recommendedBy, {
     onDelete: 'CASCADE'

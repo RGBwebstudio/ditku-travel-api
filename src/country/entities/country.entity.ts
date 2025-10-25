@@ -7,6 +7,7 @@ import {
   UpdateDateColumn
 } from 'typeorm'
 import { CountryTranslate } from './country-translate.entity'
+import { City } from 'src/city/entities/city.entity'
 
 @Entity()
 export class Country {
@@ -27,6 +28,9 @@ export class Country {
     (translate: CountryTranslate) => translate.entity_id
   )
   translates: CountryTranslate[]
+
+  @OneToMany(() => City, (city) => city.country_id)
+  cities: City[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date
