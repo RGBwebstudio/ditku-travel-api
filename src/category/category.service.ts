@@ -121,7 +121,7 @@ export class CategoryService {
 
     try {
       const savedCategory = await this.categoryRepo.save(data)
-      return savedCategory as Category
+      return savedCategory
     } catch (err) {
       this.logger.error(`Error while creating category ${err}`)
       throw new BadRequestException('category is NOT_CREATED')
@@ -237,7 +237,7 @@ export class CategoryService {
       if (entity.products?.length) {
         entity.products = entity.products.slice(0, 20)
       }
-      return entity as Category
+      return entity
     })
 
     const allProducts = entities.flatMap((category) => category.products || [])
@@ -572,7 +572,7 @@ export class CategoryService {
       entity_id
     })
     try {
-      return (await this.entityImageRepo.save(newImage)) as CategoryImage
+      return await this.entityImageRepo.save(newImage)
     } catch (err) {
       this.logger.error(`Error while saving category image: ${err}`)
       throw new BadRequestException('category image is NOT_CREATED')
@@ -745,5 +745,79 @@ export class CategoryService {
     }
 
     return tree as Category | null
+  }
+
+  async getAdditionalFilters(
+    categoryId: number
+  ): Promise<{ start_points: any[]; end_points: any[] }> {
+    if (typeof categoryId !== 'number' || Number.isNaN(categoryId)) {
+      throw new BadRequestException(
+        'category id is required and must be a number'
+      )
+    }
+
+    const category = await this.categoryRepo.findOne({
+      where: { id: categoryId }
+    })
+    if (!category) throw new NotFoundException('category is NOT_FOUND')
+
+    const rawRows = await this.categoryRepo.manager
+      .createQueryBuilder()
+      .select('roadmap.id', 'roadmapId')
+      .addSelect('roadmap.start_point', 'start_point')
+      .addSelect('roadmap.end_point', 'end_point')
+      .addSelect('roadmap.time', 'time')
+      .addSelect('roadmap.description', 'description')
+      .addSelect('roadmap.order', 'order')
+      .addSelect('product.id', 'productId')
+      .addSelect('product.title', 'productTitle')
+      .addSelect('product.url', 'productUrl')
+      .addSelect('city.id', 'cityId')
+      .addSelect('city.title', 'cityTitle')
+      .from('roadmap', 'roadmap')
+      .innerJoin('product', 'product', 'product.id = roadmap.product_id')
+      .leftJoin('city', 'city', 'city.id = roadmap.city_id')
+      .where('product.category_id = :categoryId', { categoryId })
+      .getRawMany()
+
+    const start_points = rawRows
+      .filter(
+        (row) =>
+          row.start_point === true ||
+          row.start_point === 'true' ||
+          row.start_point === 1
+      )
+      .map((row) => ({
+        roadmap_id: Number(row.roadmapId),
+        product_id: Number(row.productId),
+        product_title: row.productTitle,
+        product_url: row.productUrl,
+        city_id: row.cityId ? Number(row.cityId) : null,
+        city_title: row.cityTitle || null,
+        time: row.time,
+        description: row.description,
+        order: row.order
+      }))
+
+    const end_points = rawRows
+      .filter(
+        (row) =>
+          row.end_point === true ||
+          row.end_point === 'true' ||
+          row.end_point === 1
+      )
+      .map((row) => ({
+        roadmap_id: Number(row.roadmapId),
+        product_id: Number(row.productId),
+        product_title: row.productTitle,
+        product_url: row.productUrl,
+        city_id: row.cityId ? Number(row.cityId) : null,
+        city_title: row.cityTitle || null,
+        time: row.time,
+        description: row.description,
+        order: row.order
+      }))
+
+    return { start_points, end_points }
   }
 }

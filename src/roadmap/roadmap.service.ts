@@ -37,6 +37,8 @@ export class RoadmapService {
 
   async create(dto: CreateRoadmapDto): Promise<Roadmap> {
     const payload: DeepPartial<Roadmap> = {
+      start_point: dto.start_point,
+      end_point: dto.end_point,
       time: dto.time,
       description: dto.description,
       order: dto.order
@@ -62,6 +64,8 @@ export class RoadmapService {
 
   async update(id: number, dto: UpdateRoadmapDto): Promise<Roadmap | null> {
     const updatePayload: Partial<Roadmap> = {
+      start_point: dto.start_point,
+      end_point: dto.end_point,
       time: dto.time,
       description: dto.description,
       order: dto.order
@@ -71,11 +75,11 @@ export class RoadmapService {
       updatePayload.city_id =
         dto.city_id === null
           ? (null as unknown as City)
-          : ({ id: dto.city_id } as unknown as City)
+          : ({ id: dto.city_id } as City)
     }
 
     if (typeof dto.product_id !== 'undefined') {
-      updatePayload.product_id = { id: dto.product_id } as unknown as Product
+      updatePayload.product_id = { id: dto.product_id } as Product
     }
 
     const result = await this.repo.update(id, updatePayload)

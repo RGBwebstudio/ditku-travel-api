@@ -1,10 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsInt, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator'
 
 export class CreateRoadmapDto {
   @ApiProperty({ example: 1 })
   @IsInt()
   product_id: number
+
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  start_point: boolean
+
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  end_point: boolean
 
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()

@@ -103,6 +103,19 @@ export class CategoryController {
     return this.categoryService.findOne(value, req.lang)
   }
 
+  @Get(':id/additional-filters')
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Отримано додаткові фільтри для категорії'
+  })
+  @ApiOperation({
+    summary:
+      'Отримати додаткові фільтри (start/end точки roadmap) для товарів у категорії'
+  })
+  findAdditionalFilters(@Param('id', ParseIntPipe) id: number) {
+    return this.categoryService.getAdditionalFilters(id)
+  }
+
   @Get('/tree/all')
   @ApiResponse({
     status: 200,

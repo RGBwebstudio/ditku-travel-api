@@ -23,6 +23,7 @@ import { Stock } from 'src/stock/entities/stock.entity'
 import { Measurement } from 'src/measurement/entities/measurement.entity'
 import { ProductPromotion } from 'src/product-promotion/entities/product-promotion.entity'
 import { OrderItem } from 'src/order/entities/order-item.entity'
+import { Section } from 'src/section/entities/section.entity'
 
 @Entity()
 @Index(['category_id', 'show_on_main_page', 'created_at'])
@@ -145,6 +146,11 @@ export class Product {
   })
   format_groups: FormatGroup[]
 
+  @ManyToMany(() => Section, (section: Section) => section.products, {
+    onDelete: 'CASCADE'
+  })
+  sections: Section[]
+
   @ManyToMany(() => Product, (product: Product) => product.recommendedBy, {
     onDelete: 'CASCADE'
   })
@@ -166,6 +172,7 @@ export class Product {
     (translate: ProductTranslate) => translate.entity_id
   )
   translates: ProductTranslate[]
+
   @OneToMany(() => OrderItem, (orderItem: OrderItem) => orderItem.product_id)
   order_item_ids: OrderItem[]
 
@@ -177,6 +184,12 @@ export class Product {
 
   @OneToOne(() => Stock, (stock: Stock) => stock.product)
   stock: Stock
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  start_at: Date
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  end_at: Date
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date

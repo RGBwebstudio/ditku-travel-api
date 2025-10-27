@@ -15,6 +15,12 @@ export class Roadmap {
   @PrimaryGeneratedColumn()
   id: number
 
+  @Column()
+  start_point: boolean
+
+  @Column()
+  end_point: boolean
+
   @ManyToOne(() => Product, { onDelete: 'CASCADE' })
   product_id: Product
 

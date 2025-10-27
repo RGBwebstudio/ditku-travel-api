@@ -431,7 +431,11 @@ export class ProductService {
     sortBy: SORT_BY,
     lang: LANG,
     minPrice?: number,
-    maxPrice?: number
+    maxPrice?: number,
+    start_point?: number,
+    end_point?: number,
+    startAt?: string,
+    endAt?: string
   ) {
     const mappedCategories = categories?.trim().length
       ? categories.split(',').map((item) => String(item))
@@ -509,6 +513,64 @@ export class ProductService {
           .getQuery()
         return 'product.id IN ' + subQuery
       })
+    }
+
+    if (start_point && typeof start_point === 'number') {
+      queryBuilder.innerJoin(
+        'roadmap',
+        'start_roadmap',
+        'start_roadmap.product_id = product.id'
+      )
+      queryBuilder.andWhere(
+        'start_roadmap.start_point = true AND start_roadmap.city_id = :startPoint',
+        { startPoint: start_point }
+      )
+    }
+
+    if (end_point && typeof end_point === 'number') {
+      queryBuilder.innerJoin(
+        'roadmap',
+        'end_roadmap',
+        'end_roadmap.product_id = product.id'
+      )
+      queryBuilder.andWhere(
+        'end_roadmap.end_point = true AND end_roadmap.city_id = :endPoint',
+        { endPoint: end_point }
+      )
+    }
+
+    let queryStartDate: Date | null = null
+    let queryEndDate: Date | null = null
+
+    if (startAt && typeof startAt === 'string') {
+      const parsedStart = new Date(startAt)
+      if (!isNaN(parsedStart.getTime())) queryStartDate = parsedStart
+    }
+    if (endAt && typeof endAt === 'string') {
+      const parsedEnd = new Date(endAt)
+      if (!isNaN(parsedEnd.getTime())) queryEndDate = parsedEnd
+    }
+
+    if (queryStartDate && queryEndDate) {
+      queryBuilder.andWhere(
+        '(product.start_at <= :queryEnd AND (product.end_at IS NULL OR product.end_at >= :queryStart))',
+        {
+          queryStart: queryStartDate.toISOString(),
+          queryEnd: queryEndDate.toISOString()
+        }
+      )
+    } else if (queryStartDate) {
+      const queryDate = queryStartDate.toISOString()
+      queryBuilder.andWhere(
+        'product.start_at <= :queryDate AND (product.end_at IS NULL OR product.end_at >= :queryDate)',
+        { queryDate }
+      )
+    } else if (queryEndDate) {
+      const queryDate = queryEndDate.toISOString()
+      queryBuilder.andWhere(
+        'product.start_at <= :queryDate AND (product.end_at IS NULL OR product.end_at >= :queryDate)',
+        { queryDate }
+      )
     }
 
     if (sortBy === SORT_BY.PRICE_ASC || sortBy === SORT_BY.PRICE_DESC) {

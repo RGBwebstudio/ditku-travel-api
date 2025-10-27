@@ -124,4 +124,12 @@ export class ProductCreateDto {
   @IsString()
   @IsOptional()
   weight: string
+
+  @ApiPropertyOptional({ example: '2023-12-01T00:00:00Z' })
+  @IsOptional()
+  start_at: Date
+
+  @ApiPropertyOptional({ example: '2023-12-31T23:59:59Z' })
+  @IsOptional()
+  end_at: Date
 }

@@ -34,10 +34,12 @@ import { SmsSenderModule } from './sms-sender/sms-sender.module'
 import { BannerModule } from './banners/brand.module'
 import { SettingsModule } from './settings/settings.module'
 import { SeoBlocksModule } from './seo-blocks/seo-blocks.module'
+import { SeoFilterModule } from './seo-filter/seo-filter.module'
 import { PriceModule } from './price/price.module'
 import { DiscountModule } from './discount/discount.module'
 import { DiscountConditionModule } from './discount-condition/discount-condition.module'
 import { PostModule } from './posts/post.module'
+import { SectionModule } from './section/section.module'
 
 const config = configuration()
 
@@ -78,10 +80,12 @@ const config = configuration()
     BannerModule,
     SettingsModule,
     SeoBlocksModule,
+    SeoFilterModule,
     DiscountModule,
     DiscountConditionModule,
     PriceModule,
-    PostModule
+    PostModule,
+    SectionModule
   ],
   controllers: [AppController],
   providers: [AppService]
