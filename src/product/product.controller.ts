@@ -100,6 +100,7 @@ export class ProductController {
     const {
       categories,
       parameters,
+      sections,
       take,
       skip,
       start_point,
@@ -111,6 +112,7 @@ export class ProductController {
     return this.productService.filter(
       categories,
       parameters,
+      sections,
       take,
       skip,
       req.lang,

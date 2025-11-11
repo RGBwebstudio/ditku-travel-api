@@ -33,7 +33,6 @@ export class MailLayoutService {
   }
 
   async create(dto: CreateMailLayoutDto): Promise<MailLayout> {
-    // Ensure title uniqueness
     const exists = await this.mailLayout
       .createQueryBuilder('mailLayout')
       .where('LOWER(mailLayout.title) = :title', {

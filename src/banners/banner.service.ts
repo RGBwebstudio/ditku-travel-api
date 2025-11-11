@@ -41,7 +41,6 @@ export class BannerService {
   }
 
   async create(dto: BannerCreateDto): Promise<BannerGroup> {
-    // Ensure unique title
     const exists = await this.bannerRepo
       .createQueryBuilder('banner')
       .where('LOWER(banner.title) = :title', {
@@ -103,7 +102,6 @@ export class BannerService {
   }
 
   async update(id: number, dto: BannerUpdateDto): Promise<BannerGroup | null> {
-    // Check uniqueness for title
     if (dto.title) {
       const exists = await this.bannerRepo
         .createQueryBuilder('banner')
@@ -267,7 +265,6 @@ export class BannerService {
         }
       }
 
-      // Remove image records from DB
       const ids = deleteCandidates.map((c) => c.id)
       try {
         if (ids.length) await this.entityImageRepo.delete(ids)
@@ -293,7 +290,6 @@ export class BannerService {
     if (!Array.isArray(orders))
       throw new BadRequestException('orders is required')
 
-    // Validate ids exist in this banner group
     const imageIds = banner.images.map((i) => i.id)
     for (const o of orders) {
       if (!imageIds.includes(o.id)) {
@@ -303,7 +299,6 @@ export class BannerService {
       }
     }
 
-    // Update each image order
     for (const o of orders) {
       await this.entityImageRepo.update(o.id, { order: o.order })
     }

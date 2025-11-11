@@ -11,11 +11,9 @@ export class IdOrUrlValidationPipe implements PipeTransform {
     const { data } = metadata
 
     if (typeof value === 'string') {
-      // Якщо рядок містить тільки цифри, перетворюємо на число
       if (/^\d+$/.test(value)) {
         return parseInt(value, 10)
       }
-      // Інакше повертаємо як рядок (URL)
       return value
     }
 

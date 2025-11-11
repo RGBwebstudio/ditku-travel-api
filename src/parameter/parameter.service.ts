@@ -125,7 +125,6 @@ export class ParameterService {
       parameter.category_ids = categories
     }
 
-    // Ensure unique title
     const exists = await this.parameterRepo
       .createQueryBuilder('parameter')
       .where('LOWER(parameter.title) = :title', {
@@ -152,7 +151,6 @@ export class ParameterService {
     })
     if (!parameter) throw new NotFoundException('parameter is NOT_FOUND')
 
-    // Title uniqueness check
     if (dto.title) {
       const exists = await this.parameterRepo
         .createQueryBuilder('parameter')

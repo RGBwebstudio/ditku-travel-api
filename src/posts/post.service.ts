@@ -136,7 +136,6 @@ export class PostService {
   }
 
   async create(createDto: PostCreateDto): Promise<Post> {
-    // Check if category exists
     if (createDto.category_id) {
       const category = await this.categoryRepo.findOne({
         where: { id: createDto.category_id as any }
@@ -146,7 +145,6 @@ export class PostService {
       }
     }
 
-    // Check if URL is unique
     const existingPost = await this.postRepo.findOne({
       where: { url: createDto.url }
     })
@@ -161,7 +159,6 @@ export class PostService {
   async update(id: number, updateDto: PostUpdateDto): Promise<Post> {
     const existingPost = await this.findOne(id)
 
-    // Check if category exists
     if (updateDto.category_id) {
       const category = await this.categoryRepo.findOne({
         where: { id: updateDto.category_id as any }
@@ -171,7 +168,6 @@ export class PostService {
       }
     }
 
-    // Check if URL is unique
     if (updateDto.url && updateDto.url !== existingPost.url) {
       const existingUrlPost = await this.postRepo.findOne({
         where: { url: updateDto.url }
@@ -190,7 +186,6 @@ export class PostService {
     await this.postRepo.remove(post)
   }
 
-  // Translation methods
   async createTranslate(
     postId: number,
     createTranslateDto: PostCreateTranslateDto
@@ -237,7 +232,6 @@ export class PostService {
     await this.postTranslateRepo.remove(translate)
   }
 
-  // Image methods
   async uploadImage(
     postId: number,
     file: Express.Multer.File,
@@ -251,7 +245,6 @@ export class PostService {
     const filename = `${Date.now()}-${file.originalname}`
     const filePath = path.join(uploadsDir, filename)
 
-    // Resize and optimize image
     await sharp(file.buffer)
       .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
       .jpeg({ quality: 85 })
@@ -306,12 +299,11 @@ export class PostService {
 
     const images = await this.postImageRepo.find({
       where: {
-        id: deleteImagesDto.imageIds[0], // TypeORM In operator
+        id: deleteImagesDto.imageIds[0],
         entity_id: post
       }
     })
 
-    // Delete physical files
     for (const image of images) {
       const filePath = path.join(process.cwd(), image.path)
       try {
@@ -333,7 +325,6 @@ export class PostService {
       throw new NotFoundException(`Image with ID ${imageId} not found`)
     }
 
-    // Delete physical file
     const filePath = path.join(process.cwd(), image.path)
     try {
       await fs.remove(filePath)

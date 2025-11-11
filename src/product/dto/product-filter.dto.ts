@@ -12,6 +12,11 @@ export class ProductFilterDto {
   @IsOptional()
   parameters: string
 
+  @ApiPropertyOptional({ example: '1,2' })
+  @IsString()
+  @IsOptional()
+  sections: string
+
   @ApiProperty({ example: 15 })
   @IsInt()
   @Min(0)

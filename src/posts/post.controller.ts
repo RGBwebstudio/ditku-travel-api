@@ -102,7 +102,6 @@ export class PostController {
     return this.postService.remove(id)
   }
 
-  // Translation endpoints
   @Post(':id/translates')
   @UseGuards(AuthAdminGuard)
   @ApiBearerAuth()
@@ -139,7 +138,6 @@ export class PostController {
     return this.postService.removeTranslate(translateId)
   }
 
-  // Image endpoints
   @Post(':id/images/upload')
   @UseGuards(AuthAdminGuard)
   @ApiBearerAuth()

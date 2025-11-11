@@ -109,7 +109,6 @@ export class ParameterCategoryService {
     const { parameter_ids, ...categoryData } = dto
     const newEntity = this.parameterCategoryRepo.create(categoryData)
 
-    // Ensure title uniqueness
     const exists = await this.parameterCategoryRepo
       .createQueryBuilder('parameterCategory')
       .where('LOWER(parameterCategory.title) = :title', {
@@ -155,7 +154,6 @@ export class ParameterCategoryService {
     if (!category)
       throw new NotFoundException('parameter category is NOT_FOUND')
 
-    // Check uniqueness for title
     if (categoryData.title) {
       const exists = await this.parameterCategoryRepo
         .createQueryBuilder('parameterCategory')

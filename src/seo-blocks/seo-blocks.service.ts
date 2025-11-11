@@ -21,7 +21,6 @@ export class SeoBlocksService {
   }
 
   async create(dto: CreateSeoBlockDto): Promise<SeoBlock> {
-    // Ensure unique meta_title if provided
     if (dto.meta_title) {
       const exists = await this.repo
         .createQueryBuilder('seoBlock')

@@ -52,8 +52,6 @@ export class RatingService {
     }
   }
 
-  // purchase check removed — ratings allowed from any user
-
   async findAllList(lang: LANG): Promise<{ entities: Rating[] }> {
     const entities = await this.ratingRepo.find({
       order: { created_at: 'DESC' }

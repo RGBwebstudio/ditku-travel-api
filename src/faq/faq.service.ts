@@ -48,7 +48,6 @@ export class FaqService {
   }
 
   async create(dto: CreateFaqDto) {
-    // Ensure unique title
     const exists = await this.faqRepo
       .createQueryBuilder('faq')
       .where('LOWER(faq.title) = :title', {

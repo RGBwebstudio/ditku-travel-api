@@ -255,6 +255,7 @@ export class ProductService {
   async filter(
     categories: string,
     parameters: string,
+    sections: string,
     take: number,
     skip: number,
     lang: LANG,
@@ -269,6 +270,10 @@ export class ProductService {
 
     const mappedParameters: number[] = parameters?.trim().length
       ? parameters.split(',').map((item) => Number(item))
+      : []
+
+    const mappedSections: number[] = sections?.trim().length
+      ? sections.split(',').map((item) => Number(item))
       : []
 
     const allCategoryUrls: string[] = mappedCategories.length
@@ -301,6 +306,20 @@ export class ProductService {
           .groupBy('pp.product_id')
           .having('COUNT(DISTINCT pp.parameter_id) = :paramCount', {
             paramCount: mappedParameters.length
+          })
+          .getQuery()
+        return 'product.id IN ' + subQuery
+      })
+    }
+
+    if (mappedSections.length > 0) {
+      queryBuilder.andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('ps.product_id')
+          .from('product_section', 'ps')
+          .where('ps.section_id IN (:...sections)', {
+            sections: mappedSections
           })
           .getQuery()
         return 'product.id IN ' + subQuery

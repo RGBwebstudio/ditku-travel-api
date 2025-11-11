@@ -404,16 +404,13 @@ export class CategoryService {
 
     const mappedEntities = roots.map((r) => applyTranslationsRecursively(r))
 
-    // fill products_count for each node recursively (include descendants)
     const fillProductsCount = async (node: Category) => {
-      // count products directly assigned to this node (do not include descendants)
       const count = await this.categoryRepo.manager
         .getRepository('Product')
         .count({ where: { category_id: node.id } })
 
       node.products_count = count
 
-      // debug log to help diagnose incorrect identical counts
       this.logger.debug(
         'fillProductsCount: node.id=' +
           node.id +
@@ -447,7 +444,6 @@ export class CategoryService {
     if (!categoryExist) throw new NotFoundException('category is NOT_FOUND')
 
     try {
-      // If title provided and changed, ensure case-insensitive uniqueness (same as Product)
       const newTitle = dto.title ? String(dto.title).trim() : undefined
       if (
         newTitle &&

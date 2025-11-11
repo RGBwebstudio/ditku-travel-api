@@ -182,10 +182,4 @@ export class UserController {
 
     return this.userService.delete(id)
   }
-
-  // @Post('get-reset-code')
-  // @ApiOperation({ summary: 'Отримати код' })
-  // sendResetCode(@Body() { email }: SendCodeDto) {
-  //   return this.userService.sendResetCode({ email })
-  // }
 }
