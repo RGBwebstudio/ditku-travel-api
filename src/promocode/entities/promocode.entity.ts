@@ -8,16 +8,16 @@ import {
 } from 'typeorm'
 
 @Entity()
-export class Price {
+@Index(['title'])
+export class Promocode {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Index()
-  @Column({ nullable: true })
-  custom_id: string
+  @Column({ unique: true })
+  title: string
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  value: number
+  @Column('float')
+  discount: number
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date

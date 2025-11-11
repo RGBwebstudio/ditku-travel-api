@@ -4,7 +4,8 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-  UnauthorizedException
+  UnauthorizedException,
+  Logger
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository } from 'typeorm'
@@ -13,18 +14,14 @@ import { UserCreateDto } from './dto/user-create.dto'
 import { UserUpdateDto } from './dto/user-update.dto'
 import { JwtService } from '@nestjs/jwt'
 import { MailSenderService } from 'src/mail-sender/mail-sender.service'
-import { SendCodeDto } from './dto/send-code.dto'
-import { generateResetCode } from 'src/helpers/generte-code.helper'
-import { CartService } from 'src/cart/cart.service'
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name)
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @Inject(forwardRef(() => MailSenderService))
     private mailService: MailSenderService,
-    @Inject(forwardRef(() => CartService))
-    private cartService: CartService,
     private jwtService: JwtService
   ) {}
 
@@ -80,7 +77,7 @@ export class UserService {
     return users
   }
 
-  async findByToken(token: string, session_id?: string): Promise<User> {
+  async findByToken(token: string): Promise<User> {
     try {
       const payload = await this.jwtService.verifyAsync<{ id: number }>(token, {
         secret: process.env.JWT_SECRET
@@ -95,10 +92,6 @@ export class UserService {
 
       if (!result) {
         throw new UnauthorizedException('user is NOT_AUTHORIZED')
-      }
-
-      if (session_id) {
-        await this.cartService.updateUserOfCart({ session_id, user_id: userId })
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -140,43 +133,28 @@ export class UserService {
       }
     }
 
-    // Merge the existing user with the update data
     const updatedUser = this.userRepo.merge(existingUser, dto)
 
-    // Use save() instead of update() to trigger @BeforeUpdate hook for password hashing
     await this.userRepo.save(updatedUser)
 
     const user = await this.userRepo.findOne({
       where: { id },
       relations: ['address_list']
     })
+
     if (!user) throw new NotFoundException('user is NOT_FOUND')
+
     return user
   }
 
   async delete(id: number): Promise<{ message: string }> {
+    const user = await this.userRepo.findOne({ where: { id } })
+    if (!user) throw new NotFoundException('user is NOT_FOUND')
+
     const result = await this.userRepo.delete(id)
     if (result.affected === 0) throw new NotFoundException('user is NOT_FOUND')
 
     return { message: 'SUCCESS' }
-  }
-
-  async sendResetCode({ email }: SendCodeDto) {
-    const user = await this.findByEmail(email)
-
-    if (user) {
-      const resetCode = generateResetCode()
-
-      user.verification_code = resetCode
-      await this.userRepo.save(user)
-
-      await this.mailService.sendMail({
-        to: email,
-        subject: 'Password reset code',
-        template: 'default',
-        context: { message: `<b>Verification code:</b> ${resetCode}` }
-      })
-    }
   }
 
   async findByPhone(phone: string): Promise<User | null> {
@@ -189,7 +167,6 @@ export class UserService {
   async createByPhone(phone: string): Promise<User> {
     const user = new User()
     user.phone = phone
-    user.auth_code = '000000'
     user.first_name = ''
     user.second_name = ''
     user.middle_name = ''

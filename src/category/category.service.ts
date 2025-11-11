@@ -276,15 +276,6 @@ export class CategoryService {
     for (const category of mappedEntities) {
       if (category.products?.length) {
         category.products = applyTranslations(category.products, lang)
-
-        for (const product of category.products) {
-          if (product.measurement_id) {
-            product.measurement_id = applyTranslations(
-              [product.measurement_id],
-              lang
-            )[0]
-          }
-        }
       }
     }
 

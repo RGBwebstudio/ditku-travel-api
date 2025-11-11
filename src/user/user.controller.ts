@@ -17,22 +17,16 @@ import { UserCreateDto } from './dto/user-create.dto'
 import { UserUpdateDto } from './dto/user-update.dto'
 import { AuthGuard } from 'src/auth/auth.guard'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { GetUserOrdersDto } from './dto/get-user-orders.dto'
 import { Request } from 'express'
-// import { SendCodeDto } from './dto/send-code.dto'
 import { AuthenticatedRequest } from './types/auth-request.types'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AuthAdminGuard } from 'src/auth/auth-admin.guard'
 import { Roles } from 'src/common/enums/user.enum'
-import { OrderService } from 'src/order/order.service'
 
 @ApiTags('Користувачі')
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly orderService: OrderService
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('search')
   @UseGuards(AuthAdminGuard)
@@ -40,8 +34,6 @@ export class UserController {
     summary: "Пошук користувачів за телефоном, поштою або ім'ям"
   })
   async searchUsers(@Query('q') q: string) {
-    console.log('q', q)
-
     if (!q || q.trim() === '') {
       return this.userService.findAll(20, 0)
     }
@@ -83,7 +75,7 @@ export class UserController {
       throw new UnauthorizedException('NOT_AUTHORIZED')
     }
 
-    return this.userService.findByToken(token, req.sessionID)
+    return this.userService.findByToken(token)
   }
 
   @Get('me')
@@ -117,26 +109,6 @@ export class UserController {
     @Body() dto: UserUpdateDto
   ) {
     return this.userService.update(req.user.id, dto)
-  }
-
-  @Get('me/orders')
-  @ApiResponse({
-    status: 200,
-    description: 'SUCCESS - Замовлення користувача успішно отримано'
-  })
-  @ApiResponse({
-    status: 401,
-    description: "NOT_AUTHORIZED  - Об'єкт не авторизований"
-  })
-  @UseGuards(AuthGuard)
-  @ApiOperation({
-    summary: 'Отримати замовлення поточного користувача з фільтрацією'
-  })
-  getCurrentUserOrders(
-    @Req() req: AuthenticatedRequest,
-    @Query() dto: GetUserOrdersDto
-  ) {
-    return this.orderService.getUserOrdersWithFilters(req.user.id, dto)
   }
 
   @Post()

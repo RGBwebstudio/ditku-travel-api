@@ -4,20 +4,19 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
   Entity,
-  JoinColumn,
   BeforeInsert,
   BeforeUpdate
 } from 'typeorm'
-import { Genders, Roles, UserType } from 'src/common/enums/user.enum'
-import { Cart } from 'src/cart/entities/cart.entity'
-import { Order } from 'src/order/entities/order.entity'
+import { Genders, Roles } from 'src/common/enums/user.enum'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number
+
+  @Column({ nullable: true })
+  custom_id: string
 
   @Column()
   first_name: string
@@ -46,47 +45,10 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: UserType,
-    default: UserType.GUEST
-  })
-  type: UserType
-
-  @Column({
-    type: 'enum',
     enum: Roles,
     default: Roles.USER
   })
   role: Roles
-
-  @Column({ default: false })
-  verified_email: boolean
-
-  @Column({ default: 0 })
-  verify_email_code: number
-
-  @Column({ default: false })
-  verified_phone: boolean
-
-  @Column({ default: 0 })
-  verify_phone_code: number
-
-  @OneToMany(() => Cart, (cart: Cart) => cart.user_id)
-  @JoinColumn({ name: 'cart_id' })
-  cart_ids: Cart[]
-
-  @OneToMany(() => Cart, (cart: Cart) => cart.user_id)
-  @JoinColumn({ name: 'order_id' })
-  order_ids: Order[]
-
-  @OneToMany(() => Order, (order: Order) => order.user_id)
-  @JoinColumn({ name: 'user_id' })
-  order: Order[]
-
-  @Column({ default: '' })
-  verification_code: string
-
-  @Column({ type: 'varchar', length: 6, nullable: true })
-  auth_code: string
 
   @Column()
   password: string

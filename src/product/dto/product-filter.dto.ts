@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator'
-import { SORT_BY } from 'src/common/enums/products.enum'
+import { IsInt, IsOptional, IsString, Min } from 'class-validator'
 
 export class ProductFilterDto {
   @ApiPropertyOptional({ example: 'frukty-ta-ovochi,yabluka' })
@@ -23,15 +22,6 @@ export class ProductFilterDto {
   @IsInt()
   @Min(0)
   skip: number
-
-  @ApiProperty({
-    example: SORT_BY.PRICE_ASC,
-    enum: SORT_BY,
-    description: 'Sort by options'
-  })
-  @IsEnum(SORT_BY)
-  @IsOptional()
-  sort_by: SORT_BY
 
   @ApiPropertyOptional({ example: 0 })
   @IsOptional()

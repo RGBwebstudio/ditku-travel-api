@@ -23,10 +23,7 @@ import { ProductCreateImageDto } from './dto/product-create-image.dto'
 import { ProductImage } from './entities/product-image.entity'
 import { ProductWithoutRatings } from 'src/common/utils/apply-rating'
 import { Request } from 'express'
-import { SORT_BY } from 'src/common/enums/products.enum'
-import { HttpService } from '@nestjs/axios'
 import { Category } from 'src/category/entities/category.entity'
-import { RatingService } from 'src/product-rating/rating.service'
 
 @Injectable()
 export class ProductService {
@@ -39,9 +36,7 @@ export class ProductService {
     @InjectRepository(ProductTranslate)
     private entityTranslateRepo: Repository<ProductTranslate>,
     @InjectRepository(ProductImage)
-    private entityImageRepo: Repository<ProductImage>,
-    private httpService: HttpService,
-    private ratingService: RatingService
+    private entityImageRepo: Repository<ProductImage>
   ) {}
 
   async searchByTitle(
@@ -54,33 +49,8 @@ export class ProductService {
     let queryBuilder = this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
-      .leftJoinAndSelect(
-        'nomenclature_id.product_group_id',
-        'nomenclature_product_group'
-      )
-      .leftJoinAndSelect('nomenclature_id.price_id', 'nomenclature_prices')
-      .leftJoinAndSelect(
-        'nomenclature_prices.price_type_id',
-        'nomenclature_price_type'
-      )
-      .leftJoinAndSelect('nomenclature_id.segment_id', 'nomenclature_segment')
-      .leftJoinAndSelect(
-        'nomenclature_segment.discount_ids',
-        'segment_discounts'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.discount_conditions',
-        'segment_discount_conditions'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.price_type_id',
-        'segment_discount_price_type'
-      )
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
-      .leftJoinAndSelect('category_id.images', 'category_images')
-      .leftJoinAndSelect('product.promotion_id', 'promotion_id')
       .leftJoinAndSelect('product.images', 'images')
       .addSelect(
         (subQuery) =>
@@ -102,33 +72,8 @@ export class ProductService {
       queryBuilder = this.productRepo
         .createQueryBuilder('product')
         .leftJoinAndSelect('product.translates', 'translates')
-        .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
-        .leftJoinAndSelect(
-          'nomenclature_id.product_group_id',
-          'nomenclature_product_group'
-        )
-        .leftJoinAndSelect('nomenclature_id.price_id', 'nomenclature_prices')
-        .leftJoinAndSelect(
-          'nomenclature_prices.price_type_id',
-          'nomenclature_price_type'
-        )
-        .leftJoinAndSelect('nomenclature_id.segment_id', 'nomenclature_segment')
-        .leftJoinAndSelect(
-          'nomenclature_segment.discount_ids',
-          'segment_discounts'
-        )
-        .leftJoinAndSelect(
-          'segment_discounts.discount_conditions',
-          'segment_discount_conditions'
-        )
-        .leftJoinAndSelect(
-          'segment_discounts.price_type_id',
-          'segment_discount_price_type'
-        )
         .leftJoinAndSelect('product.category_id', 'category_id')
         .leftJoinAndSelect('product.format_groups', 'format_groups')
-        .leftJoinAndSelect('category_id.images', 'category_images')
-        .leftJoinAndSelect('product.promotion_id', 'promotion_id')
         .leftJoinAndSelect('product.images', 'images')
         .addSelect(
           (subQuery) =>
@@ -179,15 +124,6 @@ export class ProductService {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
 
-      // nomenclature has no translates - keep nomenclature as-is
-
-      if (product.measurement_id && product.measurement_id.translates) {
-        product.measurement_id = applyTranslations(
-          [product.measurement_id],
-          lang
-        )[0]
-      }
-
       if (product.parameters && Array.isArray(product.parameters)) {
         product.parameters = product.parameters.map((param) =>
           param && param.translates
@@ -211,60 +147,8 @@ export class ProductService {
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
-      .leftJoinAndSelect(
-        'nomenclature_id.product_group_id',
-        'nomenclature_product_group'
-      )
-      .leftJoinAndSelect('nomenclature_id.price_id', 'nomenclature_prices')
-      .leftJoinAndSelect(
-        'nomenclature_prices.price_type_id',
-        'nomenclature_price_type'
-      )
-      .leftJoinAndSelect('nomenclature_id.segment_id', 'nomenclature_segment')
-      .leftJoinAndSelect(
-        'nomenclature_segment.discount_ids',
-        'segment_discounts'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.discount_conditions',
-        'segment_discount_conditions'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.price_type_id',
-        'segment_discount_price_type'
-      )
-      .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
-      .leftJoinAndSelect(
-        'nomenclature_id.product_group_id',
-        'nomenclature_product_group'
-      )
-      .leftJoinAndSelect('nomenclature_id.price_id', 'nomenclature_prices')
-      .leftJoinAndSelect(
-        'nomenclature_prices.price_type_id',
-        'nomenclature_price_type'
-      )
-      .leftJoinAndSelect('nomenclature_id.segment_id', 'nomenclature_segment')
-      .leftJoinAndSelect(
-        'nomenclature_segment.discount_ids',
-        'segment_discounts'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.discount_conditions',
-        'segment_discount_conditions'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.price_type_id',
-        'segment_discount_price_type'
-      )
       .leftJoinAndSelect('product.parameters', 'parameters')
       .leftJoinAndSelect('parameters.translates', 'parameter_translates')
-      .leftJoinAndSelect('product.measurement_id', 'measurement_id')
-      .leftJoinAndSelect('measurement_id.translates', 'measurement_translates')
-      .leftJoinAndSelect('product.brand_id', 'brand_id')
-      .leftJoinAndSelect('product.promotion_id', 'promotion_id')
-      .leftJoinAndSelect('promotion_id.translates', 'promotion_translates')
-      .leftJoinAndSelect('product.stock', 'stock')
       .addSelect(
         (subQuery) =>
           subQuery
@@ -273,7 +157,7 @@ export class ProductService {
             .where('r.productIdId = product.id'),
         'average_rating'
       )
-      .where('promotion_id.show_on_main_page = :showOnMainPage', {
+      .where('product.show_on_main_page = :showOnMainPage', {
         showOnMainPage: true
       })
       .take(20)
@@ -290,13 +174,6 @@ export class ProductService {
     const mappedEntities = applyTranslations(products, lang)
 
     for (const product of mappedEntities) {
-      if (product.measurement_id && product.measurement_id.translates) {
-        product.measurement_id = applyTranslations(
-          [product.measurement_id],
-          lang
-        )[0]
-      }
-
       if (product.category_id && product.category_id.translates) {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
@@ -307,13 +184,6 @@ export class ProductService {
             ? applyTranslations([param], lang)[0]
             : param
         )
-      }
-
-      if (product.promotion_id && product.promotion_id.translates) {
-        product.promotion_id = applyTranslations(
-          [product.promotion_id],
-          lang
-        )[0]
       }
     }
 
@@ -332,55 +202,14 @@ export class ProductService {
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
-      .leftJoinAndSelect(
-        'nomenclature_id.product_group_id',
-        'nomenclature_product_group'
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('COALESCE(AVG(r.rating), 0)')
+            .from('rating', 'r')
+            .where('r.productIdId = product.id'),
+        'average_rating'
       )
-      .leftJoinAndSelect('nomenclature_id.price_id', 'nomenclature_prices')
-      .leftJoinAndSelect(
-        'nomenclature_prices.price_type_id',
-        'nomenclature_price_type'
-      )
-      .leftJoinAndSelect('nomenclature_id.segment_id', 'nomenclature_segment')
-      .leftJoinAndSelect(
-        'nomenclature_segment.discount_ids',
-        'segment_discounts'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.discount_conditions',
-        'segment_discount_conditions'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.price_type_id',
-        'segment_discount_price_type'
-      )
-      .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
-      .leftJoinAndSelect(
-        'nomenclature_id.product_group_id',
-        'nomenclature_product_group'
-      )
-      .leftJoinAndSelect('nomenclature_id.price_id', 'nomenclature_prices')
-      .leftJoinAndSelect(
-        'nomenclature_prices.price_type_id',
-        'nomenclature_price_type'
-      )
-      .leftJoinAndSelect('nomenclature_id.segment_id', 'nomenclature_segment')
-      .leftJoinAndSelect(
-        'nomenclature_segment.discount_ids',
-        'segment_discounts'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.discount_conditions',
-        'segment_discount_conditions'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.price_type_id',
-        'segment_discount_price_type'
-      )
-      .leftJoinAndSelect('product.brand_id', 'brand_id')
-      .leftJoinAndSelect('brand_id.translates', 'brand_translates')
-      .leftJoinAndSelect('product.stock', 'stock')
       .orderBy('product.created_at', 'DESC')
       .take(take)
       .skip(skip)
@@ -428,10 +257,7 @@ export class ProductService {
     parameters: string,
     take: number,
     skip: number,
-    sortBy: SORT_BY,
     lang: LANG,
-    minPrice?: number,
-    maxPrice?: number,
     start_point?: number,
     end_point?: number,
     startAt?: string,
@@ -455,41 +281,7 @@ export class ProductService {
       .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
-      .leftJoinAndSelect(
-        'nomenclature_id.product_group_id',
-        'nomenclature_product_group'
-      )
-      .leftJoinAndSelect('nomenclature_id.price_id', 'nomenclature_prices')
-      .leftJoinAndSelect(
-        'nomenclature_prices.price_type_id',
-        'nomenclature_price_type'
-      )
-      .leftJoinAndSelect('nomenclature_id.segment_id', 'nomenclature_segment')
-      .leftJoinAndSelect(
-        'nomenclature_segment.discount_ids',
-        'segment_discounts'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.discount_conditions',
-        'segment_discount_conditions'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.price_type_id',
-        'segment_discount_price_type'
-      )
-      .leftJoinAndSelect('product.brand_id', 'brand_id')
-      .leftJoinAndSelect('product.measurement_id', 'measurement_id')
-      .leftJoinAndSelect('product.promotion_id', 'promotion_id')
-      .leftJoinAndSelect('product.stock', 'stock')
       .where('product.is_hidden = :isHidden', { isHidden: false })
-
-    if (minPrice && typeof minPrice === 'number') {
-      queryBuilder.andWhere('product.price >= :minPrice', { minPrice })
-    }
-    if (maxPrice && typeof maxPrice === 'number') {
-      queryBuilder.andWhere('product.price <= :maxPrice', { maxPrice })
-    }
 
     if (allCategoryUrls.length > 0) {
       queryBuilder.andWhere('category_id.url IN (:...categories)', {
@@ -573,40 +365,6 @@ export class ProductService {
       )
     }
 
-    if (sortBy === SORT_BY.PRICE_ASC || sortBy === SORT_BY.PRICE_DESC) {
-      queryBuilder.orderBy(
-        'product.price',
-        sortBy === SORT_BY.PRICE_ASC ? 'ASC' : 'DESC'
-      )
-    } else if (
-      sortBy === SORT_BY.RATING_ASC ||
-      sortBy === SORT_BY.RATING_DESC
-    ) {
-      queryBuilder.addSelect(
-        (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
-        'avg_rating'
-      )
-      queryBuilder.orderBy(
-        'avg_rating',
-        sortBy === SORT_BY.RATING_ASC ? 'ASC' : 'DESC'
-      )
-    } else if (
-      sortBy === SORT_BY.POPULAR_ASC ||
-      sortBy === SORT_BY.POPULAR_DESC
-    ) {
-      queryBuilder.orderBy('product.is_popular', 'DESC')
-      queryBuilder.addOrderBy(
-        'product.popular_count',
-        sortBy === SORT_BY.POPULAR_ASC ? 'ASC' : 'DESC'
-      )
-    } else {
-      queryBuilder.orderBy('product.created_at', 'DESC')
-    }
-
     queryBuilder.take(take).skip(skip)
 
     const [entities, count] = await queryBuilder.getManyAndCount()
@@ -625,23 +383,9 @@ export class ProductService {
         'images',
         'translates',
         'format_groups',
-        'nomenclature_id',
-        'nomenclature_id.product_group_id',
-        'nomenclature_id.price_id',
-        'nomenclature_id.price_id.price_type_id',
-        'nomenclature_id.segment_id',
-        'nomenclature_id.segment_id.discount_ids',
-        'nomenclature_id.segment_id.discount_ids.discount_conditions',
-        'nomenclature_id.segment_id.discount_ids.price_type_id',
         'parameters',
         'parameters.translates',
-        'measurement_id',
-        'measurement_id.translates',
-        'brand_id',
-        'brand_id.translates',
-        'promotion_id',
-        'promotion_id.translates',
-        'stock'
+        'ratings'
       ]
     })
 
@@ -652,14 +396,6 @@ export class ProductService {
     mappedProducts = mappedProducts.map((prod) => {
       if (prod.category_id && prod.category_id.translates) {
         prod.category_id = applyTranslations([prod.category_id], lang)[0]
-      }
-
-      if (prod.measurement_id && prod.measurement_id.translates) {
-        prod.measurement_id = applyTranslations([prod.measurement_id], lang)[0]
-      }
-
-      if (prod.promotion_id && prod.promotion_id.translates) {
-        prod.promotion_id = applyTranslations([prod.promotion_id], lang)[0]
       }
 
       if (prod.parameters && Array.isArray(prod.parameters)) {
@@ -685,23 +421,9 @@ export class ProductService {
         'images',
         'translates',
         'format_groups',
-        'nomenclature_id',
-        'nomenclature_id.product_group_id',
-        'nomenclature_id.price_id',
-        'nomenclature_id.price_id.price_type_id',
-        'nomenclature_id.segment_id',
-        'nomenclature_id.segment_id.discount_ids',
-        'nomenclature_id.segment_id.discount_ids.discount_conditions',
-        'nomenclature_id.segment_id.discount_ids.price_type_id',
         'parameters',
         'parameters.translates',
-        'measurement_id',
-        'measurement_id.translates',
-        'brand_id',
-        'brand_id.translates',
-        'promotion_id',
-        'promotion_id.translates',
-        'stock'
+        'ratings'
       ]
     })
 
@@ -722,14 +444,6 @@ export class ProductService {
     mappedProduct = mappedProduct.map((prod) => {
       if (prod.category_id && prod.category_id.translates) {
         prod.category_id = applyTranslations([prod.category_id], lang)[0]
-      }
-
-      if (prod.measurement_id && prod.measurement_id.translates) {
-        prod.measurement_id = applyTranslations([prod.measurement_id], lang)[0]
-      }
-
-      if (prod.promotion_id && prod.promotion_id.translates) {
-        prod.promotion_id = applyTranslations([prod.promotion_id], lang)[0]
       }
 
       if (prod.parameters && Array.isArray(prod.parameters)) {
@@ -761,23 +475,10 @@ export class ProductService {
         'parent_id',
         'images',
         'translates',
-        'nomenclature_id',
-        'nomenclature_id.price_id',
-        'nomenclature_id.price_id.price_type_id',
-        'nomenclature_id.segment_id',
-        'nomenclature_id.segment_id.discount_ids',
-        'nomenclature_id.segment_id.discount_ids.discount_conditions',
-        'nomenclature_id.segment_id.discount_ids.price_type_id',
         'parameters',
         'parameters.translates',
-        'measurement_id',
-        'measurement_id.translates',
-        'brand_id',
-        'brand_id.translates',
-        'promotion_id',
         'format_groups',
-        'promotion_id.translates',
-        'stock'
+        'ratings'
       ]
     })
 
@@ -804,24 +505,9 @@ export class ProductService {
           'parent_id',
           'images',
           'translates',
-          'nomenclature_id',
-          'nomenclature_id.product_group_id',
-          'nomenclature_id.price_id',
-          'nomenclature_id.price_id.price_type_id',
-          'nomenclature_id.segment_id',
-          'nomenclature_id.segment_id.discount_ids',
-          'nomenclature_id.segment_id.discount_ids.discount_conditions',
-          'nomenclature_id.segment_id.discount_ids.price_type_id',
           'parameters',
           'parameters.translates',
-          'measurement_id',
-          'measurement_id.translates',
-          'brand_id',
-          'brand_id.translates',
-          'promotion_id',
-          'promotion_id.translates',
-          'format_groups',
-          'stock'
+          'format_groups'
         ]
       })
     }
@@ -831,14 +517,6 @@ export class ProductService {
     mappedProduct = mappedProduct.map((prod) => {
       if (prod.category_id && prod.category_id.translates) {
         prod.category_id = applyTranslations([prod.category_id], lang)[0]
-      }
-
-      if (prod.measurement_id && prod.measurement_id.translates) {
-        prod.measurement_id = applyTranslations([prod.measurement_id], lang)[0]
-      }
-
-      if (prod.promotion_id && prod.promotion_id.translates) {
-        prod.promotion_id = applyTranslations([prod.promotion_id], lang)[0]
       }
 
       if (prod.parameters && Array.isArray(prod.parameters)) {
@@ -872,17 +550,6 @@ export class ProductService {
         child.category_id = applyTranslations([child.category_id], lang)[0]
       }
 
-      if (child.measurement_id && child.measurement_id.translates) {
-        child.measurement_id = applyTranslations(
-          [child.measurement_id],
-          lang
-        )[0]
-      }
-
-      if (child.promotion_id && child.promotion_id.translates) {
-        child.promotion_id = applyTranslations([child.promotion_id], lang)[0]
-      }
-
       if (child.parameters && Array.isArray(child.parameters)) {
         child.parameters = child.parameters.map((param) =>
           param && param.translates
@@ -900,97 +567,6 @@ export class ProductService {
     }
   }
 
-  async findSimilar(id: number, lang: LANG): Promise<ProductWithoutRatings[]> {
-    const product = await this.productRepo.findOne({
-      where: { id },
-      relations: [
-        'category_id',
-        'brand_id',
-        'category_id.translates',
-        'brand_id.translates'
-      ]
-    })
-
-    if (!product) throw new NotFoundException('product is NOT_FOUND')
-
-    const result = await this.productRepo
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category_id', 'category_id')
-      .leftJoinAndSelect('product.format_groups', 'format_groups')
-      .leftJoinAndSelect('category_id.translates', 'category_translates')
-      .leftJoinAndSelect('product.images', 'images')
-      .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.nomenclature_id', 'nomenclature_id')
-      .leftJoinAndSelect('nomenclature_id.price_id', 'nomenclature_prices')
-      .leftJoinAndSelect('nomenclature_id.segment_id', 'nomenclature_segment')
-      .leftJoinAndSelect(
-        'nomenclature_segment.discount_ids',
-        'segment_discounts'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.discount_conditions',
-        'segment_discount_conditions'
-      )
-      .leftJoinAndSelect(
-        'segment_discounts.price_type_id',
-        'segment_discount_price_type'
-      )
-      .leftJoinAndSelect('product.measurement_id', 'measurement_id')
-      .leftJoinAndSelect('measurement_id.translates', 'measurement_translates')
-      .leftJoinAndSelect('product.brand_id', 'brand_id')
-      .leftJoinAndSelect('brand_id.translates', 'brand_translates')
-      .leftJoinAndSelect('product.promotion_id', 'promotion_id')
-      .leftJoinAndSelect('promotion_id.translates', 'promotion_translates')
-      .leftJoinAndSelect('product.stock', 'stock')
-      .addSelect(
-        (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
-        'average_rating'
-      )
-      .where('product.category_id = :categoryId', {
-        categoryId: product.category_id?.id
-      })
-      .andWhere('product.id != :excludeId', { excludeId: id })
-      .take(10)
-      .getRawAndEntities()
-
-    const similarProducts = result.entities.map((entity, index) => {
-      const raw = result.raw[index]
-      if (raw.average_rating !== undefined) {
-        entity.rating =
-          Math.round(parseFloat(raw.average_rating) * 10) / 10 || 0
-      }
-      return entity
-    })
-
-    let mappedEntities = applyTranslations(similarProducts, lang)
-
-    mappedEntities = mappedEntities.map((product) => {
-      if (product.category_id && product.category_id.translates) {
-        product.category_id = applyTranslations([product.category_id], lang)[0]
-      }
-      if (product.measurement_id && product.measurement_id.translates) {
-        product.measurement_id = applyTranslations(
-          [product.measurement_id],
-          lang
-        )[0]
-      }
-
-      if (product.promotion_id && product.promotion_id.translates) {
-        product.promotion_id = applyTranslations(
-          [product.promotion_id],
-          lang
-        )[0]
-      }
-      return product
-    })
-
-    return mappedEntities
-  }
-
   async findRecommended(
     productIds: number[],
     lang: LANG
@@ -1004,12 +580,7 @@ export class ProductService {
       .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.measurement_id', 'measurement_id')
-      .leftJoinAndSelect('measurement_id.translates', 'measurement_translates')
-      .leftJoinAndSelect('product.promotion_id', 'promotion_id')
-      .leftJoinAndSelect('promotion_id.translates', 'promotion_translates')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
-      .leftJoinAndSelect('product.stock', 'stock')
       .addSelect(
         (subQuery) =>
           subQuery
@@ -1038,18 +609,6 @@ export class ProductService {
       if (product.category_id && product.category_id.translates) {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
-      if (product.measurement_id && product.measurement_id.translates) {
-        product.measurement_id = applyTranslations(
-          [product.measurement_id],
-          lang
-        )[0]
-      }
-      if (product.promotion_id && product.promotion_id.translates) {
-        product.promotion_id = applyTranslations(
-          [product.promotion_id],
-          lang
-        )[0]
-      }
       return product
     })
 
@@ -1069,12 +628,7 @@ export class ProductService {
       .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.measurement_id', 'measurement_id')
-      .leftJoinAndSelect('measurement_id.translates', 'measurement_translates')
-      .leftJoinAndSelect('product.promotion_id', 'promotion_id')
-      .leftJoinAndSelect('promotion_id.translates', 'promotion_translates')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
-      .leftJoinAndSelect('product.stock', 'stock')
       .addSelect(
         (subQuery) =>
           subQuery
@@ -1085,7 +639,6 @@ export class ProductService {
       )
       .where('product.category_id IN (:...categoryIds)', { categoryIds })
       .andWhere('product.is_hidden = :isHidden', { isHidden: false })
-      .andWhere('stock.amount > 0')
       .take(take)
       .getRawAndEntities()
 
@@ -1098,7 +651,6 @@ export class ProductService {
       return entity
     })
 
-    // Перемішуємо товари після отримання з БД
     const shuffledProducts = replacementProducts.sort(() => Math.random() - 0.5)
 
     let mappedEntities = applyTranslations(shuffledProducts, lang)
@@ -1106,18 +658,6 @@ export class ProductService {
     mappedEntities = mappedEntities.map((product) => {
       if (product.category_id && product.category_id.translates) {
         product.category_id = applyTranslations([product.category_id], lang)[0]
-      }
-      if (product.measurement_id && product.measurement_id.translates) {
-        product.measurement_id = applyTranslations(
-          [product.measurement_id],
-          lang
-        )[0]
-      }
-      if (product.promotion_id && product.promotion_id.translates) {
-        product.promotion_id = applyTranslations(
-          [product.promotion_id],
-          lang
-        )[0]
       }
       return product
     })
@@ -1133,11 +673,6 @@ export class ProductService {
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.measurement_id', 'measurement_id')
-      .leftJoinAndSelect('measurement_id.translates', 'measurement_translates')
-      .leftJoinAndSelect('product.promotion_id', 'promotion_id')
-      .leftJoinAndSelect('promotion_id.translates', 'promotion_translates')
-      .leftJoinAndSelect('product.stock', 'stock')
       .addSelect(
         (subQuery) =>
           subQuery
@@ -1166,20 +701,6 @@ export class ProductService {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
 
-      if (product.measurement_id && product.measurement_id.translates) {
-        product.measurement_id = applyTranslations(
-          [product.measurement_id],
-          lang
-        )[0]
-      }
-
-      if (product.promotion_id && product.promotion_id.translates) {
-        product.promotion_id = applyTranslations(
-          [product.promotion_id],
-          lang
-        )[0]
-      }
-
       return product
     })
 
@@ -1191,7 +712,6 @@ export class ProductService {
 
     const product = this.productRepo.create({
       ...dto,
-      is_parent: false,
       parent_id: dto.parent_id ?? undefined,
       ...(url ? { url } : {})
     })
@@ -1255,12 +775,8 @@ export class ProductService {
           'images',
           'translates',
           'parameters',
-          'measurement_id',
-          'brand_id',
-          'promotion_id',
           'format_groups',
-          'ratings',
-          'stock'
+          'ratings'
         ]
       })) as Product
     } catch (err) {

@@ -9,20 +9,14 @@ import {
   JoinTable,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToOne,
   Index
 } from 'typeorm'
 import { Category } from 'src/category/entities/category.entity'
-import { CartItem } from 'src/cart/entities/cart-item.entity'
 import { Parameter } from 'src/parameter/entities/parameter.entity'
 import { FormatGroup } from 'src/format-group/entities/format-group.entity'
 import { ProductTranslate } from './product-translate.entity'
 import { ProductImage } from './product-image.entity'
 import { Rating } from 'src/product-rating/entities/rating.entity'
-import { Stock } from 'src/stock/entities/stock.entity'
-import { Measurement } from 'src/measurement/entities/measurement.entity'
-import { ProductPromotion } from 'src/product-promotion/entities/product-promotion.entity'
-import { OrderItem } from 'src/order/entities/order-item.entity'
 import { Section } from 'src/section/entities/section.entity'
 
 @Entity()
@@ -42,12 +36,6 @@ export class Product {
 
   @Column()
   is_hidden: boolean
-
-  @Column()
-  is_parent: boolean
-
-  @Column()
-  article: string
 
   @Column()
   title: string
@@ -76,9 +64,6 @@ export class Product {
   @Column({ default: 0 })
   order_in_list: number
 
-  @Column({ type: 'decimal', precision: 10, scale: 3, nullable: true })
-  weight: string
-
   @Column({ default: false })
   show_on_main_page: boolean
 
@@ -87,9 +72,6 @@ export class Product {
 
   @Column({ default: false })
   is_popular: boolean
-
-  @OneToMany(() => CartItem, (cartItem: CartItem) => cartItem.product_id)
-  cart_item_id: CartItem[]
 
   @ManyToOne(() => Product, (product: Product) => product.parent_id, {
     onDelete: 'SET NULL'
@@ -102,25 +84,6 @@ export class Product {
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category
-
-  @ManyToOne(
-    () => Measurement,
-    (measurement: Measurement) => measurement.products,
-    {
-      onDelete: 'RESTRICT'
-    }
-  )
-  @JoinColumn({ name: 'measurement' })
-  measurement_id: Measurement
-
-  @ManyToOne(
-    () => ProductPromotion,
-    (promotion: ProductPromotion) => promotion.products,
-    {
-      onDelete: 'SET NULL'
-    }
-  )
-  promotion_id: ProductPromotion
 
   @ManyToMany(() => Parameter, (parameter: Parameter) => parameter.products, {
     onDelete: 'CASCADE'
@@ -173,17 +136,11 @@ export class Product {
   )
   translates: ProductTranslate[]
 
-  @OneToMany(() => OrderItem, (orderItem: OrderItem) => orderItem.product_id)
-  order_item_ids: OrderItem[]
-
   @OneToMany(() => ProductImage, (image: ProductImage) => image.entity_id)
   images: ProductImage[]
 
   @OneToMany(() => Rating, (rating: Rating) => rating.product_id)
   ratings: Rating[]
-
-  @OneToOne(() => Stock, (stock: Stock) => stock.product)
-  stock: Stock
 
   @CreateDateColumn({ type: 'timestamptz' })
   start_at: Date

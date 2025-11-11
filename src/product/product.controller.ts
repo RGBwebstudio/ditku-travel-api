@@ -90,38 +90,6 @@ export class ProductController {
     return viewedProducts
   }
 
-  @Get('discount')
-  @ApiResponse({
-    status: 200,
-    description: 'SUCCESS - Успішно отримано cутність'
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
-  })
-  @ApiOperation({
-    summary: 'Отримати товари зі знижками для головної сторінки'
-  })
-  findPromotedOnMainPage(@Req() req: Request) {
-    return this.productService.findPromotedOnMainPage(req.lang)
-  }
-
-  @Get(':id/similar')
-  @ApiResponse({
-    status: 200,
-    description: 'SUCCESS - Успішно отримано cутність'
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
-  })
-  @ApiOperation({
-    summary: 'Отримати cхожі товари'
-  })
-  findSimilar(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
-    return this.productService.findSimilar(id, req.lang)
-  }
-
   @Get('filter')
   @ApiResponse({
     status: 200,
@@ -134,9 +102,6 @@ export class ProductController {
       parameters,
       take,
       skip,
-      sort_by,
-      minPrice,
-      maxPrice,
       start_point,
       end_point,
       startAt,
@@ -148,10 +113,7 @@ export class ProductController {
       parameters,
       take,
       skip,
-      sort_by,
       req.lang,
-      minPrice,
-      maxPrice,
       start_point,
       end_point,
       startAt,

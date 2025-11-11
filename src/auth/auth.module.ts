@@ -7,7 +7,6 @@ import { AuthController } from './auth.controller'
 import * as dotenv from 'dotenv'
 import { UserModule } from 'src/user/user.module'
 import { ConfigService } from '@nestjs/config'
-import { CartModule } from 'src/cart/cart.module'
 
 dotenv.config()
 
@@ -19,7 +18,6 @@ dotenv.config()
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '7d' }
     }),
-    CartModule,
     UserModule
   ],
   controllers: [AuthController],

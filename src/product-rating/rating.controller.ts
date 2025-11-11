@@ -9,8 +9,7 @@ import {
   Delete,
   Put,
   Headers,
-  Req,
-  UseGuards
+  Req
 } from '@nestjs/common'
 import { RatingCreateDto } from './dto/rating-create.dto'
 import { RatingUpdateDto } from './dto/rating-update.dto'
@@ -18,9 +17,6 @@ import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
 import { RatingService } from './rating.service'
 import { Request } from 'express'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/auth/auth-admin.guard'
-import { AuthGuard } from 'src/auth/auth.guard'
-import { AuthenticatedRequest } from 'src/user/types/auth-request.types'
 
 @ApiTags('Рейтинг товарів')
 @Controller('rating')
@@ -62,25 +58,19 @@ export class RatingController {
   }
 
   @Get('/get-user-estimate/:productId')
-  @UseGuards(AuthGuard)
   @ApiResponse({
     status: 200,
     description: 'SUCCESS - Успішно отримано сутність'
   })
   @ApiResponse({
-    status: 401,
-    description: 'NOT_AUTHORIZED - Користувач не авторизований'
-  })
-  @ApiResponse({
     status: 404,
     description: 'NOT_FOUND - Сутність не знайдено'
   })
-  @ApiOperation({ summary: 'Отримати оцінку товару від конкретного юзера' })
-  findEstimateOfuser(
-    @Param('productId', ParseIntPipe) id: number,
-    @Req() req: AuthenticatedRequest
-  ) {
-    return this.ratingService.getUserEstimate(id, req)
+  @ApiOperation({
+    summary: 'Отримати оцінку товару від конкретного юзера (deprecated)'
+  })
+  findEstimateOfuser(@Param('productId', ParseIntPipe) id: number) {
+    return this.ratingService.getRatingsByProduct(id)
   }
 
   @Get('/product/:productId')
@@ -98,7 +88,6 @@ export class RatingController {
   ) {
     const result = await this.ratingService.getRatingsByProduct(productId)
 
-    // Повертаємо дані у форматі, який очікує frontend
     return {
       rating: result.averageRating,
       rating_count: result.totalRatings,
@@ -107,8 +96,7 @@ export class RatingController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Cтворити оцінку товару' })
+  @ApiOperation({ summary: 'Cтворити оцінку товару (доступно всім)' })
   @ApiResponse({
     status: 201,
     description: 'CREATED - Сутність успішно створено'
@@ -121,16 +109,11 @@ export class RatingController {
     status: 403,
     description: 'FORBIDDEN - Ви не можете залишити рейтинг для цього товару'
   })
-  @ApiResponse({
-    status: 401,
-    description: 'UNAUTHORIZED - Необхідна авторизація'
-  })
-  setRating(@Body() dto: RatingCreateDto, @Req() req: AuthenticatedRequest) {
-    return this.ratingService.setRating(dto, req)
+  setRating(@Body() dto: RatingCreateDto) {
+    return this.ratingService.setRating(dto)
   }
 
   @Put(':id')
-  @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
     description: 'SUCCESS - Сутність успішно оновлено'
@@ -141,7 +124,6 @@ export class RatingController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
     description: 'SUCCESS - Сутність успішно видалено'

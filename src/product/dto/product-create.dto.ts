@@ -11,8 +11,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Parameter } from 'src/parameter/entities/parameter.entity'
 import { Product } from '../entities/product.entity'
 import { Category } from 'src/category/entities/category.entity'
-import { ProductPromotion } from 'src/product-promotion/entities/product-promotion.entity'
-import { Measurement } from 'src/measurement/entities/measurement.entity'
 
 export class ProductCreateDto {
   @ApiPropertyOptional({ example: '123' })
@@ -42,23 +40,10 @@ export class ProductCreateDto {
   @IsInt()
   category_id: Category
 
-  @ApiProperty({ example: 1 })
-  @IsInt()
-  measurement_id: Measurement
-
-  @ApiProperty({ example: null })
-  @IsInt()
-  @IsOptional()
-  promotion_id: ProductPromotion
-
   @ApiProperty({ example: false })
   @IsBoolean()
   @IsOptional()
   is_parent: boolean
-
-  @ApiProperty({ example: '123' })
-  @IsString()
-  article: string
 
   @ApiProperty({ example: 'Яблуко Fuji' })
   @IsString()

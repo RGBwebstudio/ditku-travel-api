@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import {
-  IsInt,
-  Min,
-  IsOptional,
-  IsEnum,
-  IsString,
-  Matches
-} from 'class-validator'
+import { IsInt, Min, IsOptional, IsString, Matches } from 'class-validator'
 import { OrderStatus } from 'src/common/enums/order.enum'
 
 export class GetUserOrdersDto {
@@ -21,14 +14,13 @@ export class GetUserOrdersDto {
   skip: number
 
   @ApiProperty({
-    enum: OrderStatus,
     required: false,
     example: OrderStatus.NEW,
-    description: 'Filter orders by status'
+    description:
+      'Filter orders by status (single or multiple via repeated `status` query params)'
   })
   @IsOptional()
-  @IsEnum(OrderStatus)
-  status?: OrderStatus
+  status?: any
 
   @ApiProperty({
     type: String,

@@ -1,11 +1,10 @@
-import { forwardRef, Module } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { MailSenderController } from './mail-sender.controller'
 import { MailSenderService } from './mail-sender.service'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
 import * as path from 'path'
 import { MailLayoutModule } from 'src/mail-layout/mail-layout.module'
-import { UserModule } from 'src/user/user.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
 @Module({
@@ -35,8 +34,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
       })
     }),
 
-    MailLayoutModule,
-    forwardRef(() => UserModule)
+    MailLayoutModule
   ],
   providers: [MailSenderService],
   controllers: [MailSenderController],

@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
   Logger
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -12,11 +11,6 @@ import { RatingCreateDto } from './dto/rating-create.dto'
 import { RatingUpdateDto } from './dto/rating-update.dto'
 import { LANG } from 'src/common/enums/translation.enum'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
-import { OrderItem } from 'src/order/entities/order-item.entity'
-import { OrderStatus } from 'src/common/enums/order.enum'
-import { Request } from 'express'
-import { JwtService } from '@nestjs/jwt'
-import { AuthenticatedRequest } from 'src/user/types/auth-request.types'
 
 @Injectable()
 export class RatingService {
@@ -24,10 +18,7 @@ export class RatingService {
 
   constructor(
     @InjectRepository(Rating)
-    private readonly ratingRepo: Repository<Rating>,
-    @InjectRepository(OrderItem)
-    private readonly orderItemRepo: Repository<OrderItem>,
-    private jwtService: JwtService
+    private readonly ratingRepo: Repository<Rating>
   ) {}
 
   async findOne(id: number, lang: LANG): Promise<Rating | null> {
@@ -42,63 +33,15 @@ export class RatingService {
     return mappedEntity[0]
   }
 
-  async getUserEstimate(productId: number, req: AuthenticatedRequest) {
-    const userId = req.user.id
-
-    const ratingData = await this.ratingRepo.findOne({
-      where: {
-        product_id: { id: productId },
-        user_id: { id: userId }
-      },
-      relations: ['product_id', 'user_id']
-    })
-
-    return ratingData as Rating
-  }
-
-  async setRating(
-    dto: RatingCreateDto,
-    req: AuthenticatedRequest
-  ): Promise<Rating> {
-    const userId = req.user.id
-
+  async setRating(dto: RatingCreateDto): Promise<Rating> {
     const productId =
       typeof dto.product_id === 'number' ? dto.product_id : dto.product_id.id
 
-    const hasPurchased = await this.checkUserPurchasedProduct(userId, productId)
-
-    if (!hasPurchased) {
-      throw new ForbiddenException('user has NOT_PURCHASED_PRODUCT')
-    }
-
-    // Шукаємо існуючий рейтинг користувача для цього товару
-    const existingRating = await this.ratingRepo.findOne({
-      where: {
-        product_id: { id: productId },
-        user_id: { id: userId }
-      },
-      relations: ['product_id', 'user_id']
-    })
-
-    if (existingRating) {
-      existingRating.rating = dto.rating
-
-      // If provided, update textual review as well
-      if (typeof dto.review !== 'undefined') {
-        existingRating.review = dto.review
-      }
-
-      try {
-        return await this.ratingRepo.save(existingRating)
-      } catch (error) {
-        this.logger.error(`Error while updating existing rating: ${error}`)
-        throw new BadRequestException('rating is NOT_UPDATED')
-      }
-    }
-
     const data = this.ratingRepo.create({
-      ...dto,
-      user_id: { id: userId } as any
+      name: dto.name,
+      review: dto.review,
+      rating: String(dto.rating),
+      product_id: { id: productId } as any
     })
 
     try {
@@ -109,23 +52,7 @@ export class RatingService {
     }
   }
 
-  private async checkUserPurchasedProduct(
-    userId: number,
-    productId: number
-  ): Promise<boolean> {
-    const orderItem = await this.orderItemRepo
-      .createQueryBuilder('orderItem')
-      .innerJoin('orderItem.order_id', 'order')
-      .innerJoin('orderItem.product_id', 'product')
-      .where('order.user_id = :userId', { userId })
-      .andWhere('product.id = :productId', { productId })
-      .andWhere('order.status IN (:...statuses)', {
-        statuses: [OrderStatus.SUCCESS]
-      })
-      .getOne()
-
-    return !!orderItem
-  }
+  // purchase check removed — ratings allowed from any user
 
   async findAllList(lang: LANG): Promise<{ entities: Rating[] }> {
     const entities = await this.ratingRepo.find({
@@ -156,7 +83,10 @@ export class RatingService {
   }
 
   async update(id: number, dto: RatingUpdateDto): Promise<Rating | null> {
-    const result = await this.ratingRepo.update(id, { ...dto })
+    const payload: any = { ...dto }
+    if (typeof dto.rating !== 'undefined') payload.rating = String(dto.rating)
+
+    const result = await this.ratingRepo.update(id, payload)
 
     if (result.affected === 0)
       throw new NotFoundException('rating is NOT_FOUND')
@@ -175,7 +105,7 @@ export class RatingService {
   }> {
     const ratings = await this.ratingRepo.find({
       where: { product_id: { id: productId } },
-      relations: ['product_id', 'user_id'],
+      relations: ['product_id'],
       order: { created_at: 'DESC' }
     })
 
