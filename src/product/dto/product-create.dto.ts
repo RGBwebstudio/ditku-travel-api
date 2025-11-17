@@ -26,10 +26,6 @@ export class ProductCreateDto {
   @IsBoolean()
   is_top_product: boolean
 
-  @ApiProperty({ example: false })
-  @IsBoolean()
-  is_hidden: boolean
-
   @ApiProperty({ example: null })
   @IsInt()
   @IsPositive()
@@ -60,14 +56,6 @@ export class ProductCreateDto {
   @ApiProperty({ example: 'yablyko-fuji' })
   @IsString()
   url: string
-
-  @ApiProperty({ example: '0.00' })
-  @IsString()
-  price: string
-
-  @ApiProperty({ example: '0.00' })
-  @IsString()
-  price_retail: string
 
   @ApiProperty({ example: 'Опис продукту' })
   @IsString()
@@ -104,6 +92,11 @@ export class ProductCreateDto {
   @IsArray()
   @IsOptional()
   parameters: Parameter[]
+
+  @ApiPropertyOptional({ type: [Number] })
+  @IsOptional()
+  @IsArray()
+  sections?: number[]
 
   @ApiPropertyOptional({ example: '1.234', description: 'Product weight' })
   @IsString()

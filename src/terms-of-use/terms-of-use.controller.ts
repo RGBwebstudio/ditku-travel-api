@@ -22,7 +22,7 @@ import { AuthAdminGuard } from 'src/auth/auth-admin.guard'
 @ApiTags('Terms of use')
 @Controller('terms-of-use')
 export class TermsOfUseController {
-  constructor(private readonly service: TermsOfUseService) {}
+  constructor(protected readonly service: TermsOfUseService) {}
 
   @Get()
   @ApiResponse({

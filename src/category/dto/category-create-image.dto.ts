@@ -1,11 +1,7 @@
-import { IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
+import { IsInt, IsPositive, IsString } from 'class-validator'
 import { Category } from '../entities/category.entity'
 
 export class CategoryCreateImageDto {
-  @IsString()
-  @IsOptional()
-  custom_id: string
-
   @IsString()
   name: string
 

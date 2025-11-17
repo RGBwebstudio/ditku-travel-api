@@ -8,6 +8,7 @@ import { DAPTranslates } from './entities/dap-translate.entity'
 @Module({
   imports: [TypeOrmModule.forFeature([DAP, DAPTranslates])],
   controllers: [DAPController],
-  providers: [DAPService]
+  providers: [DAPService],
+  exports: [DAPService]
 })
 export class DAPModule {}

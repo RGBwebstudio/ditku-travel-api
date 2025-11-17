@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Product } from './entities/product.entity'
+import { Section } from 'src/section/entities/section.entity'
 import { ProductService } from './product.service'
 import { ProductController } from './product.controller'
 import { Parameter } from 'src/parameter/entities/parameter.entity'
@@ -20,7 +21,8 @@ import { RatingModule } from 'src/product-rating/rating.module'
       FormatGroup,
       ProductImage,
       ProductTranslate,
-      Category
+      Category,
+      Section
     ]),
     HttpModule,
     RatingModule

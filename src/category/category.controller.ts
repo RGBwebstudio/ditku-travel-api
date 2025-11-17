@@ -38,7 +38,7 @@ import { FineOneWhereType } from 'src/common/types/category.types'
 @ApiTags('Категорії')
 @Controller('category')
 export class CategoryController {
-  constructor(private categoryService: CategoryService) {}
+  constructor(readonly categoryService: CategoryService) {}
 
   @Get('all')
   @ApiResponse({

@@ -8,6 +8,7 @@ import { CountryTranslate } from './entities/country-translate.entity'
 @Module({
   imports: [TypeOrmModule.forFeature([Country, CountryTranslate])],
   controllers: [CountryController],
-  providers: [CountryService]
+  providers: [CountryService],
+  exports: [CountryService]
 })
 export class CountryModule {}

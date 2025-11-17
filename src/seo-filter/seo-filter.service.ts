@@ -296,4 +296,24 @@ export class SeoFilterService {
 
     return { message: 'SUCCESS' }
   }
+
+  async findByCategory(id: number): Promise<SeoFilter[]> {
+    const treeRepository =
+      this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
+
+    // find filters directly attached to category
+    const roots = await this.seoFilterRepository.find({
+      where: { category_id: { id } }
+    })
+
+    if (!roots || roots.length === 0) return []
+
+    const resultTrees: SeoFilter[] = []
+    for (const root of roots) {
+      const tree = await treeRepository.findDescendantsTree(root)
+      resultTrees.push(tree as SeoFilter)
+    }
+
+    return resultTrees
+  }
 }

@@ -40,7 +40,7 @@ export class CountryService {
     if (exists) throw new BadRequestException('NAME_ALREADY_RESERVED')
 
     try {
-      return (await this.countryRepo.save(country)) as Country
+      return await this.countryRepo.save(country)
     } catch (error) {
       this.logger.error(`Error creating country: ${error.message}`)
       throw new BadRequestException('NOT_CREATED')
@@ -56,7 +56,7 @@ export class CountryService {
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: ['brands', 'translates']
+      relations: ['translates']
     })
 
     const mappedEntities = applyTranslations([entities], lang)
@@ -68,7 +68,7 @@ export class CountryService {
   async getAllList(lang: LANG): Promise<{ entities: Country[] }> {
     const entities = await this.countryRepo.find({
       order: { created_at: 'DESC' },
-      relations: ['brands', 'translates']
+      relations: ['translates']
     })
 
     const mappedEntities = applyTranslations(entities, lang)
@@ -85,7 +85,6 @@ export class CountryService {
     let qb = this.countryRepo
       .createQueryBuilder('country')
       .leftJoinAndSelect('country.translates', 'translates')
-      .leftJoinAndSelect('country.brands', 'brands')
       .where('LOWER(country.title) LIKE :title', {
         title: `%${query.toLowerCase()}%`
       })
@@ -98,7 +97,6 @@ export class CountryService {
       qb = this.countryRepo
         .createQueryBuilder('country')
         .leftJoinAndSelect('country.translates', 'translates')
-        .leftJoinAndSelect('country.brands', 'brands')
         .where('LOWER(translates.value) LIKE :title', {
           title: `%${query.toLowerCase()}%`
         })
@@ -117,19 +115,19 @@ export class CountryService {
   async findOne(id: number, lang: LANG): Promise<Country> {
     const entity = await this.countryRepo.findOne({
       where: { id },
-      relations: ['brands', 'translates']
+      relations: ['translates']
     })
 
     if (!entity) throw new NotFoundException('country is NOT_FOUND')
 
     const mappedEntity = applyTranslations([entity], lang)
-    return mappedEntity[0] as Country
+    return mappedEntity[0]
   }
 
   async update(id: number, dto: UpdateCountryDto): Promise<Country | null> {
     const country = await this.countryRepo.findOne({
       where: { id },
-      relations: ['brands', 'translates']
+      relations: ['translates']
     })
     if (!country) throw new NotFoundException('country is NOT_FOUND')
 
@@ -149,7 +147,7 @@ export class CountryService {
     }
 
     await this.countryRepo.save(country)
-    return country as Country
+    return country
   }
 
   async delete(id: number): Promise<{ message: string }> {

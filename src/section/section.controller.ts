@@ -17,33 +17,40 @@ import { SectionUpdateTranslateDto } from './dto/section-update-translate.dto'
 import { AuthAdminGuard } from 'src/auth/auth-admin.guard'
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger'
 
-@ApiTags('Рубрики')
+@ApiTags('Секції')
 @Controller('section')
 export class SectionController {
   constructor(private readonly sectionService: SectionService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Отримати рубрики' })
+  @ApiOperation({ summary: 'Отримати секції' })
   async findAll() {
     return this.sectionService.find()
   }
 
+  @Get('all')
+  @ApiOperation({ summary: 'Отримати всі секції (без пагінації)' })
+  async findAllEntities() {
+    const result = await this.sectionService.find(Number.MAX_SAFE_INTEGER, 0)
+    return { entities: result.entities }
+  }
+
   @Get(':id')
-  @ApiOperation({ summary: 'Отримати рубрику' })
+  @ApiOperation({ summary: 'Отримати секцію' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.sectionService.findOne(id)
   }
 
   @Post()
   @UseGuards(AuthAdminGuard)
-  @ApiOperation({ summary: 'Створити рубрику' })
+  @ApiOperation({ summary: 'Створити секцію' })
   async create(@Body() dto: SectionCreateDto) {
     return this.sectionService.create(dto)
   }
 
   @Put(':id')
   @UseGuards(AuthAdminGuard)
-  @ApiOperation({ summary: 'Оновити рубрику' })
+  @ApiOperation({ summary: 'Оновити секцію' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: SectionUpdateDto
@@ -53,14 +60,14 @@ export class SectionController {
 
   @Delete(':id')
   @UseGuards(AuthAdminGuard)
-  @ApiOperation({ summary: 'Видалити рубрику' })
+  @ApiOperation({ summary: 'Видалити секцію' })
   async delete(@Param('id', ParseIntPipe) id: number) {
     return this.sectionService.delete(id)
   }
 
   @Post('/translates')
   @UseGuards(AuthAdminGuard)
-  @ApiOperation({ summary: 'Створити переклади для рубрики' })
+  @ApiOperation({ summary: 'Створити переклади для секції' })
   @ApiBody({ type: SectionCreateTranslateDto, isArray: true })
   async createTranslates(@Body() dto: SectionCreateTranslateDto[]) {
     return this.sectionService.createTranslates(dto)
@@ -68,7 +75,7 @@ export class SectionController {
 
   @Put(':id/translates')
   @UseGuards(AuthAdminGuard)
-  @ApiOperation({ summary: 'Оновити переклади для рубрики' })
+  @ApiOperation({ summary: 'Оновити переклади для секції' })
   @ApiBody({ type: SectionUpdateTranslateDto, isArray: true })
   async updateTranslates(@Body() dto: SectionUpdateTranslateDto[]) {
     return this.sectionService.updateTranslates(dto)
@@ -76,7 +83,7 @@ export class SectionController {
 
   @Delete('/translate/:id')
   @UseGuards(AuthAdminGuard)
-  @ApiOperation({ summary: 'Видалити переклад рубрики' })
+  @ApiOperation({ summary: 'Видалити переклад секції' })
   async deleteTranslate(@Param('id', ParseIntPipe) id: number) {
     return this.sectionService.deleteTranslate(id)
   }

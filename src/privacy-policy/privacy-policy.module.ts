@@ -7,6 +7,7 @@ import { PrivacyPolicy } from './entities/privacy-policy.entity'
 @Module({
   imports: [TypeOrmModule.forFeature([PrivacyPolicy])],
   controllers: [PrivacyPolicyController],
-  providers: [PrivacyPolicyService]
+  providers: [PrivacyPolicyService],
+  exports: [PrivacyPolicyService]
 })
 export class PrivacyPolicyModule {}

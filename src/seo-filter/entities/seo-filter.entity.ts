@@ -16,6 +16,7 @@ import { Category } from 'src/category/entities/category.entity'
 import { City } from 'src/city/entities/city.entity'
 import { Country } from 'src/country/entities/country.entity'
 import { Section } from 'src/section/entities/section.entity'
+import { Menu } from 'src/menu/entities/menu.entity'
 
 @Entity()
 @Tree('closure-table')
@@ -68,6 +69,9 @@ export class SeoFilter {
     inverseJoinColumn: { name: 'section_id', referencedColumnName: 'id' }
   })
   sections: Section[]
+
+  @ManyToMany(() => Menu, (menu) => menu.seo_filters)
+  menus: Menu[]
 
   @TreeParent()
   parent?: SeoFilter

@@ -13,7 +13,7 @@ import {
 import { Product } from 'src/product/entities/product.entity'
 import { CategoryTranslate } from './category-translate.entity'
 import { CategoryImage } from './category-image.entity'
-import { CategoryIcons } from 'src/common/types/category.types'
+import { Menu } from 'src/menu/entities/menu.entity'
 
 @Entity()
 @Tree('closure-table', {
@@ -37,9 +37,6 @@ export class Category {
   @Column({ default: false })
   show_on_main_page: boolean
 
-  @Column({ nullable: true })
-  icon_name: CategoryIcons
-
   @Column({ unique: true })
   title: string
 
@@ -49,9 +46,6 @@ export class Category {
   @Column()
   seo_text: string
 
-  @Column({ default: false })
-  is_packages: boolean
-
   @OneToMany(() => Product, (product) => product.category_id)
   products: Product[]
 
@@ -60,6 +54,9 @@ export class Category {
 
   @OneToMany(() => CategoryImage, (image) => image.entity_id)
   images: CategoryImage[]
+
+  @OneToMany(() => Menu, (menu) => menu.category_id)
+  menus: Menu[]
 
   @Column({ default: 0 })
   order_in_list: number

@@ -24,8 +24,34 @@ export class CityController {
     description: 'SUCCESS - Успішно отримано частину сутностей'
   })
   @ApiOperation({ summary: 'Отримати частину міст' })
-  find(@Query('take') take: number = 20, @Query('skip') skip: number = 0) {
+  find(
+    @Query('take') take: number = 20,
+    @Query('skip') skip: number = 0,
+    @Query('country_id') country_id?: string
+  ) {
+    if (
+      country_id !== undefined &&
+      country_id !== null &&
+      String(country_id).trim() !== ''
+    ) {
+      return this.cityService.findByCountry(Number(country_id))
+    }
+
     return this.cityService.findAll(Number(take), Number(skip))
+  }
+
+  @Get('all')
+  async getAllList(@Query('country_id') country_id?: string) {
+    if (
+      country_id !== undefined &&
+      country_id !== null &&
+      String(country_id).trim() !== ''
+    ) {
+      const entities = await this.cityService.findByCountry(Number(country_id))
+      return { entities }
+    }
+
+    return this.cityService.getAllList()
   }
 
   @Get(':id')

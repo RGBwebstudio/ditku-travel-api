@@ -26,6 +26,13 @@ export class SeoFilterController {
     return this.seoFilterService.find()
   }
 
+  @Get('all')
+  @ApiOperation({ summary: 'Отримати всі seo-фільтри' })
+  async findAllEntities() {
+    const res = await this.seoFilterService.find()
+    return { entities: res.entities }
+  }
+
   @Get('by-url/:url')
   @ApiOperation({ summary: 'Отримати seo-фільтр по url' })
   async findByUrl(@Param('url') url: string) {
@@ -36,6 +43,12 @@ export class SeoFilterController {
   @ApiOperation({ summary: 'Отримати seo-фільтр' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.seoFilterService.findOne(id)
+  }
+
+  @Get('by-category/:id/seo-filter')
+  @ApiOperation({ summary: 'Отримати seo-фільтри за категорією' })
+  async findByCategory(@Param('id', ParseIntPipe) id: number) {
+    return this.seoFilterService.findByCategory(id)
   }
 
   @Post()

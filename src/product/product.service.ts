@@ -12,6 +12,7 @@ import { Product } from './entities/product.entity'
 import { In, Repository } from 'typeorm'
 import { ProductCreateDto } from 'src/product/dto/product-create.dto'
 import { ProductUpdateDto } from 'src/product/dto/product-update.dto'
+import { Section } from 'src/section/entities/section.entity'
 import { ProductParametersDto } from './dto/product-parameters.dto'
 import { Parameter } from 'src/parameter/entities/parameter.entity'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
@@ -33,6 +34,7 @@ export class ProductService {
     @InjectRepository(Product) private productRepo: Repository<Product>,
     @InjectRepository(Parameter) private parameterRepo: Repository<Parameter>,
     @InjectRepository(Category) private categoryRepo: Repository<Category>,
+    @InjectRepository(Section) private sectionRepo: Repository<Section>,
     @InjectRepository(ProductTranslate)
     private entityTranslateRepo: Repository<ProductTranslate>,
     @InjectRepository(ProductImage)
@@ -250,6 +252,90 @@ export class ProductService {
     }
 
     return Array.from(urls)
+  }
+
+  private async getAllChildrenCategoryIds(
+    categoryIds: number[]
+  ): Promise<number[]> {
+    if (!categoryIds?.length) return []
+
+    const treeRepo = this.categoryRepo.manager.getTreeRepository(Category)
+
+    const ids = new Set<number>()
+
+    for (const id of categoryIds) {
+      const root = await this.categoryRepo.findOne({ where: { id } })
+      if (!root) continue
+
+      const descendants = await treeRepo.findDescendants(root)
+      for (const desc of descendants) {
+        if (desc?.id) ids.add(desc.id)
+      }
+    }
+
+    return Array.from(ids)
+  }
+
+  async findByCategory(
+    categoryId: number,
+    lang: LANG
+  ): Promise<ProductWithoutRatings[]> {
+    const root = await this.categoryRepo.findOne({ where: { id: categoryId } })
+    if (!root) return []
+
+    const treeRepo = this.categoryRepo.manager.getTreeRepository(Category)
+    const descendants = await treeRepo.findDescendants(root)
+    const categoryIds = descendants.map((c) => c.id)
+
+    if (!categoryIds.length) return []
+
+    const result = await this.productRepo
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.translates', 'translates')
+      .leftJoinAndSelect('category_id.translates', 'category_translates')
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('COALESCE(AVG(r.rating), 0)')
+            .from('rating', 'r')
+            .where('r.productIdId = product.id'),
+        'average_rating'
+      )
+      .where('product.category_id IN (:...categoryIds)', { categoryIds })
+      .andWhere('product.is_hidden = :isHidden', { isHidden: false })
+      .orderBy('product.created_at', 'DESC')
+      .getRawAndEntities()
+
+    const products = result.entities.map((entity, index) => {
+      const raw = result.raw[index]
+      if (raw.average_rating !== undefined) {
+        entity.rating = parseFloat(raw.average_rating) || 0
+      }
+      return entity
+    })
+
+    let mappedEntities = applyTranslations(products, lang)
+
+    mappedEntities = mappedEntities.map((product) => {
+      if (product.category_id && product.category_id.translates) {
+        product.category_id = applyTranslations([product.category_id], lang)[0]
+      }
+
+      if (product.parameters && Array.isArray(product.parameters)) {
+        product.parameters = product.parameters.map((param: Parameter) =>
+          param && param.translates
+            ? applyTranslations([param], lang)[0]
+            : param
+        )
+      }
+
+      return product
+    })
+
+    return mappedEntities
   }
 
   async filter(
@@ -684,59 +770,31 @@ export class ProductService {
     return mappedEntities
   }
 
-  async findPackages(lang: LANG): Promise<ProductWithoutRatings[]> {
-    const result = await this.productRepo
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category_id', 'category_id')
-      .leftJoinAndSelect('product.format_groups', 'format_groups')
-      .leftJoinAndSelect('category_id.translates', 'category_translates')
-      .leftJoinAndSelect('product.images', 'images')
-      .leftJoinAndSelect('product.translates', 'translates')
-      .addSelect(
-        (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
-        'average_rating'
-      )
-      .where('category_id.is_packages = :isPackages', { isPackages: true })
-      .take(20)
-      .getRawAndEntities()
-
-    const products = result.entities.map((entity, index) => {
-      const raw = result.raw[index]
-      if (raw.average_rating !== undefined) {
-        entity.rating =
-          Math.round(parseFloat(raw.average_rating) * 10) / 10 || 0
-      }
-      return entity
-    })
-
-    let mappedEntities = applyTranslations(products, lang)
-
-    mappedEntities = mappedEntities.map((product) => {
-      if (product.category_id && product.category_id.translates) {
-        product.category_id = applyTranslations([product.category_id], lang)[0]
-      }
-
-      return product
-    })
-
-    return mappedEntities
-  }
-
   async create(dto: ProductCreateDto): Promise<Product> {
     const url = dto.url && String(dto.url).trim() !== '' ? dto.url : undefined
-
-    const product = this.productRepo.create({
+    const productPayload: any = {
       ...dto,
       parent_id: dto.parent_id ?? undefined,
       ...(url ? { url } : {})
-    })
+    }
+
+    const sectionsIds = Array.isArray(dto.sections) ? dto.sections : undefined
+    if (sectionsIds) delete productPayload.sections
+
+    const product = this.productRepo.create(productPayload)
 
     try {
-      return await this.productRepo.save(product)
+      const saved = (await this.productRepo.save(product as any)) as Product
+
+      if (sectionsIds && sectionsIds.length) {
+        const sectionEntities = await this.sectionRepo.findBy({
+          id: In(sectionsIds)
+        })
+        saved.sections = sectionEntities.length ? sectionEntities : []
+        await this.productRepo.save(saved)
+      }
+
+      return saved
     } catch (err) {
       this.logger.error(`Error while creating product \n ${err}`)
       throw new BadRequestException('product is NOT_CREATED')
@@ -750,14 +808,29 @@ export class ProductService {
 
     try {
       const url = dto.url && String(dto.url).trim() !== '' ? dto.url : undefined
-      await this.productRepo.update(
-        { id },
-        {
-          ...dto,
-          parent_id: dto.parent_id ?? undefined,
-          ...(url ? { url } : {})
-        }
-      )
+
+      const sectionsIds =
+        (dto as any).sections !== undefined ? (dto as any).sections : undefined
+      const updatePayload: any = {
+        ...dto,
+        parent_id: dto.parent_id ?? undefined,
+        ...(url ? { url } : {})
+      }
+
+      if (sectionsIds !== undefined) delete updatePayload.sections
+
+      await this.productRepo.update({ id }, updatePayload)
+
+      if (sectionsIds !== undefined) {
+        const sectionEntities = sectionsIds?.length
+          ? await this.sectionRepo.findBy({ id: In(sectionsIds) })
+          : []
+        const existing = (await this.productRepo.findOne({
+          where: { id }
+        })) as Product
+        existing.sections = sectionEntities.length ? sectionEntities : []
+        await this.productRepo.save(existing)
+      }
 
       return (await this.productRepo.findOne({ where: { id } })) as Product
     } catch (err) {

@@ -133,18 +133,6 @@ export class ProductController {
     return this.productService.find(take, skip, req.lang)
   }
 
-  @Get('packages')
-  @ApiResponse({
-    status: 200,
-    description: 'SUCCESS - Успішно отримано сутності'
-  })
-  @ApiOperation({
-    summary: 'Отримати товар що відносяться до категорії "Пакування"'
-  })
-  findPackages(@Req() req: Request) {
-    return this.productService.findPackages(req.lang)
-  }
-
   @Get(':id')
   @ApiResponse({
     status: 200,
@@ -157,6 +145,16 @@ export class ProductController {
   @ApiOperation({ summary: 'Отримати товар' })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.productService.findOne(id, req.lang, req)
+  }
+
+  @Get('category/:categoryId/products')
+  @ApiOperation({ summary: 'Отримати товари по категорії (для адмінки)' })
+  @ApiResponse({ status: 200, description: 'SUCCESS - Знайдено товари' })
+  async getByCategory(
+    @Param('categoryId', ParseIntPipe) categoryId: number,
+    @Req() req: Request
+  ) {
+    return this.productService.findByCategory(categoryId, req.lang)
   }
 
   @Get('url/:url')
@@ -187,6 +185,20 @@ export class ProductController {
     description: 'NOT_CREATED - Cутність не створено'
   })
   create(@Body() dto: ProductCreateDto) {
+    // strip deprecated/forbidden fields coming from client
+    const forbidden = [
+      'article',
+      'show_in_discounts_on_main_page',
+      'measurement_id',
+      'promotion_id',
+      'is_hidden',
+      'price',
+      'price_retail'
+    ]
+    for (const f of forbidden) {
+      if ((dto as any)[f] !== undefined) delete (dto as any)[f]
+    }
+
     return this.productService.create(dto)
   }
 
@@ -204,6 +216,20 @@ export class ProductController {
     description: 'NOT_UPDATED - Cутність не оновлено'
   })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: ProductUpdateDto) {
+    // strip deprecated/forbidden fields coming from client
+    const forbidden = [
+      'article',
+      'show_in_discounts_on_main_page',
+      'measurement_id',
+      'promotion_id',
+      'is_hidden',
+      'price',
+      'price_retail'
+    ]
+    for (const f of forbidden) {
+      if ((dto as any)[f] !== undefined) delete (dto as any)[f]
+    }
+
     return this.productService.update(id, dto)
   }
 

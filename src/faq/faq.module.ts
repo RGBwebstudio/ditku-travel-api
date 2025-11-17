@@ -8,6 +8,7 @@ import { FaqTranslate } from './entities/faq-translate.entity'
 @Module({
   imports: [TypeOrmModule.forFeature([Faq, FaqTranslate])],
   controllers: [FaqController],
-  providers: [FaqService]
+  providers: [FaqService],
+  exports: [FaqService]
 })
 export class FaqModule {}

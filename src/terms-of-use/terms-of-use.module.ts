@@ -7,6 +7,7 @@ import { TermsOfUse } from './entities/terms-of-use.entity'
 @Module({
   imports: [TypeOrmModule.forFeature([TermsOfUse])],
   controllers: [TermsOfUseController],
-  providers: [TermsOfUseService]
+  providers: [TermsOfUseService],
+  exports: [TermsOfUseService]
 })
 export class TermsOfUseModule {}

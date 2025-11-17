@@ -31,7 +31,10 @@ import { SeoBlocksModule } from './seo-blocks/seo-blocks.module'
 import { SeoFilterModule } from './seo-filter/seo-filter.module'
 import { PostModule } from './posts/post.module'
 import { SectionModule } from './section/section.module'
+import { MenuModule } from './menu/menu.module'
 import { PromocodeModule } from './promocode/promocode.module'
+import { AdminModule } from './admin/admin.module'
+import { PageConstructorModule } from './page-constructor/page-constructor.module'
 
 const config = configuration()
 
@@ -69,7 +72,10 @@ const config = configuration()
     SeoFilterModule,
     PostModule,
     SectionModule,
-    PromocodeModule
+    MenuModule,
+    PromocodeModule,
+    AdminModule,
+    PageConstructorModule
   ],
   controllers: [AppController],
   providers: [AppService]

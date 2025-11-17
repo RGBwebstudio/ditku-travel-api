@@ -45,36 +45,58 @@ export class CityService {
     const [entities, count] = await this.repo.findAndCount({
       take,
       skip,
-      order: { order: 'ASC' }
+      order: { order: 'ASC' },
+      relations: ['country_id']
     })
 
     return { entities, count }
   }
 
+  async findByCountry(countryId: number) {
+    const entities = await this.repo.find({
+      where: { country_id: { id: countryId } as unknown as Country },
+      order: { order: 'ASC' },
+      relations: ['country_id']
+    })
+
+    return entities
+  }
+
+  async getAllList() {
+    const entities = await this.repo.find({
+      order: { order: 'ASC' },
+      relations: ['country_id']
+    })
+
+    return { entities }
+  }
+
   async findOne(id: number): Promise<City> {
-    const entity = await this.repo.findOne({ where: { id } })
+    const entity = await this.repo.findOne({
+      where: { id },
+      relations: ['country_id']
+    })
     if (!entity) throw new NotFoundException('city is NOT_FOUND')
     return entity
   }
 
   async update(id: number, dto: UpdateCityDto): Promise<City> {
-    const payload: Partial<City> = {
-      is_hidden: dto.is_hidden,
-      title: dto.title,
-      url: dto.url,
-      seo_title: dto.seo_title,
-      seo_description: dto.seo_description,
-      order: dto.order
+    const entity = await this.repo.findOne({ where: { id } })
+    if (!entity) throw new NotFoundException('city is NOT_FOUND')
+
+    try {
+      const payload = {
+        ...entity,
+        ...dto,
+        country_id: dto.country_id
+          ? ({ id: dto.country_id } as unknown as Country)
+          : entity.country_id
+      }
+      const saved = await this.repo.save(payload)
+      return saved as City
+    } catch {
+      throw new BadRequestException('city is NOT_UPDATED')
     }
-
-    if (typeof dto.country_id !== 'undefined') {
-      payload.country_id = { id: dto.country_id } as unknown as Country
-    }
-
-    const result = await this.repo.update(id, payload as any)
-    if (result.affected === 0) throw new NotFoundException('city is NOT_FOUND')
-
-    return (await this.repo.findOne({ where: { id } })) as City
   }
 
   async delete(id: number): Promise<{ message: string }> {

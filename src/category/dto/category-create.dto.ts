@@ -9,22 +9,11 @@ import {
 } from 'class-validator'
 import { ProductCreateDto } from 'src/product/dto/product-create.dto'
 import { Category } from '../entities/category.entity'
-import { CategoryIcons } from 'src/common/types/category.types'
 
 export class CategoryCreateDto {
   @ApiProperty({ example: false })
   @IsBoolean()
   show_on_main_page: boolean
-
-  @ApiProperty({ example: '' })
-  @IsString()
-  @IsOptional()
-  custom_id: string
-
-  @ApiProperty({ example: 'apple' })
-  @IsString()
-  @IsOptional()
-  icon_name: CategoryIcons
 
   @ApiProperty({ example: null })
   @IsNumber()
@@ -42,11 +31,6 @@ export class CategoryCreateDto {
   @ApiProperty({ example: 'Це сео-текст' })
   @IsString()
   seo_text: string
-
-  @ApiProperty({ example: false })
-  @IsBoolean()
-  is_packages: boolean
-
   @ApiProperty({ example: 0, nullable: false })
   @IsInt()
   order_in_list: number
@@ -64,11 +48,6 @@ export class CategoryCreateResponseDto {
   @ApiProperty({ example: 'yabluka' })
   @IsString()
   url: string
-
-  @ApiProperty({ example: false })
-  @IsBoolean()
-  is_packages: boolean
-
   @ApiProperty({ example: 0 })
   @IsInt()
   order_in_list: number

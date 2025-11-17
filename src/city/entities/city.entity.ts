@@ -31,9 +31,6 @@ export class City {
   @Column({ nullable: true })
   seo_description: string
 
-  @Column({ default: 0 })
-  order: number
-
   @ManyToOne(() => Country, (country) => country.cities, {
     nullable: true,
     onDelete: 'SET NULL'
@@ -49,4 +46,7 @@ export class City {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
+
+  @Column({ default: 0 })
+  order: number
 }

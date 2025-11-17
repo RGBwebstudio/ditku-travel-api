@@ -49,14 +49,7 @@ export class CategoryService {
 
     const entity = await this.categoryRepo.findOne({
       where,
-      relations: [
-        'parent',
-        'parent.translates',
-        'images',
-        'translates',
-        'promotion_id',
-        'promotion_id.translates'
-      ]
+      relations: ['parent', 'parent.translates', 'images', 'translates']
     })
 
     if (!entity) throw new NotFoundException('category is NOT_FOUND')
@@ -137,9 +130,7 @@ export class CategoryService {
         'children.images',
         'children.translates',
         'images',
-        'translates',
-        'promotion_id',
-        'promotion_id.translates'
+        'translates'
       ]
     })
 
@@ -213,8 +204,6 @@ export class CategoryService {
       .createQueryBuilder('category')
       .leftJoinAndSelect('category.images', 'images')
       .leftJoinAndSelect('category.translates', 'translates')
-      .leftJoinAndSelect('category.promotion_id', 'promotion_id')
-      .leftJoinAndSelect('promotion_id.translates', 'promotion_translates')
       .leftJoinAndSelect(
         'category.products',
         'products',
@@ -223,8 +212,6 @@ export class CategoryService {
       )
       .leftJoinAndSelect('products.images', 'product_images')
       .leftJoinAndSelect('products.stock', 'product_stock')
-      .leftJoinAndSelect('products.measurement_id', 'measurement_id')
-      .leftJoinAndSelect('measurement_id.translates', 'measurement_translates')
       .leftJoinAndSelect('products.translates', 'product_translates')
       .where('category.show_on_main_page = :categoryShowOnMainPage', {
         categoryShowOnMainPage: true
@@ -292,12 +279,7 @@ export class CategoryService {
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: [
-        'translates',
-        'images',
-        'promotion_id',
-        'promotion_id.translates'
-      ]
+      relations: ['translates', 'images']
     })
 
     const entities: Category[] = []
@@ -311,9 +293,7 @@ export class CategoryService {
           'children.images',
           'children.translates',
           'translates',
-          'images',
-          'promotion_id',
-          'promotion_id.translates'
+          'images'
         ]
       })
       entities.push(tree)
@@ -356,9 +336,7 @@ export class CategoryService {
       'parent',
       'parent.translates',
       'translates',
-      'images',
-      'promotion_id',
-      'promotion_id.translates'
+      'images'
     ]
 
     const relationsSet = new Set<string>(rootRelations)
@@ -368,8 +346,6 @@ export class CategoryService {
       relationsSet.add(chain)
       relationsSet.add(`${chain}.images`)
       relationsSet.add(`${chain}.translates`)
-      relationsSet.add(`${chain}.promotion_id`)
-      relationsSet.add(`${chain}.promotion_id.translates`)
     }
 
     const relations = Array.from(relationsSet)
@@ -588,7 +564,6 @@ export class CategoryService {
         await sharp(file.buffer).avif().toFile(outputFilePath)
 
         const body: CategoryCreateImageDto = {
-          custom_id: '',
           name: fileName,
           path: `/uploads/category/${fileName}`,
           entity_id: entity_id
@@ -680,8 +655,6 @@ export class CategoryService {
       relationsSet.add(chain)
       relationsSet.add(`${chain}.images`)
       relationsSet.add(`${chain}.translates`)
-      relationsSet.add(`${chain}.promotion_id`)
-      relationsSet.add(`${chain}.promotion_id.translates`)
     }
 
     const relations = Array.from(relationsSet)
