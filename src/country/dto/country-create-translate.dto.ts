@@ -10,11 +10,6 @@ import { Country } from '../entities/country.entity'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class CountryCreateTranslateDto {
-  @ApiPropertyOptional({ example: '123' })
-  @IsString()
-  @IsOptional()
-  custom_id: string
-
   @ApiProperty({ example: 'title' })
   @IsString()
   field: string

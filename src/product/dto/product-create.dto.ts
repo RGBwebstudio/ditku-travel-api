@@ -13,18 +13,17 @@ import { Product } from '../entities/product.entity'
 import { Category } from 'src/category/entities/category.entity'
 
 export class ProductCreateDto {
-  @ApiPropertyOptional({ example: '123' })
-  @IsString()
-  @IsOptional()
-  custom_id: string
-
   @ApiProperty({ example: false, description: 'Show product on main page' })
   @IsBoolean()
   show_on_main_page: boolean
 
   @ApiProperty({ example: false })
   @IsBoolean()
-  is_top_product: boolean
+  is_top: boolean
+
+  @ApiProperty({ example: false, default: false })
+  @IsBoolean()
+  is_hidden: boolean
 
   @ApiProperty({ example: null })
   @IsInt()
@@ -41,9 +40,13 @@ export class ProductCreateDto {
   @IsOptional()
   is_parent: boolean
 
-  @ApiProperty({ example: 'Яблуко Fuji' })
+  @ApiProperty({ example: 'Тур' })
   @IsString()
   title: string
+
+  @ApiProperty({ example: 'Тур до карпат для дітей' })
+  @IsString()
+  subtitle: string
 
   @ApiProperty({ example: 'сео-заголовок' })
   @IsString()
@@ -53,25 +56,14 @@ export class ProductCreateDto {
   @IsString()
   seo_description: string
 
-  @ApiProperty({ example: 'yablyko-fuji' })
+  @ApiProperty({ example: 'tour' })
   @IsString()
   url: string
 
-  @ApiProperty({ example: 'Опис продукту' })
+  @ApiPropertyOptional({ example: '0.00', description: 'Ціна' })
+  @IsOptional()
   @IsString()
-  description_1: string
-
-  @ApiProperty({ example: 'Склад продукту' })
-  @IsString()
-  description_2: string
-
-  @ApiProperty({ example: 'Загальна інформація (JSON рядок)' })
-  @IsString()
-  description_3: string
-
-  @ApiProperty({ example: 'Харчова цінність (JSON рядок)' })
-  @IsString()
-  description_4: string
+  price?: string
 
   @ApiProperty({ example: 0 })
   @IsInt()
@@ -93,15 +85,42 @@ export class ProductCreateDto {
   @IsOptional()
   parameters: Parameter[]
 
+  @ApiPropertyOptional({
+    type: [Number],
+    description: 'Array of Format group ids'
+  })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  format_group?: number[]
+
+  @ApiPropertyOptional({
+    example: 'історію, культуру, побут, архітектуру',
+    description: 'Навички (через кому)'
+  })
+  @IsOptional()
+  @IsString()
+  skills?: string
+
+  @ApiPropertyOptional({
+    example: 'критичне мислення, пізнання світу, емоційний досвід',
+    description: 'Досліджуємо (через кому)'
+  })
+  @IsOptional()
+  @IsString()
+  discover?: string
+
+  @ApiPropertyOptional({
+    description: 'Структура контенту блоків'
+  })
+  @IsOptional()
+  @IsString()
+  structure?: Record<string, string>
+
   @ApiPropertyOptional({ type: [Number] })
   @IsOptional()
   @IsArray()
   sections?: number[]
-
-  @ApiPropertyOptional({ example: '1.234', description: 'Product weight' })
-  @IsString()
-  @IsOptional()
-  weight: string
 
   @ApiPropertyOptional({ example: '2023-12-01T00:00:00Z' })
   @IsOptional()

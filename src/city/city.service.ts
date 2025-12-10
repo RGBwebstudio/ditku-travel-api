@@ -28,13 +28,13 @@ export class CityService {
     }
 
     if (typeof dto.country_id !== 'undefined') {
-      payload.country_id = { id: dto.country_id } as unknown as Country
+      payload.country_id = { id: dto.country_id } as Country
     }
 
-    const entity = this.repo.create(payload as any)
+    const entity = this.repo.create(payload)
 
     try {
-      const saved = (await this.repo.save(entity)) as unknown as City
+      const saved = await this.repo.save(entity)
       return saved
     } catch {
       throw new BadRequestException('city is NOT_CREATED')
@@ -54,7 +54,7 @@ export class CityService {
 
   async findByCountry(countryId: number) {
     const entities = await this.repo.find({
-      where: { country_id: { id: countryId } as unknown as Country },
+      where: { country_id: { id: countryId } as Country },
       order: { order: 'ASC' },
       relations: ['country_id']
     })
@@ -89,7 +89,7 @@ export class CityService {
         ...entity,
         ...dto,
         country_id: dto.country_id
-          ? ({ id: dto.country_id } as unknown as Country)
+          ? ({ id: dto.country_id } as Country)
           : entity.country_id
       }
       const saved = await this.repo.save(payload)

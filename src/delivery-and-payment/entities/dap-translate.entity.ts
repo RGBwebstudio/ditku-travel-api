@@ -6,10 +6,6 @@ import { DAP } from './dap.entity'
 export class DAPTranslates {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   field: string
 

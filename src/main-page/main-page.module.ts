@@ -7,6 +7,7 @@ import { MainPage } from './entities/main-page.entity'
 @Module({
   imports: [TypeOrmModule.forFeature([MainPage])],
   controllers: [MainPageController],
-  providers: [MainPageService]
+  providers: [MainPageService],
+  exports: [MainPageService]
 })
 export class MainPageModule {}

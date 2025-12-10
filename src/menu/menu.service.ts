@@ -5,10 +5,12 @@ import {
   BadRequestException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Repository, DeepPartial } from 'typeorm'
 import { Menu } from './entities/menu.entity'
 import { MenuCreateDto } from './dto/menu-create.dto'
 import { MenuUpdateDto } from './dto/menu-update.dto'
+import { Category } from 'src/category/entities/category.entity'
+import { SeoFilter } from 'src/seo-filter/entities/seo-filter.entity'
 
 @Injectable()
 export class MenuService {
@@ -47,7 +49,7 @@ export class MenuService {
   }
 
   async create(dto: MenuCreateDto): Promise<Menu> {
-    const data: any = {
+    const data: DeepPartial<Menu> = {
       order_in_list: dto.order_in_list || 0
     }
 
@@ -55,7 +57,7 @@ export class MenuService {
     if (dto.seo_filter_ids && Array.isArray(dto.seo_filter_ids))
       data.seo_filters = dto.seo_filter_ids.map((id) => ({ id }))
 
-    const entity = this.repo.create(data) as unknown as Menu
+    const entity = this.repo.create(data)
     try {
       return await this.repo.save(entity)
     } catch (err) {
@@ -76,13 +78,13 @@ export class MenuService {
 
     if (dto.category_id !== undefined) {
       entity.category_id = dto.category_id
-        ? ({ id: dto.category_id } as any)
+        ? ({ id: dto.category_id } as Category)
         : null
     }
 
     if (dto.seo_filter_ids !== undefined) {
       entity.seo_filters = Array.isArray(dto.seo_filter_ids)
-        ? dto.seo_filter_ids.map((i) => ({ id: i }) as any)
+        ? dto.seo_filter_ids.map((i) => ({ id: i }) as SeoFilter)
         : []
     }
 

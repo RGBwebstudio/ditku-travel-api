@@ -50,12 +50,12 @@ export class ContentService {
   }
 
   async update(dto: UpdateContentDto): Promise<Content | null> {
-    const { lang } = dto as any
+    const { lang } = dto
     const result = await this.repo.update({ lang }, dto)
 
     if (result.affected === 0) {
-      const created = this.repo.create(dto as any)
-      return await this.repo.save(created as any)
+      const created = this.repo.create(dto)
+      return await this.repo.save(created)
     }
 
     const entity = await this.repo.findOne({ where: { lang } })

@@ -10,11 +10,11 @@ import {
   Req,
   UseGuards,
   ParseIntPipe,
-  UploadedFile,
   UseInterceptors,
+  UploadedFiles,
   HttpCode
 } from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { FilesInterceptor } from '@nestjs/platform-express'
 import {
   ApiTags,
   ApiOperation,
@@ -29,6 +29,7 @@ import { PostService } from './post.service'
 import { AuthAdminGuard } from 'src/auth/auth-admin.guard'
 
 import { PostCreateDto } from './dto/post-create.dto'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
 import { PostUpdateDto } from './dto/post-update.dto'
 import { PostFilterDto } from './dto/post-filter.dto'
 import { PostCreateTranslateDto } from './dto/post-create-translate.dto'
@@ -46,6 +47,21 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Успішно отримано частину сутностей'
+  })
+  @ApiOperation({ summary: 'Отримати частину постів' })
+  find(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
+    const filter: Partial<PostFilterDto> = {
+      limit: take,
+      offset: skip
+    }
+
+    return this.postService.findAll(filter as PostFilterDto, req.lang)
+  }
+
+  @Get('filter')
   @ApiOperation({ summary: 'Отримати список постів з фільтрацією' })
   @ApiResponse({ status: 200, description: 'Список постів успішно отримано' })
   async findAll(@Query() filter: PostFilterDto, @Req() req: Request) {
@@ -141,19 +157,16 @@ export class PostController {
   @Post(':id/images/upload')
   @UseGuards(AuthAdminGuard)
   @ApiBearerAuth()
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Завантажити зображення для посту' })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        file: {
-          type: 'string',
-          format: 'binary'
-        },
-        custom_id: {
-          type: 'string'
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' }
         }
       }
     }
@@ -161,10 +174,10 @@ export class PostController {
   @ApiResponse({ status: 201, description: 'Зображення успішно завантажено' })
   async uploadImage(
     @Param('id', ParseIntPipe) postId: number,
-    @UploadedFile(FilesSizeValidationPipe) file: Express.Multer.File,
+    @UploadedFiles(new FilesSizeValidationPipe()) files: Express.Multer.File[],
     @Body() uploadImageDto: PostUploadImageDto
   ) {
-    return this.postService.uploadImage(postId, file, uploadImageDto.custom_id)
+    return this.postService.uploadImages(files, postId)
   }
 
   @Post(':id/images')

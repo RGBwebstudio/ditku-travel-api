@@ -10,11 +10,6 @@ import { Product } from '../entities/product.entity'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class ProductCreateTranslateDto {
-  @ApiPropertyOptional({ example: '123' })
-  @IsString()
-  @IsOptional()
-  custom_id: string
-
   @ApiProperty({ example: 'title' })
   @IsString()
   field: string

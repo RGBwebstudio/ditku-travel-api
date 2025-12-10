@@ -13,10 +13,6 @@ import { BannerType } from 'src/common/types/banner-group.types'
 export class BannerGroup {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   title: string
 

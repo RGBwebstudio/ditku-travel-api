@@ -7,17 +7,6 @@ import {
 } from 'typeorm'
 import { LANG } from 'src/common/enums/translation.enum'
 
-export enum TypeLabels {
-  text_block = 'text_block',
-  plates = 'plates',
-  blog_list = 'blog_list',
-  ready = 'ready',
-  testimonials = 'testimonials',
-  form = 'form',
-  in_numbers = 'in_numbers',
-  planning = 'planning'
-}
-
 export enum PageType {
   FOR_PARENT = 'for-parent',
   FOR_TEACHERS = 'for-teachers'
@@ -34,8 +23,20 @@ export class PageConstructor {
   @Column({ enum: LANG, default: LANG.UA })
   lang: LANG
 
-  @Column({ enum: TypeLabels, nullable: true })
-  content_type: TypeLabels
+  @Column()
+  title: string
+
+  @Column({ nullable: true })
+  seo_title: string
+
+  @Column({ type: 'text', nullable: true })
+  seo_description: string
+
+  @Column()
+  url: string
+
+  @Column({ type: 'int', default: 0 })
+  order: number
 
   @Column({ enum: PageType, nullable: true })
   page_type: PageType

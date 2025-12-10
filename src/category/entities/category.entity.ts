@@ -24,10 +24,6 @@ import { Menu } from 'src/menu/entities/menu.entity'
 export class Category {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @TreeParent()
   parent: Category | null
 

@@ -7,10 +7,12 @@ import {
   Body,
   ParseIntPipe,
   Delete,
-  Put
+  Put,
+  ParseArrayPipe
 } from '@nestjs/common'
 import { CreateRoadmapDto } from './dto/create-roadmap.dto'
 import { UpdateRoadmapDto } from './dto/update-roadmap.dto'
+import { UpdateRoadmapItemDto } from './dto/update-roadmap-item.dto'
 import { RoadmapService } from './roadmap.service'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
@@ -27,7 +29,6 @@ export class RoadmapController {
   find(@Query('take') take: number = 20, @Query('skip') skip: number = 0) {
     return this.roadmapService.findAll(Number(take), Number(skip))
   }
-
   @Get(':id')
   @ApiOperation({ summary: 'Отримати запис roadmap' })
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -42,6 +43,22 @@ export class RoadmapController {
   })
   create(@Body() dto: CreateRoadmapDto) {
     return this.roadmapService.create(dto)
+  }
+
+  @Post('create-from-array')
+  @ApiOperation({ summary: 'Cтворити масив записів roadmap' })
+  @ApiResponse({
+    status: 201,
+    description: 'CREATED - Масив сутностей успішно створено'
+  })
+  createFromArray(@Body() body: CreateRoadmapDto[]) {
+    return this.roadmapService.createFromArray(body)
+  }
+
+  @Put('update/from-array')
+  @ApiOperation({ summary: 'Оновити масив записів roadmap' })
+  updateFromArray(@Body() dto: UpdateRoadmapItemDto[]) {
+    return this.roadmapService.updateFromArray(dto)
   }
 
   @Put(':id')

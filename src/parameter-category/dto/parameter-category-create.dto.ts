@@ -6,8 +6,6 @@ export class ParameterCategoryCreateDto {
   @ApiPropertyOptional({ example: '123' })
   @IsString()
   @IsOptional()
-  custom_id?: string
-
   @ApiProperty({ example: 'Сорт' })
   @IsString()
   title: string

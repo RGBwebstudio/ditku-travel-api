@@ -26,15 +26,16 @@ import { CookieModule } from './cookie/cookie.module'
 import { DAPModule } from './delivery-and-payment/faq.module'
 import { ContactsModule } from './сontacts/contacts.module'
 import { BannerModule } from './banners/brand.module'
-import { SettingsModule } from './settings/settings.module'
 import { SeoBlocksModule } from './seo-blocks/seo-blocks.module'
 import { SeoFilterModule } from './seo-filter/seo-filter.module'
 import { PostModule } from './posts/post.module'
+import { PostCategoryModule } from './post-category/post-category.module'
 import { SectionModule } from './section/section.module'
 import { MenuModule } from './menu/menu.module'
 import { PromocodeModule } from './promocode/promocode.module'
 import { AdminModule } from './admin/admin.module'
 import { PageConstructorModule } from './page-constructor/page-constructor.module'
+import { VideoModule } from './video/video.module'
 
 const config = configuration()
 
@@ -67,15 +68,16 @@ const config = configuration()
     TermsOfUseModule,
     CookieModule,
     BannerModule,
-    SettingsModule,
     SeoBlocksModule,
     SeoFilterModule,
     PostModule,
+    PostCategoryModule,
     SectionModule,
     MenuModule,
     PromocodeModule,
     AdminModule,
-    PageConstructorModule
+    PageConstructorModule,
+    VideoModule
   ],
   controllers: [AppController],
   providers: [AppService]

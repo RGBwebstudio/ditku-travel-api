@@ -2,11 +2,6 @@ import { IsString, IsOptional, IsInt, Min } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class PostCreateImageDto {
-  @ApiPropertyOptional({ example: '123' })
-  @IsString()
-  @IsOptional()
-  custom_id?: string
-
   @ApiProperty({ example: 'post-image.jpg' })
   @IsString()
   name: string

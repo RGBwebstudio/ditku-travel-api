@@ -13,7 +13,7 @@ import * as sharp from 'sharp'
 import { Post } from './entities/post.entity'
 import { PostTranslate } from './entities/post-translate.entity'
 import { PostImage } from './entities/post-image.entity'
-import { Category } from 'src/category/entities/category.entity'
+import { PostCategory } from 'src/post-category/entities/post-category.entity'
 
 import { PostCreateDto } from './dto/post-create.dto'
 import { PostUpdateDto } from './dto/post-update.dto'
@@ -38,8 +38,8 @@ export class PostService {
     private postTranslateRepo: Repository<PostTranslate>,
     @InjectRepository(PostImage)
     private postImageRepo: Repository<PostImage>,
-    @InjectRepository(Category)
-    private categoryRepo: Repository<Category>
+    @InjectRepository(PostCategory)
+    private categoryRepo: Repository<PostCategory>
   ) {}
 
   async findAll(
@@ -136,20 +136,22 @@ export class PostService {
   }
 
   async create(createDto: PostCreateDto): Promise<Post> {
-    if (createDto.category_id) {
+    if (createDto.category_id && typeof createDto.category_id === 'number') {
       const category = await this.categoryRepo.findOne({
-        where: { id: createDto.category_id as any }
+        where: { id: createDto.category_id }
       })
       if (!category) {
-        throw new BadRequestException('Category not found')
+        throw new BadRequestException('Category is NOT_FOUND')
       }
+    } else {
+      throw new BadRequestException('Category is NOT_FOUND')
     }
 
     const existingPost = await this.postRepo.findOne({
       where: { url: createDto.url }
     })
     if (existingPost) {
-      throw new BadRequestException('Post with this URL already exists')
+      throw new BadRequestException('Post with this URL ALREADY_EXISTS')
     }
 
     const post = this.postRepo.create(createDto)
@@ -159,12 +161,17 @@ export class PostService {
   async update(id: number, updateDto: PostUpdateDto): Promise<Post> {
     const existingPost = await this.findOne(id)
 
-    if (updateDto.category_id) {
+    if (updateDto.category_id !== undefined && updateDto.category_id !== null) {
+      const categoryId = Number(updateDto.category_id)
+      if (Number.isNaN(categoryId)) {
+        throw new BadRequestException('Category NOT_FOUND')
+      }
+
       const category = await this.categoryRepo.findOne({
-        where: { id: updateDto.category_id as any }
+        where: { id: categoryId }
       })
       if (!category) {
-        throw new BadRequestException('Category not found')
+        throw new BadRequestException('Category NOT_FOUND')
       }
     }
 
@@ -173,7 +180,7 @@ export class PostService {
         where: { url: updateDto.url }
       })
       if (existingUrlPost) {
-        throw new BadRequestException('Post with this URL already exists')
+        throw new BadRequestException('Post with this URL ALREADY_EXISTS')
       }
     }
 
@@ -183,6 +190,30 @@ export class PostService {
 
   async remove(id: number): Promise<void> {
     const post = await this.findOne(id)
+
+    const images = await this.postImageRepo.find({
+      where: { entity_id: post }
+    })
+
+    for (const image of images) {
+      const filePath = path.isAbsolute(image.path)
+        ? image.path
+        : path.join(process.cwd(), image.path.replace(/^\/+/, ''))
+      try {
+        if (await fs.pathExists(filePath)) {
+          await fs.remove(filePath)
+        } else {
+          this.logger.warn(`File at path ${filePath} does not exist`)
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to delete file ${filePath}: ${error.message}`)
+      }
+    }
+
+    if (images.length > 0) {
+      await this.postImageRepo.remove(images)
+    }
+
     await this.postRepo.remove(post)
   }
 
@@ -210,7 +241,7 @@ export class PostService {
 
     if (!translate) {
       throw new NotFoundException(
-        `Translation with ID ${translateId} not found`
+        `Translation with ID ${translateId} NOT_FOUND`
       )
     }
 
@@ -225,7 +256,7 @@ export class PostService {
 
     if (!translate) {
       throw new NotFoundException(
-        `Translation with ID ${translateId} not found`
+        `Translation with ID ${translateId} NOT_FOUND`
       )
     }
 
@@ -234,8 +265,7 @@ export class PostService {
 
   async uploadImage(
     postId: number,
-    file: Express.Multer.File,
-    customId?: string
+    file: Express.Multer.File
   ): Promise<PostImage> {
     const post = await this.findOne(postId)
 
@@ -251,7 +281,6 @@ export class PostService {
       .toFile(filePath)
 
     const image = this.postImageRepo.create({
-      custom_id: customId,
       name: filename,
       path: `/uploads/posts/${filename}`,
       entity_id: post,
@@ -259,6 +288,40 @@ export class PostService {
     })
 
     return await this.postImageRepo.save(image)
+  }
+
+  async uploadImages(
+    files: Express.Multer.File[],
+    postId: number
+  ): Promise<PostImage[]> {
+    const post = await this.findOne(postId)
+
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'posts')
+    await fs.ensureDir(uploadsDir)
+
+    const savedImages: PostImage[] = []
+
+    for (const file of files) {
+      const filename = `${Date.now()}-${file.originalname}`
+      const filePath = path.join(uploadsDir, filename)
+
+      await sharp(file.buffer)
+        .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 85 })
+        .toFile(filePath)
+
+      const image = this.postImageRepo.create({
+        name: filename,
+        path: `/uploads/posts/${filename}`,
+        entity_id: post,
+        order: 0
+      })
+
+      const saved = await this.postImageRepo.save(image)
+      savedImages.push(saved)
+    }
+
+    return savedImages
   }
 
   async createImage(
@@ -284,7 +347,7 @@ export class PostService {
     })
 
     if (!image) {
-      throw new NotFoundException(`Image with ID ${imageId} not found`)
+      throw new NotFoundException(`Image with ID ${imageId} NOT_FOUND`)
     }
 
     Object.assign(image, updateImageDto)
@@ -305,9 +368,15 @@ export class PostService {
     })
 
     for (const image of images) {
-      const filePath = path.join(process.cwd(), image.path)
+      const filePath = path.isAbsolute(image.path)
+        ? image.path
+        : path.join(process.cwd(), image.path.replace(/^\/+/, ''))
       try {
-        await fs.remove(filePath)
+        if (await fs.pathExists(filePath)) {
+          await fs.remove(filePath)
+        } else {
+          this.logger.warn(`File at path ${filePath} does not exist`)
+        }
       } catch (error) {
         this.logger.warn(`Failed to delete file ${filePath}: ${error.message}`)
       }
@@ -322,12 +391,18 @@ export class PostService {
     })
 
     if (!image) {
-      throw new NotFoundException(`Image with ID ${imageId} not found`)
+      throw new NotFoundException(`Image with ID ${imageId} NOT_FOUND`)
     }
 
-    const filePath = path.join(process.cwd(), image.path)
+    const filePath = path.isAbsolute(image.path)
+      ? image.path
+      : path.join(process.cwd(), image.path.replace(/^\/+/, ''))
     try {
-      await fs.remove(filePath)
+      if (await fs.pathExists(filePath)) {
+        await fs.remove(filePath)
+      } else {
+        this.logger.warn(`File at path ${filePath} does not exist`)
+      }
     } catch (error) {
       this.logger.warn(`Failed to delete file ${filePath}: ${error.message}`)
     }

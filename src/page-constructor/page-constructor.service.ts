@@ -38,7 +38,7 @@ export class PageConstructorService {
     const entities = await this.repo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { order: 'ASC', created_at: 'ASC' }
     })
     const count = await this.repo.count()
     return { entities, count }
@@ -50,7 +50,7 @@ export class PageConstructorService {
 
     const entities = await this.repo.find({
       where,
-      order: { created_at: 'DESC' }
+      order: { order: 'ASC', created_at: 'ASC' }
     })
     if (!entities || entities.length === 0)
       throw new NotFoundException('entity of page-constructor NOT_FOUND')
@@ -90,6 +90,23 @@ export class PageConstructorService {
       )
       throw err
     }
+
+    return { message: 'SUCCESS' }
+  }
+
+  async updateOrder(
+    items: { id: number; order: number }[]
+  ): Promise<{ message: string }> {
+    if (!Array.isArray(items)) {
+      throw new BadRequestException('items should be an array')
+    }
+
+    await Promise.all(
+      items.map(async (it) => {
+        if (!it || typeof it.id !== 'number') return
+        await this.repo.update(it.id, { order: it.order })
+      })
+    )
 
     return { message: 'SUCCESS' }
   }

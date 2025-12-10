@@ -7,9 +7,6 @@ export class ProductTranslate {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   field: string
 

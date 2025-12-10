@@ -3,10 +3,6 @@ import { Product } from '../entities/product.entity'
 
 export class ProductCreateImageDto {
   @IsString()
-  @IsOptional()
-  custom_id: string
-
-  @IsString()
   name: string
 
   @IsString()

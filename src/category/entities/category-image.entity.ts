@@ -5,10 +5,6 @@ import { Category } from './category.entity'
 export class CategoryImage {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   name: string
 

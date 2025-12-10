@@ -39,6 +39,16 @@ export class FormatGroupController {
     return this.service.searchByTitle(q)
   }
 
+  @Get('all')
+  @ApiOperation({ summary: 'Отримати всі формат групи' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Успішно отримано всі сутності'
+  })
+  findAll() {
+    return this.service.findAll()
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Отримати формат групу' })
   @ApiResponse({

@@ -43,6 +43,11 @@ export class FormatGroupService {
     return { entities: result }
   }
 
+  async findAll() {
+    const entities = await this.repo.find({ order: { created_at: 'DESC' } })
+    return { entities }
+  }
+
   async findOne(id: number): Promise<FormatGroup | null> {
     const entity = await this.repo.findOne({ where: { id } })
     if (!entity) throw new NotFoundException('format_group is NOT_FOUND')
@@ -50,6 +55,17 @@ export class FormatGroupService {
   }
 
   async create(dto: FormatGroupCreateDto): Promise<FormatGroup> {
+    const exists = await this.repo
+      .createQueryBuilder('fg')
+      .where('LOWER(fg.title) = :title', {
+        title: String(dto.title).toLowerCase()
+      })
+      .getOne()
+
+    if (exists) {
+      throw new BadRequestException('ALREADY_CREATED')
+    }
+
     const data = this.repo.create(dto)
     try {
       const saved = await this.repo.save(data)

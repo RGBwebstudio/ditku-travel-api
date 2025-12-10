@@ -22,7 +22,7 @@ export class Menu {
     onDelete: 'SET NULL'
   })
   @JoinColumn({ name: 'category_id' })
-  category_id: Category
+  category_id: Category | null
 
   @ManyToMany(() => SeoFilter, (seoFilter) => seoFilter.menus, {
     onDelete: 'CASCADE'

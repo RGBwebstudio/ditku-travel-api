@@ -5,10 +5,6 @@ import { BannerGroup } from './banners.entity'
 export class BannerImage {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   name: string
 

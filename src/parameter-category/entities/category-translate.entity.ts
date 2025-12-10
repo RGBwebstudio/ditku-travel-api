@@ -6,10 +6,6 @@ import { ParameterCategory } from './parameter-category.entity'
 export class ParameterCategoryTranslate {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   field: string
 

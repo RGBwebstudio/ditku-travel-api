@@ -41,7 +41,7 @@ export class RatingService {
       name: dto.name,
       review: dto.review,
       rating: String(dto.rating),
-      product_id: { id: productId } as any
+      product_id: { id: productId }
     })
 
     try {

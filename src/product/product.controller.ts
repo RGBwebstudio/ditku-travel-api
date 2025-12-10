@@ -31,6 +31,7 @@ import {
 } from '@nestjs/swagger'
 import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
+import { ProductRecommendedDto } from './dto/product-recommended.dto'
 import { AuthAdminGuard } from 'src/auth/auth-admin.guard'
 import { Product } from './entities/product.entity'
 import { Request } from 'express'
@@ -54,7 +55,7 @@ export class ProductController {
     description: 'NOT_FOUND - Сутність не знайдено'
   })
   @ApiOperation({
-    summary: 'Пошук товарів (id, custom_id, title) по q, максимум 20)'
+    summary: 'Пошук товарів (id, title) по q, максимум 20)'
   })
   async search(@Query('q') q: string) {
     return await this.productService.searchShort(q)
@@ -147,6 +148,16 @@ export class ProductController {
     return this.productService.findOne(id, req.lang, req)
   }
 
+  @Get(':id/recommendations')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Отримати рекомендовані товари для товару' })
+  async getRecommendations(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request
+  ) {
+    return this.productService.getRecommendedOfProduct(id, req.lang)
+  }
+
   @Get('category/:categoryId/products')
   @ApiOperation({ summary: 'Отримати товари по категорії (для адмінки)' })
   @ApiResponse({ status: 200, description: 'SUCCESS - Знайдено товари' })
@@ -185,20 +196,6 @@ export class ProductController {
     description: 'NOT_CREATED - Cутність не створено'
   })
   create(@Body() dto: ProductCreateDto) {
-    // strip deprecated/forbidden fields coming from client
-    const forbidden = [
-      'article',
-      'show_in_discounts_on_main_page',
-      'measurement_id',
-      'promotion_id',
-      'is_hidden',
-      'price',
-      'price_retail'
-    ]
-    for (const f of forbidden) {
-      if ((dto as any)[f] !== undefined) delete (dto as any)[f]
-    }
-
     return this.productService.create(dto)
   }
 
@@ -216,20 +213,6 @@ export class ProductController {
     description: 'NOT_UPDATED - Cутність не оновлено'
   })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: ProductUpdateDto) {
-    // strip deprecated/forbidden fields coming from client
-    const forbidden = [
-      'article',
-      'show_in_discounts_on_main_page',
-      'measurement_id',
-      'promotion_id',
-      'is_hidden',
-      'price',
-      'price_retail'
-    ]
-    for (const f of forbidden) {
-      if ((dto as any)[f] !== undefined) delete (dto as any)[f]
-    }
-
     return this.productService.update(id, dto)
   }
 
@@ -281,6 +264,21 @@ export class ProductController {
     @Body() dto: ProductParametersDto
   ) {
     return this.productService.updateParameters(id, dto)
+  }
+
+  @Patch(':id/recommendations')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Оновити список рекомендованих товарів для товару' })
+  @ApiBody({
+    description: 'Масив id рекомендованих товарів',
+    type: ProductRecommendedDto
+  })
+  async updateRecommendations(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ProductRecommendedDto
+  ) {
+    const ids = Array.isArray(dto?.productIds) ? dto.productIds : []
+    return this.productService.updateRecommendedProducts(id, ids)
   }
 
   @Post('/translates')

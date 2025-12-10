@@ -21,15 +21,15 @@ export class Roadmap {
   @Column()
   end_point: boolean
 
-  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
-  product_id: Product
+  @ManyToOne(() => Product, { onDelete: 'SET NULL' })
+  product_id: Product | null
 
   @ManyToOne(() => City, (city) => city.roadmaps, {
     nullable: true,
     onDelete: 'SET NULL'
   })
   @JoinColumn({ name: 'city_id' })
-  city_id: City
+  city_id: City | null
 
   @Column()
   time: string

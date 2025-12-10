@@ -3,11 +3,6 @@ import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator'
 import { BannerType } from 'src/common/types/banner-group.types'
 
 export class BannerCreateDto {
-  @ApiPropertyOptional({ example: '123' })
-  @IsString()
-  @IsOptional()
-  custom_id: string
-
   @ApiProperty({ example: 'Акція манго -20%' })
   @IsString()
   title: string

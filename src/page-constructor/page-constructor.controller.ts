@@ -14,6 +14,7 @@ import {
 import { PageConstructorService } from './page-constructor.service'
 import { CreatePageConstructorDto } from './dto/create-page-constructor.dto'
 import { UpdatePageConstructorDto } from './dto/update-page-constructor.dto'
+import { UpdateOrderDto } from './dto/update-order.dto'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
 import { Request } from 'express'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
@@ -35,6 +36,12 @@ export class PageConstructorController {
   @ApiOperation({ summary: 'Отримати весь конструктор сторінок' })
   findAll(@Query() { take, skip }: TakeAndSkipDto) {
     return this.pageConstructorService.findAll(take, skip)
+  }
+
+  @Get('types')
+  @ApiOperation({ summary: 'Отримати варіанти page_type' })
+  getTypes() {
+    return Object.values(PageType)
   }
 
   @Get(':lang')
@@ -73,6 +80,17 @@ export class PageConstructorController {
   @ApiOperation({ summary: 'Оновити запис конструктора сторінки' })
   update(@Body() updateDto: UpdatePageConstructorDto) {
     return this.pageConstructorService.update(updateDto)
+  }
+
+  @Patch('order')
+  @UseGuards(AuthAdminGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Порядок блоків оновлено'
+  })
+  @ApiOperation({ summary: 'Оновити порядок блоків конструктора сторінки' })
+  updateOrder(@Body() dto: UpdateOrderDto) {
+    return this.pageConstructorService.updateOrder(dto.items)
   }
 
   @Delete(':id')

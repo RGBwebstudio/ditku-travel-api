@@ -180,7 +180,6 @@ export class BannerService {
         await sharp(file.buffer).avif().toFile(outputFilePath)
 
         const body: BannerCreateImageDto = {
-          custom_id: '',
           name: fileName,
           path: `/uploads/banner/${fileName}`,
           entity_id: entity_id,

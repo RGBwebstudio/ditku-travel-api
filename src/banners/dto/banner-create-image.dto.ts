@@ -3,10 +3,6 @@ import { BannerGroup } from '../entities/banners.entity'
 
 export class BannerCreateImageDto {
   @IsString()
-  @IsOptional()
-  custom_id: string
-
-  @IsString()
   name: string
 
   @IsString()

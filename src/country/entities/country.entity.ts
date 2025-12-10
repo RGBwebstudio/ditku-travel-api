@@ -13,10 +13,6 @@ import { City } from 'src/city/entities/city.entity'
 export class Country {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   title: string
 

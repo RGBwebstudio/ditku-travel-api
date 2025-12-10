@@ -15,9 +15,6 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   first_name: string
 

@@ -5,10 +5,6 @@ import { Post } from './post.entity'
 export class PostImage {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   name: string
 

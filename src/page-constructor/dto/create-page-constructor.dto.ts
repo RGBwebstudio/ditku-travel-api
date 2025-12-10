@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsEnum, IsString, IsOptional } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
-import { TypeLabels, PageType } from '../entities/page-constructor.entity'
+import { PageType } from '../entities/page-constructor.entity'
 
 export class CreatePageConstructorDto {
   @ApiProperty({ example: '{}' })
@@ -12,12 +12,32 @@ export class CreatePageConstructorDto {
   @IsEnum(LANG)
   lang: LANG
 
-  @ApiProperty({ example: TypeLabels.text_block })
-  @IsEnum(TypeLabels)
-  content_type: TypeLabels
-
   @ApiPropertyOptional({ example: PageType.FOR_PARENT })
   @IsEnum(PageType)
   @IsOptional()
   page_type?: PageType
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsOptional()
+  order?: number
+
+  @ApiPropertyOptional({ example: 'Page title' })
+  @ApiProperty({ example: 'Page title' })
+  @IsString()
+  title: string
+
+  @ApiPropertyOptional({ example: 'SEO title' })
+  @IsOptional()
+  @IsString()
+  seo_title?: string
+
+  @ApiPropertyOptional({ example: 'SEO description' })
+  @IsOptional()
+  @IsString()
+  seo_description?: string
+
+  @ApiPropertyOptional({ example: '/some-url' })
+  @ApiProperty({ example: '/some-url' })
+  @IsString()
+  url: string
 }

@@ -6,9 +6,6 @@ export class ProductImage {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   name: string
 

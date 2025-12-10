@@ -18,6 +18,7 @@ import { ProductTranslate } from './product-translate.entity'
 import { ProductImage } from './product-image.entity'
 import { Rating } from 'src/product-rating/entities/rating.entity'
 import { Section } from 'src/section/entities/section.entity'
+import { Roadmap } from 'src/roadmap/entities/roadmap.entity'
 
 @Entity()
 @Index(['category_id', 'show_on_main_page', 'created_at'])
@@ -26,10 +27,6 @@ import { Section } from 'src/section/entities/section.entity'
 export class Product {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Index()
-  @Column({ default: '', nullable: true })
-  custom_id: string
 
   @Column()
   is_top: boolean
@@ -55,11 +52,14 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   price: string
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   discover: string
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   skills: string
+
+  @Column({ type: 'jsonb', nullable: true })
+  structure: any
 
   @Column({ default: 0 })
   order_in_list: number
@@ -141,6 +141,9 @@ export class Product {
 
   @OneToMany(() => Rating, (rating: Rating) => rating.product_id)
   ratings: Rating[]
+
+  @OneToMany(() => Roadmap, (roadmap: Roadmap) => roadmap.product_id)
+  roadmaps: Roadmap[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   start_at: Date

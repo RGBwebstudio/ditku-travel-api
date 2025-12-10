@@ -1,13 +1,8 @@
 import { IsBoolean, IsString, IsInt, Min, IsOptional } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { Category } from 'src/category/entities/category.entity'
+import { PostCategory } from 'src/post-category/entities/post-category.entity'
 
 export class PostCreateDto {
-  @ApiPropertyOptional({ example: '123' })
-  @IsString()
-  @IsOptional()
-  custom_id: string
-
   @ApiProperty({ example: false })
   @IsBoolean()
   is_hidden: boolean
@@ -43,6 +38,11 @@ export class PostCreateDto {
   @IsOptional()
   seo_description: string
 
+  @ApiPropertyOptional({ example: '<p>Контент посту</p>' })
+  @IsString()
+  @IsOptional()
+  content: string
+
   @ApiProperty({ example: 0 })
   @IsInt()
   @Min(0)
@@ -55,5 +55,5 @@ export class PostCreateDto {
 
   @ApiProperty({ example: 1 })
   @IsInt()
-  category_id: Category
+  category_id: PostCategory
 }

@@ -9,13 +9,15 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Product } from './entities/product.entity'
-import { In, Repository } from 'typeorm'
+import { In, Repository, DeepPartial } from 'typeorm'
 import { ProductCreateDto } from 'src/product/dto/product-create.dto'
 import { ProductUpdateDto } from 'src/product/dto/product-update.dto'
 import { Section } from 'src/section/entities/section.entity'
+import { FormatGroup } from 'src/format-group/entities/format-group.entity'
 import { ProductParametersDto } from './dto/product-parameters.dto'
 import { Parameter } from 'src/parameter/entities/parameter.entity'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { Roadmap } from 'src/roadmap/entities/roadmap.entity'
 import { LANG } from 'src/common/enums/translation.enum'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
 import { ProductTranslate } from './entities/product-translate.entity'
@@ -26,6 +28,16 @@ import { ProductWithoutRatings } from 'src/common/utils/apply-rating'
 import { Request } from 'express'
 import { Category } from 'src/category/entities/category.entity'
 
+type RawRoadmap = {
+  id: number
+  start_point: boolean
+  end_point: boolean
+  city_id?: number | { id: number } | null
+  time?: string
+  description?: string
+  order?: number | string | null
+}
+
 @Injectable()
 export class ProductService {
   private readonly logger = new Logger(ProductService.name)
@@ -35,6 +47,8 @@ export class ProductService {
     @InjectRepository(Parameter) private parameterRepo: Repository<Parameter>,
     @InjectRepository(Category) private categoryRepo: Repository<Category>,
     @InjectRepository(Section) private sectionRepo: Repository<Section>,
+    @InjectRepository(FormatGroup)
+    private formatGroupRepo: Repository<FormatGroup>,
     @InjectRepository(ProductTranslate)
     private entityTranslateRepo: Repository<ProductTranslate>,
     @InjectRepository(ProductImage)
@@ -96,9 +110,9 @@ export class ProductService {
     }
 
     const entities = result.entities.map((entity, index) => {
-      const raw = result.raw[index]
-      if (raw.average_rating !== undefined) {
-        entity.rating = parseFloat(raw.average_rating) || 0
+      const rawRow = result.raw[index]
+      if (rawRow.average_rating !== undefined) {
+        entity.rating = parseFloat(rawRow.average_rating) || 0
       }
       return entity
     })
@@ -121,16 +135,26 @@ export class ProductService {
 
     const mappedEntities = applyTranslations(entities, lang)
 
-    for (const product of mappedEntities) {
-      if (product.category_id && product.category_id.translates) {
-        product.category_id = applyTranslations([product.category_id], lang)[0]
+    for (const mappedProductItem of mappedEntities) {
+      if (
+        mappedProductItem.category_id &&
+        mappedProductItem.category_id.translates
+      ) {
+        mappedProductItem.category_id = applyTranslations(
+          [mappedProductItem.category_id],
+          lang
+        )[0]
       }
 
-      if (product.parameters && Array.isArray(product.parameters)) {
-        product.parameters = product.parameters.map((param) =>
-          param && param.translates
-            ? applyTranslations([param], lang)[0]
-            : param
+      if (
+        mappedProductItem.parameters &&
+        Array.isArray(mappedProductItem.parameters)
+      ) {
+        mappedProductItem.parameters = mappedProductItem.parameters.map(
+          (parameter) =>
+            parameter && parameter.translates
+              ? applyTranslations([parameter], lang)[0]
+              : parameter
         )
       }
     }
@@ -487,10 +511,12 @@ export class ProductService {
         'parent_id',
         'images',
         'translates',
-        'format_groups',
         'parameters',
         'parameters.translates',
-        'ratings'
+        'format_groups',
+        'ratings',
+        'roadmaps',
+        'roadmaps.city_id'
       ]
     })
 
@@ -498,20 +524,54 @@ export class ProductService {
 
     let mappedProducts = applyTranslations(products, lang)
 
-    mappedProducts = mappedProducts.map((prod) => {
-      if (prod.category_id && prod.category_id.translates) {
-        prod.category_id = applyTranslations([prod.category_id], lang)[0]
+    mappedProducts = mappedProducts.map((mappedProductItem) => {
+      if (
+        mappedProductItem.category_id &&
+        mappedProductItem.category_id.translates
+      ) {
+        mappedProductItem.category_id = applyTranslations(
+          [mappedProductItem.category_id],
+          lang
+        )[0]
       }
 
-      if (prod.parameters && Array.isArray(prod.parameters)) {
-        prod.parameters = prod.parameters.map((param: Parameter) =>
-          param && param.translates
-            ? applyTranslations([param], lang)[0]
-            : param
+      if (
+        mappedProductItem.parameters &&
+        Array.isArray(mappedProductItem.parameters)
+      ) {
+        mappedProductItem.parameters = mappedProductItem.parameters.map(
+          (parameter: Parameter) =>
+            parameter && parameter.translates
+              ? applyTranslations([parameter], lang)[0]
+              : parameter
         )
       }
 
-      return prod
+      const rawRoadmaps = (mappedProductItem as { roadmaps?: RawRoadmap[] })
+        .roadmaps
+      if (Array.isArray(rawRoadmaps)) {
+        const mappedRoadmaps = rawRoadmaps.map((rawRoadmap: RawRoadmap) =>
+          Object.assign(new Roadmap(), {
+            id: rawRoadmap.id,
+            start_point: Boolean(rawRoadmap.start_point),
+            end_point: Boolean(rawRoadmap.end_point),
+            city_id:
+              rawRoadmap.city_id && typeof rawRoadmap.city_id === 'object'
+                ? rawRoadmap.city_id.id
+                : rawRoadmap.city_id,
+            time: rawRoadmap.time || '',
+            description: rawRoadmap.description || '',
+            order:
+              rawRoadmap.order !== undefined && rawRoadmap.order !== null
+                ? Number(rawRoadmap.order)
+                : undefined
+          })
+        )
+
+        mappedProductItem.roadmaps = mappedRoadmaps
+      }
+
+      return mappedProductItem
     })
 
     return mappedProducts
@@ -525,10 +585,18 @@ export class ProductService {
         'parent_id',
         'images',
         'translates',
+        'recommendedProducts',
+        'recommendedProducts.images',
+        'recommendedProducts.translates',
+        'recommendedProducts.category_id',
         'format_groups',
+        'sections',
+        'sections.translates',
         'parameters',
         'parameters.translates',
-        'ratings'
+        'ratings',
+        'roadmaps',
+        'roadmaps.city_id'
       ]
     })
 
@@ -544,25 +612,54 @@ export class ProductService {
       }
     }
 
-    let mappedProduct = applyTranslations([product], lang)
+    let mappedProducts = applyTranslations([product], lang)
 
-    mappedProduct = mappedProduct.map((prod) => {
-      if (prod.category_id && prod.category_id.translates) {
-        prod.category_id = applyTranslations([prod.category_id], lang)[0]
+    mappedProducts = mappedProducts.map((productDto) => {
+      if (productDto.category_id && productDto.category_id.translates) {
+        productDto.category_id = applyTranslations(
+          [productDto.category_id],
+          lang
+        )[0]
       }
 
-      if (prod.parameters && Array.isArray(prod.parameters)) {
-        prod.parameters = prod.parameters.map((param: Parameter) =>
+      if (productDto.parameters && Array.isArray(productDto.parameters)) {
+        productDto.parameters = productDto.parameters.map((param: Parameter) =>
           param && param.translates
             ? applyTranslations([param], lang)[0]
             : param
         )
       }
 
-      return prod
+      if (productDto.sections && Array.isArray(productDto.sections)) {
+        productDto.sections = productDto.sections.map((section: Section) =>
+          section && section.translates
+            ? applyTranslations([section], lang)[0]
+            : section
+        )
+      }
+
+      return productDto
     })
 
-    return mappedProduct[0]
+    const mappedProductDto = mappedProducts[0] as { roadmaps?: RawRoadmap[] }
+    const roadmapsDto = (product.roadmaps || []).map((roadmapEntity: Roadmap) =>
+      Object.assign(new Roadmap(), {
+        id: roadmapEntity.id,
+        start_point: Boolean(roadmapEntity.start_point),
+        end_point: Boolean(roadmapEntity.end_point),
+        city_id: roadmapEntity.city_id ? roadmapEntity.city_id.id : null,
+        time: roadmapEntity.time || '',
+        description: roadmapEntity.description || '',
+        order:
+          roadmapEntity.order !== undefined && roadmapEntity.order !== null
+            ? Number(roadmapEntity.order)
+            : undefined
+      })
+    )
+
+    mappedProductDto.roadmaps = roadmapsDto
+
+    return mappedProducts[0]
   }
 
   async findOneByUrl(
@@ -583,7 +680,9 @@ export class ProductService {
         'parameters',
         'parameters.translates',
         'format_groups',
-        'ratings'
+        'ratings',
+        'roadmaps',
+        'roadmaps.city_id'
       ]
     })
 
@@ -634,6 +733,25 @@ export class ProductService {
 
       return prod
     })
+
+    const pickedMappedProduct = mappedProduct[0]
+    pickedMappedProduct.roadmaps = (product.roadmaps || []).map((roadmap) =>
+      Object.assign(new Roadmap(), {
+        id: roadmap.id,
+        start_point: Boolean(roadmap.start_point),
+        end_point: Boolean(roadmap.end_point),
+        city_id:
+          roadmap.city_id && typeof roadmap.city_id === 'object'
+            ? roadmap.city_id.id
+            : roadmap.city_id,
+        time: roadmap.time || '',
+        description: roadmap.description || '',
+        order:
+          roadmap.order !== undefined && roadmap.order !== null
+            ? Number(roadmap.order)
+            : undefined
+      })
+    )
 
     const childrenWithRating: Product[] = []
     for (const child of children) {
@@ -695,7 +813,6 @@ export class ProductService {
         'average_rating'
       )
       .where('recommendedBy.id IN (:...productIds)', { productIds })
-      .andWhere('product.is_hidden = :isHidden', { isHidden: false })
       .take(10)
       .getRawAndEntities()
 
@@ -720,71 +837,37 @@ export class ProductService {
     return mappedEntities
   }
 
-  async findReplacementProducts(
-    categoryIds: number[],
-    lang: LANG,
-    take: number = 10
-  ): Promise<ProductWithoutRatings[]> {
-    if (!categoryIds.length) return []
-
-    const result = await this.productRepo
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category_id', 'category_id')
-      .leftJoinAndSelect('product.format_groups', 'format_groups')
-      .leftJoinAndSelect('product.images', 'images')
-      .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('category_id.translates', 'category_translates')
-      .addSelect(
-        (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
-        'average_rating'
-      )
-      .where('product.category_id IN (:...categoryIds)', { categoryIds })
-      .andWhere('product.is_hidden = :isHidden', { isHidden: false })
-      .take(take)
-      .getRawAndEntities()
-
-    const replacementProducts = result.entities.map((entity, index) => {
-      const raw = result.raw[index]
-      if (raw.average_rating !== undefined) {
-        entity.rating =
-          Math.round(parseFloat(raw.average_rating) * 10) / 10 || 0
-      }
-      return entity
-    })
-
-    const shuffledProducts = replacementProducts.sort(() => Math.random() - 0.5)
-
-    let mappedEntities = applyTranslations(shuffledProducts, lang)
-
-    mappedEntities = mappedEntities.map((product) => {
-      if (product.category_id && product.category_id.translates) {
-        product.category_id = applyTranslations([product.category_id], lang)[0]
-      }
-      return product
-    })
-
-    return mappedEntities
-  }
-
   async create(dto: ProductCreateDto): Promise<Product> {
-    const url = dto.url && String(dto.url).trim() !== '' ? dto.url : undefined
-    const productPayload: any = {
-      ...dto,
-      parent_id: dto.parent_id ?? undefined,
-      ...(url ? { url } : {})
+    const productPayload = {
+      ...dto
     }
 
     const sectionsIds = Array.isArray(dto.sections) ? dto.sections : undefined
     if (sectionsIds) delete productPayload.sections
 
-    const product = this.productRepo.create(productPayload)
+    const formatGroupIds: number[] | undefined =
+      Array.isArray(dto.format_group) && dto.format_group.length
+        ? dto.format_group
+        : undefined
+    if (formatGroupIds) delete productPayload.format_group
+
+    const product = this.productRepo.create(
+      productPayload as DeepPartial<Product>
+    )
 
     try {
-      const saved = (await this.productRepo.save(product as any)) as Product
+      const saved = await this.productRepo.save(product)
+
+      if (formatGroupIds && formatGroupIds.length) {
+        const formatGroups = await this.formatGroupRepo.findBy({
+          id: In(formatGroupIds)
+        })
+        if (formatGroups.length !== formatGroupIds.length) {
+          throw new BadRequestException('format_group is NOT_FOUND')
+        }
+        saved.format_groups = formatGroups
+        await this.productRepo.save(saved)
+      }
 
       if (sectionsIds && sectionsIds.length) {
         const sectionEntities = await this.sectionRepo.findBy({
@@ -807,28 +890,55 @@ export class ProductService {
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
     try {
-      const url = dto.url && String(dto.url).trim() !== '' ? dto.url : undefined
+      const sectionsIds = dto.sections !== undefined ? dto.sections : undefined
+      const formatGroupIds: number[] | undefined =
+        dto.format_group !== undefined && Array.isArray(dto.format_group)
+          ? dto.format_group
+          : undefined
 
-      const sectionsIds =
-        (dto as any).sections !== undefined ? (dto as any).sections : undefined
-      const updatePayload: any = {
-        ...dto,
-        parent_id: dto.parent_id ?? undefined,
-        ...(url ? { url } : {})
-      }
+      /* eslint-disable @typescript-eslint/no-unused-vars */
+      const { sections, format_group, ...rawUpdatePayload } =
+        dto as Partial<ProductUpdateDto>
 
-      if (sectionsIds !== undefined) delete updatePayload.sections
+      const updatePayload = rawUpdatePayload as Omit<
+        Partial<ProductUpdateDto>,
+        'sections' | 'format_group'
+      >
 
-      await this.productRepo.update({ id }, updatePayload)
+      await this.productRepo.update(
+        { id },
+        updatePayload as DeepPartial<Product>
+      )
 
       if (sectionsIds !== undefined) {
         const sectionEntities = sectionsIds?.length
           ? await this.sectionRepo.findBy({ id: In(sectionsIds) })
           : []
-        const existing = (await this.productRepo.findOne({
+
+        const existing = await this.productRepo.findOne({
           where: { id }
-        })) as Product
+        })
+
+        if (!existing) throw new BadRequestException('NOT_UPDATED')
+
         existing.sections = sectionEntities.length ? sectionEntities : []
+
+        await this.productRepo.save(existing)
+      }
+
+      if (formatGroupIds !== undefined) {
+        const existing = await this.productRepo.findOne({ where: { id } })
+        if (!existing) throw new BadRequestException('NOT_UPDATED')
+
+        const formatGroups = formatGroupIds.length
+          ? await this.formatGroupRepo.findBy({ id: In(formatGroupIds) })
+          : []
+
+        if (formatGroups.length !== (formatGroupIds || []).length) {
+          throw new BadRequestException('format_group is NOT_FOUND')
+        }
+
+        existing.format_groups = formatGroups.length ? formatGroups : []
         await this.productRepo.save(existing)
       }
 
@@ -984,7 +1094,6 @@ export class ProductService {
         await sharp(file.buffer).avif().toFile(outputFilePath)
 
         const body: ProductCreateImageDto = {
-          custom_id: '',
           name: fileName,
           path: `/uploads/product/${fileName}`,
           entity_id: entity_id
@@ -1090,9 +1199,8 @@ export class ProductService {
     try {
       return await this.productRepo
         .createQueryBuilder('product')
-        .select(['product.id', 'product.custom_id', 'product.title'])
+        .select(['product.id', 'product.title'])
         .where('LOWER(product.title) LIKE :q', { q: `%${q.toLowerCase()}%` })
-        .orWhere('product.custom_id LIKE :q2', { q2: `%${q}%` })
         .orderBy('product.created_at', 'DESC')
         .limit(20)
         .getMany()
@@ -1116,5 +1224,71 @@ export class ProductService {
     })
 
     return images
+  }
+
+  async updateRecommendedProducts(
+    id: number,
+    productIds: number[]
+  ): Promise<Product> {
+    const product = await this.productRepo.findOne({
+      where: { id },
+      relations: ['recommendedProducts']
+    })
+
+    if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    const recommended =
+      Array.isArray(productIds) && productIds.length
+        ? await this.productRepo.findBy({ id: In(productIds) })
+        : []
+
+    product.recommendedProducts = recommended
+
+    try {
+      await this.productRepo.save(product)
+    } catch (err) {
+      this.logger.error(`Error while updating recommended products \n ${err}`)
+      throw new BadRequestException('product is NOT_UPDATED')
+    }
+
+    const updated = await this.productRepo.findOne({
+      where: { id },
+      relations: [
+        'recommendedProducts',
+        'recommendedProducts.images',
+        'recommendedProducts.translates',
+        'recommendedProducts.category_id'
+      ]
+    })
+
+    return updated as Product
+  }
+
+  async getRecommendedOfProduct(id: number, lang: LANG): Promise<Product[]> {
+    const product = await this.productRepo.findOne({
+      where: { id },
+      relations: [
+        'recommendedProducts',
+        'recommendedProducts.images',
+        'recommendedProducts.translates',
+        'recommendedProducts.category_id',
+        'recommendedProducts.category_id.translates'
+      ]
+    })
+
+    if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    const recs = product.recommendedProducts || []
+
+    let mapped = applyTranslations(recs, lang)
+
+    mapped = mapped.map((p) => {
+      if (p.category_id && p.category_id.translates) {
+        p.category_id = applyTranslations([p.category_id], lang)[0]
+      }
+      return p
+    })
+
+    return mapped
   }
 }

@@ -6,10 +6,6 @@ import { Category } from './category.entity'
 export class CategoryTranslate {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   field: string
 

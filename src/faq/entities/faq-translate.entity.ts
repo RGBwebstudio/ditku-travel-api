@@ -6,10 +6,6 @@ import { Faq } from './faq.entity'
 export class FaqTranslate {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   field: string
 

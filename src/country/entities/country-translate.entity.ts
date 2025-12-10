@@ -6,10 +6,6 @@ import { Country } from './country.entity'
 export class CountryTranslate {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   field: string
 

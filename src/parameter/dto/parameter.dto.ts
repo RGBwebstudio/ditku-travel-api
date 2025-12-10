@@ -14,14 +14,9 @@ export class ParameterDto {
   @IsString()
   title: string
 
-  @ApiPropertyOptional({ example: '123' })
-  @IsString()
-  @IsOptional()
-  custom_id?: string
-
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     example: [1, 2],
-    description: 'Array of existing category IDs to attach' 
+    description: 'Array of existing category IDs to attach'
   })
   @IsArray()
   @IsOptional()

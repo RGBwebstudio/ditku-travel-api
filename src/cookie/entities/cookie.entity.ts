@@ -11,10 +11,6 @@ import { LANG } from 'src/common/enums/translation.enum'
 export class Cookie {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column({ type: 'jsonb', default: '{}' })
   structure: string
 

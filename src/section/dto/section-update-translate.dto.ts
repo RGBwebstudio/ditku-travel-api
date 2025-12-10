@@ -10,11 +10,6 @@ import { SectionTranslate } from '../entities/section-translate.entity'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 
 export class SectionUpdateTranslateDto {
-  @ApiPropertyOptional({ example: '123' })
-  @IsOptional()
-  @IsString()
-  custom_id?: string
-
   @ApiPropertyOptional({ example: 'title' })
   @IsOptional()
   @IsString()

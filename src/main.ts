@@ -70,8 +70,8 @@ async function bootstrap() {
   })
 
   const config = new DocumentBuilder()
-    .setTitle('Marka API')
-    .setDescription('The Marka API documentation')
+    .setTitle('Ditku travel API')
+    .setDescription('The Ditku travel API documentation')
     .setVersion('1.0')
     .addGlobalParameters({
       in: 'header',

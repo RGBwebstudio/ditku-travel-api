@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
   Index
 } from 'typeorm'
-import { Category } from 'src/category/entities/category.entity'
+import { PostCategory } from 'src/post-category/entities/post-category.entity'
 import { PostTranslate } from './post-translate.entity'
 import { PostImage } from './post-image.entity'
 
@@ -22,9 +22,6 @@ import { PostImage } from './post-image.entity'
 export class Post {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
 
   @Column({ default: false })
   is_hidden: boolean
@@ -56,11 +53,14 @@ export class Post {
   @Column({ type: 'smallint', default: 0 })
   order_in_product: number
 
-  @ManyToOne(() => Category, (category: Category) => category.id, {
+  @Column({ type: 'text', nullable: true })
+  content: string
+
+  @ManyToOne(() => PostCategory, (category: PostCategory) => category.id, {
     onDelete: 'RESTRICT'
   })
   @JoinColumn({ name: 'category_id' })
-  category_id: Category
+  category_id: PostCategory
 
   @OneToMany(
     () => PostTranslate,

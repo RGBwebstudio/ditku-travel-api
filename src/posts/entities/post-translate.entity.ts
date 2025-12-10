@@ -6,10 +6,6 @@ import { Post } from './post.entity'
 export class PostTranslate {
   @PrimaryGeneratedColumn()
   id: number
-
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column()
   field: string
 

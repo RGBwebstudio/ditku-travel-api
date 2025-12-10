@@ -13,8 +13,6 @@ export class ParameterCategoryCreateTranslateDto {
   @ApiPropertyOptional({ example: '123' })
   @IsString()
   @IsOptional()
-  custom_id: string
-
   @ApiProperty({ example: 'title' })
   @IsString()
   field: string

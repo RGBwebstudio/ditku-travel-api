@@ -12,9 +12,6 @@ export class Contacts {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ nullable: true })
-  custom_id: string
-
   @Column({ type: 'jsonb' })
   structure: string
 
