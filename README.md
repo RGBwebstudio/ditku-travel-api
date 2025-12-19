@@ -1,98 +1,138 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Ditku Travel API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Ditku Travel API предоставляет бэкенд-сервисы для приложения Ditku Travel. Он обрабатывает аутентификацию, управление пользователями, товарами, заказами и контентом.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Документация API
 
-## Description
+API задокументировано с использованием Swagger. После запуска приложения вы можете получить доступ к документации по адресу:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+**[http://localhost:4200/api](http://localhost:4200/api)**
 
-## Project setup
+(Замените `4200` на ваш настроенный `PORT`).
+
+Подробное описание эндпоинтов также доступно в:
+
+- [Client API (API_CLIENT.md)](./API_CLIENT.md)
+- [Admin API (API_ADMIN.md)](./API_ADMIN.md)
+
+## Руководство разработчика (Developer Guide)
+
+Подробное руководство по стандартам кодирования, архитектуре и рабочим процессам доступно в [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md).
+
+## Технологии
+
+- **Фреймворк**: [NestJS](https://nestjs.com/)
+- **Язык**: [TypeScript](https://www.typescriptlang.org/)
+- **База данных**: [PostgreSQL](https://www.postgresql.org/)
+- **ORM**: [TypeORM](https://typeorm.io/)
+- **Документация API**: [Swagger](https://swagger.io/)
+- **Очереди**: [BullMQ](https://docs.bullmq.io/)
+
+## Предварительные требования
+
+Убедитесь, что на вашем локальном компьютере установлены:
+
+- **Node.js** (v18 или выше)
+- **npm** (или yarn/pnpm)
+- **PostgreSQL** база данных
+
+## Структура проекта
+
+Код проекта организован в директории `src` со следующей структурой:
+
+- **`src/core`**: Содержит основную логику приложения, включая корневой `AppModule`, `AppController`, `AppService` и модуль `Auth`.
+- **`src/modules`**: Содержит все функциональные модули (например, `user`, `product`, `order` и т.д.). Каждый модуль содержит свой контроллер, сервис, сущности и DTO.
+- **`src/common`**: Содержит общие утилиты, DTO, перечисления (enums), перехватчики (interceptors), пайпы (pipes) и типы, используемые во всем приложении.
+- **`src/main.ts`**: Точка входа в приложение.
+
+## Установка
+
+1.  Клонируйте репозиторий:
+
+    ```bash
+    git clone <repository-url>
+    cd api
+    ```
+
+2.  Установите зависимости:
+    ```bash
+    npm install
+    ```
+
+## Настройка
+
+1.  Создайте файл `.env` в корневой директории. Вы можете использовать `.env.example` в качестве шаблона.
+2.  Заполните файл `.env` вашими значениями конфигурации:
+
+    ```env
+    # Порт приложения
+    PORT=4200
+
+    # JWT Аутентификация
+    JWT_SECRET=ваш_jwt_secret
+
+    # Сессии
+    SESSION_SECRET=ваш_session_secret
+
+    # Настройки базы данных
+    DB_HOSTING=localhost
+    DB_LOGIN=postgres
+    DB_PASSWORD=postgres
+    DB_POST=5432
+    DB_NAME=ditku_travel_db
+    DB_CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/ditku_travel_db
+
+    # Настройки почты
+    MAIL_HOST=smtp.example.com
+    MAIL_LOGIN=ваш_email_login
+    MAIL_PASSWORD=ваш_email_password
+    MAIL_PORT=465
+    MAIL_SECURE=true
+    MAIL_FROM='"Ditku Travel" <noreply@ditkutravel.com>'
+
+    # S3 Хранилище (если применимо)
+    S3_ENDPOINT=
+    S3_REGION=
+    S3_BUCKET=
+    S3_ACCESS_KEY_ID=
+    S3_SECRET_ACCESS_KEY=
+    S3_FORCE_PATH_STYLE=
+
+    # CORS
+    ORIGIN_ALLOWLIST=http://localhost:3000
+
+    # Ключи сторонних сервисов
+    TURBO_SMS_API_KEY=
+    ```
+
+## Запуск приложения
+
+### Разработка
+
+Чтобы запустить приложение в режиме разработки с отслеживанием изменений:
 
 ```bash
-$ npm install
+npm run start:dev
 ```
 
-## Compile and run the project
+API будет доступно по адресу `http://localhost:4200`.
+
+### Продакшн
+
+Чтобы собрать и запустить приложение в режиме продакшн:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run build
+npm run start:prod
 ```
 
-## Run tests
+## Скрипты
 
-```bash
-# unit tests
-$ npm run test
+- `npm run build`: Компилирует приложение.
+- `npm run start`: Запускает приложение.
+- `npm run start:dev`: Запускает приложение в режиме отслеживания изменений (watch mode).
+- `npm run start:prod`: Запускает скомпилированное приложение.
+- `npm run lint`: Проверяет код линтером.
+- `npm run test`: Запускает юнит-тесты.
+- `npm run test:e2e`: Запускает end-to-end тесты.
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
