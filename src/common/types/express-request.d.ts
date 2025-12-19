@@ -1,7 +1,7 @@
-import { User } from 'src/user/entities/user.entity'
+import { User } from 'src/modules/user/entities/user.entity'
 import { LANG } from '../enums/translation.enum'
 import { Session } from 'express-session'
-import { AuthenticatedRequest } from 'src/user/types/auth-request.types'
+import { AuthenticatedRequest } from 'src/modules/user/types/auth-request.types'
 
 declare module 'express' {
   interface Request {

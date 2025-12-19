@@ -1,4 +1,4 @@
-import { Product } from 'src/product/entities/product.entity'
+import { Product } from 'src/modules/product/entities/product.entity'
 
 export type ProductWithoutRatings = Omit<Product, 'ratings'>
 

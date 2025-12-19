@@ -10,7 +10,7 @@ import * as bodyParser from 'body-parser'
 import { useContainer } from 'class-validator'
 import * as session from 'express-session'
 import * as pgSession from 'connect-pg-simple'
-import { AppModule } from './app.module'
+import { AppModule } from './core/app.module'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { LanguageInterceptor } from './common/interceptors/language.interceptor'
 
