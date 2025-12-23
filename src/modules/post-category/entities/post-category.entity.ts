@@ -1,12 +1,5 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  OneToMany,
-  CreateDateColumn,
-  UpdateDateColumn,
-  Index
-} from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm'
+
 import { PostCategoryTranslate } from './post-category-translate.entity'
 
 @Entity()

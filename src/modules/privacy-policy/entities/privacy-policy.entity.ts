@@ -1,11 +1,5 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from 'typeorm'
 import { LANG } from 'src/common/enums/translation.enum'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 @Entity()
 export class PrivacyPolicy {

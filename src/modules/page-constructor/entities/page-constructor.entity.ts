@@ -1,15 +1,9 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from 'typeorm'
 import { LANG } from 'src/common/enums/translation.enum'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 export enum PageType {
   FOR_PARENT = 'for-parent',
-  FOR_TEACHERS = 'for-teachers'
+  FOR_TEACHERS = 'for-teachers',
 }
 
 @Entity({ name: 'page_constructor' })

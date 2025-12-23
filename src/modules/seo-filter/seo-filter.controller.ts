@@ -1,19 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-  UseGuards
-} from '@nestjs/common'
-import { SeoFilterService } from './seo-filter.service'
+import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common'
+import { ApiTags, ApiOperation } from '@nestjs/swagger'
+
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { SeoFilterCreateDto } from './dto/seo-filter-create.dto'
 import { SeoFilterUpdateDto } from './dto/seo-filter-update.dto'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
-import { ApiTags, ApiOperation } from '@nestjs/swagger'
+import { SeoFilterService } from './seo-filter.service'
 
 @ApiTags('SEO-фільтри')
 @Controller('seo-filter')
@@ -61,10 +53,7 @@ export class SeoFilterController {
   @Put(':id')
   @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Оновити seo-фільтр' })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: SeoFilterUpdateDto
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: SeoFilterUpdateDto) {
     return this.seoFilterService.update(id, dto)
   }
 

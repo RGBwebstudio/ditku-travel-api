@@ -1,17 +1,14 @@
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  NotFoundException
-} from '@nestjs/common'
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
 import { Repository } from 'typeorm'
-import { Section } from './entities/section.entity'
-import { SectionTranslate } from './entities/section-translate.entity'
-import { SectionCreateDto } from './dto/section-create.dto'
-import { SectionUpdateDto } from './dto/section-update.dto'
+
 import { SectionCreateTranslateDto } from './dto/section-create-translate.dto'
+import { SectionCreateDto } from './dto/section-create.dto'
 import { SectionUpdateTranslateDto } from './dto/section-update-translate.dto'
+import { SectionUpdateDto } from './dto/section-update.dto'
+import { SectionTranslate } from './entities/section-translate.entity'
+import { Section } from './entities/section.entity'
 
 @Injectable()
 export class SectionService {
@@ -28,7 +25,7 @@ export class SectionService {
     const [entities, count] = await this.repo.findAndCount({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
     return { entities, count }
   }
@@ -36,7 +33,7 @@ export class SectionService {
   async findOne(id: number): Promise<Section | null> {
     const entity = await this.repo.findOne({
       where: { id },
-      relations: ['translates']
+      relations: ['translates'],
     })
     if (!entity) throw new NotFoundException('section is NOT_FOUND')
     return entity
@@ -69,8 +66,7 @@ export class SectionService {
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('section is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('section is NOT_FOUND')
     } catch (err) {
       this.logger.error(`Error while deleting section: ${err}`)
       throw err
@@ -79,9 +75,7 @@ export class SectionService {
     return { message: 'SUCCESS' }
   }
 
-  async createTranslates(
-    dto: SectionCreateTranslateDto[]
-  ): Promise<SectionTranslate[] | null> {
+  async createTranslates(dto: SectionCreateTranslateDto[]): Promise<SectionTranslate[] | null> {
     if (dto?.length) {
       const results: SectionTranslate[] = []
       for (const t of dto) {
@@ -94,18 +88,15 @@ export class SectionService {
     return null
   }
 
-  async updateTranslates(
-    dto: SectionUpdateTranslateDto[]
-  ): Promise<SectionTranslate[] | null> {
+  async updateTranslates(dto: SectionUpdateTranslateDto[]): Promise<SectionTranslate[] | null> {
     const results: SectionTranslate[] = []
     for (const translate of dto) {
       const result = await this.translateRepo.update(translate.id, {
-        ...translate
+        ...translate,
       })
-      if (result.affected === 0)
-        throw new NotFoundException('section translate is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('section translate is NOT_FOUND')
       const updated = await this.translateRepo.findOne({
-        where: { id: translate.id }
+        where: { id: translate.id },
       })
       if (updated) results.push(updated)
     }
@@ -114,8 +105,7 @@ export class SectionService {
 
   async deleteTranslate(id: number): Promise<{ message: string }> {
     const result = await this.translateRepo.delete(id)
-    if (result.affected === 0)
-      throw new NotFoundException('section translate is NOT_FOUND')
+    if (result.affected === 0) throw new NotFoundException('section translate is NOT_FOUND')
     return { message: 'OK' }
   }
 }

@@ -1,4 +1,5 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common'
+
 import { UploadedFile } from '../types/uploaded-file.types'
 
 @Injectable()
@@ -17,9 +18,7 @@ export class FilesSizeValidationPipe implements PipeTransform {
       }
 
       if (value.size > this.limit) {
-        throw new BadRequestException(
-          'File size exceeds the limit of 5MB LIMIT_OF_SIZE '
-        )
+        throw new BadRequestException('File size exceeds the limit of 5MB LIMIT_OF_SIZE ')
       }
 
       if (!this.acceptableFormats.includes(value.mimetype)) {

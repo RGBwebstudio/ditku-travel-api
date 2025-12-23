@@ -1,21 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
-  ParseIntPipe,
-  Body,
-  Query,
-  UseGuards
-} from '@nestjs/common'
-import { FormatGroupService } from './format-group.service'
+import { Controller, Get, Post, Put, Delete, Param, ParseIntPipe, Body, Query, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { FormatGroupCreateDto } from './dto/format-group-create.dto'
 import { FormatGroupUpdateDto } from './dto/format-group-update.dto'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { FormatGroupService } from './format-group.service'
 
 @ApiTags('Формат груп')
 @Controller('format-group')
@@ -26,7 +17,7 @@ export class FormatGroupController {
   @ApiOperation({ summary: 'Отримати частину формат груп' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   find(@Query() { take, skip }: TakeAndSkipDto) {
     return this.service.find(take, skip)
@@ -43,7 +34,7 @@ export class FormatGroupController {
   @ApiOperation({ summary: 'Отримати всі формат групи' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано всі сутності'
+    description: 'SUCCESS - Успішно отримано всі сутності',
   })
   findAll() {
     return this.service.findAll()
@@ -53,7 +44,7 @@ export class FormatGroupController {
   @ApiOperation({ summary: 'Отримати формат групу' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано сутність'
+    description: 'SUCCESS - Успішно отримано сутність',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Cутність не знайдено' })
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -65,11 +56,11 @@ export class FormatGroupController {
   @ApiOperation({ summary: 'Створити формат групу' })
   @ApiResponse({
     status: 201,
-    description: 'CREATED - Сутність успішно створено'
+    description: 'CREATED - Сутність успішно створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Cутність не створено'
+    description: 'NOT_CREATED - Cутність не створено',
   })
   create(@Body() dto: FormatGroupCreateDto) {
     return this.service.create(dto)
@@ -80,17 +71,14 @@ export class FormatGroupController {
   @ApiOperation({ summary: 'Оновити формат групу' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_UPDATED - Cутність не оновлено'
+    description: 'NOT_UPDATED - Cутність не оновлено',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Cутність не знайдено' })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: FormatGroupUpdateDto
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: FormatGroupUpdateDto) {
     return this.service.update(id, dto)
   }
 
@@ -99,7 +87,7 @@ export class FormatGroupController {
   @ApiOperation({ summary: 'Видалити формат групу' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Cутність не знайдено' })
   delete(@Param('id', ParseIntPipe) id: number) {

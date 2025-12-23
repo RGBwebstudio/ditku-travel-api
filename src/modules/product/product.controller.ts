@@ -13,32 +13,27 @@ import {
   Req,
   UseGuards,
   UploadedFiles,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common'
-import { ProductService } from './product.service'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { ProductCreateDto } from './dto/product-create.dto'
-import { ProductUpdateDto } from './dto/product-update.dto'
-import { ProductParametersDto } from './dto/product-parameters.dto'
-import { ProductFilterDto } from './dto/product-filter.dto'
-import {
-  ApiBody,
-  ApiConsumes,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags
-} from '@nestjs/swagger'
-import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
-import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
-import { ProductRecommendedDto } from './dto/product-recommended.dto'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
-import { Product } from './entities/product.entity'
-import { Request } from 'express'
-import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
-import { ProductUploadImageDto } from './dto/product-upload-image.dto'
-import { ProductDeleteImagesDto } from './dto/product-delete-images.dto'
 import { FilesInterceptor } from '@nestjs/platform-express'
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
+import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
+import { ProductCreateDto } from './dto/product-create.dto'
+import { ProductDeleteImagesDto } from './dto/product-delete-images.dto'
+import { ProductFilterDto } from './dto/product-filter.dto'
+import { ProductParametersDto } from './dto/product-parameters.dto'
+import { ProductRecommendedDto } from './dto/product-recommended.dto'
+import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
+import { ProductUpdateDto } from './dto/product-update.dto'
+import { ProductUploadImageDto } from './dto/product-upload-image.dto'
+import { Product } from './entities/product.entity'
+import { ProductService } from './product.service'
 
 @ApiTags('Товари')
 @Controller('product')
@@ -48,14 +43,14 @@ export class ProductController {
   @Get('search')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано cутність'
+    description: 'SUCCESS - Успішно отримано cутність',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({
-    summary: 'Пошук товарів (id, title) по q, максимум 20)'
+    summary: 'Пошук товарів (id, title) по q, максимум 20)',
   })
   async search(@Query('q') q: string) {
     return await this.productService.searchShort(q)
@@ -71,11 +66,11 @@ export class ProductController {
   @Get('viewed/list')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано cутність'
+    description: 'SUCCESS - Успішно отримано cутність',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Переглянуті товари' })
   async getViewedProducts(@Req() req: Request): Promise<Product[]> {
@@ -83,10 +78,7 @@ export class ProductController {
 
     if (!ids.length) return []
 
-    const viewedProducts = await this.productService.findMany(
-      ids.map(Number),
-      req.lang
-    )
+    const viewedProducts = await this.productService.findMany(ids.map(Number), req.lang)
 
     return viewedProducts
   }
@@ -94,21 +86,11 @@ export class ProductController {
   @Get('filter')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано фільтровані сутності'
+    description: 'SUCCESS - Успішно отримано фільтровані сутності',
   })
   @ApiOperation({ summary: 'Отримати список фільтрованих товарів' })
   filter(@Query() query: ProductFilterDto, @Req() req: Request) {
-    const {
-      categories,
-      parameters,
-      sections,
-      take,
-      skip,
-      start_point,
-      end_point,
-      startAt,
-      endAt
-    } = query
+    const { categories, parameters, sections, take, skip, start_point, end_point, startAt, endAt } = query
 
     return this.productService.filter(
       categories,
@@ -127,7 +109,7 @@ export class ProductController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати частину товарів' })
   find(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
@@ -137,11 +119,11 @@ export class ProductController {
   @Get(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано cутність'
+    description: 'SUCCESS - Успішно отримано cутність',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Отримати товар' })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
@@ -151,31 +133,25 @@ export class ProductController {
   @Get(':id/recommendations')
   @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Отримати рекомендовані товари для товару' })
-  async getRecommendations(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: Request
-  ) {
+  async getRecommendations(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.productService.getRecommendedOfProduct(id, req.lang)
   }
 
   @Get('category/:categoryId/products')
   @ApiOperation({ summary: 'Отримати товари по категорії (для адмінки)' })
   @ApiResponse({ status: 200, description: 'SUCCESS - Знайдено товари' })
-  async getByCategory(
-    @Param('categoryId', ParseIntPipe) categoryId: number,
-    @Req() req: Request
-  ) {
+  async getByCategory(@Param('categoryId', ParseIntPipe) categoryId: number, @Req() req: Request) {
     return this.productService.findByCategory(categoryId, req.lang)
   }
 
   @Get('url/:url')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано cутність'
+    description: 'SUCCESS - Успішно отримано cутність',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Отримати товар по url' })
   findOneByUrl(@Param('url') url: string, @Req() req: Request) {
@@ -185,15 +161,15 @@ export class ProductController {
   @Post()
   @UseGuards(AuthAdminGuard)
   @ApiOperation({
-    summary: 'Cтворити товар'
+    summary: 'Cтворити товар',
   })
   @ApiResponse({
     status: 201,
-    description: 'CREATED - Сутність успішно створено'
+    description: 'CREATED - Сутність успішно створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Cутність не створено'
+    description: 'NOT_CREATED - Cутність не створено',
   })
   create(@Body() dto: ProductCreateDto) {
     return this.productService.create(dto)
@@ -202,15 +178,15 @@ export class ProductController {
   @Put(':id')
   @UseGuards(AuthAdminGuard)
   @ApiOperation({
-    summary: 'Оновити товар'
+    summary: 'Оновити товар',
   })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_UPDATED - Cутність не оновлено'
+    description: 'NOT_UPDATED - Cутність не оновлено',
   })
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: ProductUpdateDto) {
     return this.productService.update(id, dto)
@@ -220,18 +196,18 @@ export class ProductController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiResponse({
     status: 400,
-    description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена'
+    description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена',
   })
   @ApiOperation({
-    summary: 'Видалити товар'
+    summary: 'Видалити товар',
   })
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.productService.delete(id)
@@ -240,29 +216,26 @@ export class ProductController {
   @Patch('parameters/:id')
   @UseGuards(AuthAdminGuard)
   @ApiOperation({
-    summary: 'Оновити параметри товару'
+    summary: 'Оновити параметри товару',
   })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_UPDATED - Cутність не оновлено'
+    description: 'NOT_UPDATED - Cутність не оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiBody({
     description: 'Масив з id параметрів',
     type: ProductParametersDto,
-    required: true
+    required: true,
   })
-  updateParameters(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: ProductParametersDto
-  ) {
+  updateParameters(@Param('id', ParseIntPipe) id: number, @Body() dto: ProductParametersDto) {
     return this.productService.updateParameters(id, dto)
   }
 
@@ -271,12 +244,9 @@ export class ProductController {
   @ApiOperation({ summary: 'Оновити список рекомендованих товарів для товару' })
   @ApiBody({
     description: 'Масив id рекомендованих товарів',
-    type: ProductRecommendedDto
+    type: ProductRecommendedDto,
   })
-  async updateRecommendations(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: ProductRecommendedDto
-  ) {
+  async updateRecommendations(@Param('id', ParseIntPipe) id: number, @Body() dto: ProductRecommendedDto) {
     const ids = Array.isArray(dto?.productIds) ? dto.productIds : []
     return this.productService.updateRecommendedProducts(id, ids)
   }
@@ -285,14 +255,14 @@ export class ProductController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутності успішно створено'
+    description: 'SUCCESS - Сутності успішно створено',
   })
   @ApiOperation({ summary: 'Отримати всі переклади товарів' })
   @ApiBody({
     description: 'Масив перекладів',
     type: ProductCreateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   createTranslates(@Body() dto: ProductCreateTranslateDto[]) {
     return this.productService.createTranslates(dto)
@@ -302,17 +272,17 @@ export class ProductController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутності успішно оновлено'
+    description: 'SUCCESS - Сутності успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiBody({
     description: 'Масив перекладів',
     type: ProductUpdateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   @ApiOperation({ summary: 'Оновити переклади товару' })
   updateTranslates(@Body() dto: ProductUpdateTranslateDto[]) {
@@ -323,11 +293,11 @@ export class ProductController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити переклади товару' })
   deleteTranslate(@Param('id', ParseIntPipe) id: number) {
@@ -339,22 +309,21 @@ export class ProductController {
   @UseInterceptors(FilesInterceptor('files'))
   @ApiResponse({
     status: 201,
-    description:
-      "SUCCESS - Сутність успішно завантажено і прикріплено до об'єкту"
+    description: "SUCCESS - Сутність успішно завантажено і прикріплено до об'єкту",
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Сутність не створено'
+    description: 'NOT_CREATED - Сутність не створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_UPLOADED - Сутність не завантажено'
+    description: 'NOT_UPLOADED - Сутність не завантажено',
   })
   @ApiOperation({ summary: 'Завантажити зображення товару' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Завантаження фото товару',
-    type: ProductUploadImageDto
+    type: ProductUploadImageDto,
   })
   @ApiBody({
     description: 'Завантаження фото товару',
@@ -365,17 +334,17 @@ export class ProductController {
           type: 'array',
           items: {
             type: 'string',
-            format: 'binary'
-          }
-        }
-      }
-    }
+            format: 'binary',
+          },
+        },
+      },
+    },
   })
   @ApiParam({
     name: 'id',
     required: true,
     type: Number,
-    description: 'Id категорії'
+    description: 'Id категорії',
   })
   uploadFile(
     @UploadedFiles(new FilesSizeValidationPipe()) files: Express.Multer.File[],
@@ -388,11 +357,11 @@ export class ProductController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Cутність успішно видалено'
+    description: 'SUCCESS - Cутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiOperation({ summary: 'Видалити зображення товару' })
   deleteEntityImage(@Param('id', ParseIntPipe) id: number) {
@@ -410,11 +379,11 @@ export class ProductController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Images successfully deleted'
+    description: 'SUCCESS - Images successfully deleted',
   })
   @ApiResponse({
     status: 400,
-    description: 'BAD_REQUEST - Invalid payload'
+    description: 'BAD_REQUEST - Invalid payload',
   })
   @ApiOperation({ summary: 'Масове видалення фото товарів по масиву id' })
   deleteEntityImages(@Body() body: ProductDeleteImagesDto) {
@@ -426,11 +395,11 @@ export class ProductController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Images successfully deleted for product'
+    description: 'SUCCESS - Images successfully deleted for product',
   })
   @ApiResponse({
     status: 400,
-    description: 'BAD_REQUEST - Invalid payload or id'
+    description: 'BAD_REQUEST - Invalid payload or id',
   })
   deleteEntityImagesByProduct(@Body() body: ProductDeleteImagesDto) {
     const ids = body?.ids || []

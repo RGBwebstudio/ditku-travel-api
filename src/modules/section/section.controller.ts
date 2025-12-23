@@ -1,21 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-  UseGuards
-} from '@nestjs/common'
-import { SectionService } from './section.service'
-import { SectionCreateDto } from './dto/section-create.dto'
-import { SectionUpdateDto } from './dto/section-update.dto'
-import { SectionCreateTranslateDto } from './dto/section-create-translate.dto'
-import { SectionUpdateTranslateDto } from './dto/section-update-translate.dto'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger'
+
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
+import { SectionCreateTranslateDto } from './dto/section-create-translate.dto'
+import { SectionCreateDto } from './dto/section-create.dto'
+import { SectionUpdateTranslateDto } from './dto/section-update-translate.dto'
+import { SectionUpdateDto } from './dto/section-update.dto'
+import { SectionService } from './section.service'
 
 @ApiTags('Секції')
 @Controller('section')
@@ -51,10 +43,7 @@ export class SectionController {
   @Put(':id')
   @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Оновити секцію' })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: SectionUpdateDto
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: SectionUpdateDto) {
     return this.sectionService.update(id, dto)
   }
 

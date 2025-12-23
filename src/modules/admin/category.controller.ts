@@ -1,9 +1,10 @@
 import { Controller, UseGuards, Get, Query, Req } from '@nestjs/common'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 import { CategoryController } from 'src/modules/category/category.controller'
 import { CategoryService } from 'src/modules/category/category.service'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { Request } from 'express'
 
 @UseGuards(AuthAdminGuard)
 @Controller('admin/category')

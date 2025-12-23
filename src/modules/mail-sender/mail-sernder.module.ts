@@ -1,11 +1,14 @@
+import * as path from 'path'
+
 import { Module } from '@nestjs/common'
-import { MailSenderController } from './mail-sender.controller'
-import { MailSenderService } from './mail-sender.service'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+
 import { MailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
-import * as path from 'path'
 import { MailLayoutModule } from 'src/modules/mail-layout/mail-layout.module'
-import { ConfigModule, ConfigService } from '@nestjs/config'
+
+import { MailSenderController } from './mail-sender.controller'
+import { MailSenderService } from './mail-sender.service'
 
 @Module({
   imports: [
@@ -20,24 +23,24 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
           secure: configService.get('MAIL_SECURE'),
           auth: {
             user: configService.get('MAIL_LOGIN'),
-            pass: configService.get('MAIL_PASSWORD')
-          }
+            pass: configService.get('MAIL_PASSWORD'),
+          },
         },
         defaults: {
-          from: configService.get('MAIL_FROM')
+          from: configService.get('MAIL_FROM'),
         },
         template: {
           dir: path.join(__dirname + '/templates'),
           adapter: new HandlebarsAdapter(),
-          options: { strict: true }
-        }
-      })
+          options: { strict: true },
+        },
+      }),
     }),
 
-    MailLayoutModule
+    MailLayoutModule,
   ],
   providers: [MailSenderService],
   controllers: [MailSenderController],
-  exports: [MailSenderService]
+  exports: [MailSenderService],
 })
 export class MailSenderModule {}

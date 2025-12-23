@@ -1,3 +1,5 @@
+import { Category } from 'src/modules/category/entities/category.entity'
+import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,10 +9,8 @@ import {
   JoinColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm'
-import { Category } from 'src/modules/category/entities/category.entity'
-import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 
 @Entity()
 export class Menu {
@@ -19,18 +19,18 @@ export class Menu {
 
   @ManyToOne(() => Category, (category) => category.id, {
     nullable: true,
-    onDelete: 'SET NULL'
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category | null
 
   @ManyToMany(() => SeoFilter, (seoFilter) => seoFilter.menus, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @JoinTable({
     name: 'menu_seo_filter',
     joinColumn: { name: 'menu_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
   })
   seo_filters: SeoFilter[]
 

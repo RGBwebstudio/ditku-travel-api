@@ -1,14 +1,11 @@
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  NotFoundException
-} from '@nestjs/common'
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
 import { Repository } from 'typeorm'
-import { Promocode } from './entities/promocode.entity'
+
 import { CreatePromocodeDto } from './dto/create-promocode.dto'
 import { UpdatePromocodeDto } from './dto/update-promocode.dto'
+import { Promocode } from './entities/promocode.entity'
 
 @Injectable()
 export class PromocodeService {
@@ -29,14 +26,11 @@ export class PromocodeService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: Promocode[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: Promocode[]; count: number }> {
     const entities = await this.repo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
     const count = await this.repo.count()
     return { entities, count }
@@ -68,8 +62,7 @@ export class PromocodeService {
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('promocode is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('promocode is NOT_FOUND')
     } catch (err) {
       this.logger.error(`Error while deleting promocode: ${err}`)
       throw err

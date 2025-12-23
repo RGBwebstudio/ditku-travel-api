@@ -1,23 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  Req,
-  UseGuards
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Req, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { ContactsService } from './contacts.service'
 import { CreateContactsDto } from './dto/create-contacts.dto'
 import { UpdateContactsDto } from './dto/update-contacts.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { Request } from 'express'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 @ApiTags('Контакти')
 @Controller('contacts')
@@ -27,7 +17,7 @@ export class ContactsController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати всі контакти' })
   findAll(@Query() { take, skip }: TakeAndSkipDto) {
@@ -37,11 +27,11 @@ export class ContactsController {
   @Get(':lang')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Отримати контент контактів' })
   findOne(@Req() req: Request) {
@@ -52,11 +42,11 @@ export class ContactsController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутність успішно створено'
+    description: 'SUCCESS - Сутність успішно створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Cутність не створено'
+    description: 'NOT_CREATED - Cутність не створено',
   })
   @ApiOperation({ summary: 'Створення контенту контактів' })
   create(@Body() createAboutUsDto: CreateContactsDto) {
@@ -67,11 +57,11 @@ export class ContactsController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити контент контактів' })
   update(@Body() updateAboutUsDto: UpdateContactsDto) {
@@ -82,15 +72,15 @@ export class ContactsController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiResponse({
     status: 400,
-    description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена'
+    description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена',
   })
   @ApiOperation({ summary: 'Видалити контент контактів' })
   delete(@Param('id', ParseIntPipe) id: number) {

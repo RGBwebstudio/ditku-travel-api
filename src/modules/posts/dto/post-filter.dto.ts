@@ -1,6 +1,7 @@
-import { IsOptional, IsString, IsInt, IsBoolean } from 'class-validator'
 import { ApiPropertyOptional } from '@nestjs/swagger'
+
 import { Type } from 'class-transformer'
+import { IsOptional, IsString, IsInt, IsBoolean } from 'class-validator'
 
 export class PostFilterDto {
   @ApiPropertyOptional({ example: 1 })

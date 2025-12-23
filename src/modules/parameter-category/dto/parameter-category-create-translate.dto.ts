@@ -1,13 +1,9 @@
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsString
-} from 'class-validator'
-import { LANG } from 'src/common/enums/translation.enum'
-import { ParameterCategory } from '../entities/parameter-category.entity'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
+import { LANG } from 'src/common/enums/translation.enum'
+
+import { ParameterCategory } from '../entities/parameter-category.entity'
 
 export class ParameterCategoryCreateTranslateDto {
   @ApiPropertyOptional({ example: '123' })

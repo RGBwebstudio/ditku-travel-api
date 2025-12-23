@@ -1,16 +1,13 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger
-} from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { Rating } from './entities/rating.entity'
-import { RatingCreateDto } from './dto/rating-create.dto'
-import { RatingUpdateDto } from './dto/rating-update.dto'
+
 import { LANG } from 'src/common/enums/translation.enum'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { Repository } from 'typeorm'
+
+import { RatingCreateDto } from './dto/rating-create.dto'
+import { RatingUpdateDto } from './dto/rating-update.dto'
+import { Rating } from './entities/rating.entity'
 
 @Injectable()
 export class RatingService {
@@ -23,7 +20,7 @@ export class RatingService {
 
   async findOne(id: number, lang: LANG): Promise<Rating | null> {
     const entity = await this.ratingRepo.findOne({
-      where: { id }
+      where: { id },
     })
 
     if (!entity) throw new NotFoundException('rating is NOT_FOUND')
@@ -34,14 +31,13 @@ export class RatingService {
   }
 
   async setRating(dto: RatingCreateDto): Promise<Rating> {
-    const productId =
-      typeof dto.product_id === 'number' ? dto.product_id : dto.product_id.id
+    const productId = typeof dto.product_id === 'number' ? dto.product_id : dto.product_id.id
 
     const data = this.ratingRepo.create({
       name: dto.name,
       review: dto.review,
       rating: String(dto.rating),
-      product_id: { id: productId }
+      product_id: { id: productId },
     })
 
     try {
@@ -54,7 +50,7 @@ export class RatingService {
 
   async findAllList(lang: LANG): Promise<{ entities: Rating[] }> {
     const entities = await this.ratingRepo.find({
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
 
     const mappedEntities = applyTranslations(entities, lang)
@@ -62,15 +58,11 @@ export class RatingService {
     return { entities: mappedEntities }
   }
 
-  async findAll(
-    take: number,
-    skip: number,
-    lang: LANG
-  ): Promise<{ entities: Rating[]; count: number }> {
+  async findAll(take: number, skip: number, lang: LANG): Promise<{ entities: Rating[]; count: number }> {
     const entities = await this.ratingRepo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
 
     const mappedEntities = applyTranslations(entities, lang)
@@ -86,11 +78,10 @@ export class RatingService {
 
     const result = await this.ratingRepo.update(id, payload)
 
-    if (result.affected === 0)
-      throw new NotFoundException('rating is NOT_FOUND')
+    if (result.affected === 0) throw new NotFoundException('rating is NOT_FOUND')
 
     const updatedCategory = await this.ratingRepo.findOne({
-      where: { id }
+      where: { id },
     })
 
     return updatedCategory as Rating
@@ -104,27 +95,24 @@ export class RatingService {
     const ratings = await this.ratingRepo.find({
       where: { product_id: { id: productId } },
       relations: ['product_id'],
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
 
     if (!ratings || ratings.length === 0) {
       return {
         ratings: [],
         averageRating: 0,
-        totalRatings: 0
+        totalRatings: 0,
       }
     }
 
-    const totalRating = ratings.reduce(
-      (sum: number, rating: Rating) => sum + Number(rating.rating),
-      0
-    )
+    const totalRating = ratings.reduce((sum: number, rating: Rating) => sum + Number(rating.rating), 0)
     const averageRating = Math.round((totalRating / ratings.length) * 10) / 10
 
     return {
       ratings,
       averageRating,
-      totalRatings: ratings.length
+      totalRatings: ratings.length,
     }
   }
 

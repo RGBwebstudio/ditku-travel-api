@@ -1,7 +1,8 @@
 import { Controller, UseGuards } from '@nestjs/common'
+
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 import { ContactsController } from 'src/modules/сontacts/contacts.controller'
 import { ContactsService } from 'src/modules/сontacts/contacts.service'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 @UseGuards(AuthAdminGuard)
 @Controller('admin/contacts')

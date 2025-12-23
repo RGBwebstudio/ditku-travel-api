@@ -1,11 +1,6 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-  Logger
-} from '@nestjs/common'
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+
 import { Request } from 'express'
 
 @Injectable()
@@ -22,11 +17,10 @@ export class AuthAdminGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET
+        secret: process.env.JWT_SECRET,
       })
 
-      if (payload.role !== 'admin')
-        throw new UnauthorizedException('NOT_AUTHORIZED')
+      if (payload.role !== 'admin') throw new UnauthorizedException('NOT_AUTHORIZED')
 
       request['user'] = payload
     } catch {

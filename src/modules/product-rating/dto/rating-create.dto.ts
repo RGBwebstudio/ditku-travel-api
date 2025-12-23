@@ -1,11 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import {
-  IsInt,
-  IsOptional,
-  IsString,
-  Validate,
-  IsNumber
-} from 'class-validator'
+
+import { IsInt, IsOptional, IsString, Validate, IsNumber } from 'class-validator'
 import { IsExist } from 'src/common/validators/isExist.validator'
 import { Product } from 'src/modules/product/entities/product.entity'
 

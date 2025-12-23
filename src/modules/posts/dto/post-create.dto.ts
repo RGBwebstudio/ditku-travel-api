@@ -1,5 +1,6 @@
-import { IsBoolean, IsString, IsInt, Min, IsOptional } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsBoolean, IsString, IsInt, Min, IsOptional } from 'class-validator'
 import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
 
 export class PostCreateDto {

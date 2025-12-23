@@ -5,12 +5,12 @@ export enum OrderStatus {
   PACKING = 'packing',
   ON_DELIVERY = 'on_delivery',
   REJECTED = 'rejected',
-  SUCCESS = 'success'
+  SUCCESS = 'success',
 }
 
 export enum PaymentType {
   ONLINE = 'online',
   CREDIT_CARD = 'credit_card',
   CASH = 'cash',
-  BY_REQUISITES = 'by_requisites'
+  BY_REQUISITES = 'by_requisites',
 }

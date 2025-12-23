@@ -1,11 +1,5 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  CreateDateColumn,
-  UpdateDateColumn
-} from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm'
+
 import { VideoCategory } from './video-category.entity'
 
 @Entity()
@@ -15,7 +9,7 @@ export class Video {
 
   @ManyToOne(() => VideoCategory, (cat) => cat.videos, {
     nullable: true,
-    onDelete: 'SET NULL'
+    onDelete: 'SET NULL',
   })
   category_id: VideoCategory | null
 

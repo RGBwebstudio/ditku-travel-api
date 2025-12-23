@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+
+import { LANG } from 'src/common/enums/translation.enum'
+import { Repository } from 'typeorm'
+
 import { CreateMainPageDto } from './dto/create-main-page.dto'
 import { UpdateMainPageDto } from './dto/update-main-page.dto'
-import { InjectRepository } from '@nestjs/typeorm'
 import { MainPage } from './entities/main-page.entity'
-import { Repository } from 'typeorm'
-import { LANG } from 'src/common/enums/translation.enum'
 
 @Injectable()
 export class MainPageService {
@@ -31,14 +28,11 @@ export class MainPageService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: MainPage[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: MainPage[]; count: number }> {
     const entities = await this.countryRepo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
 
     const count = await this.countryRepo.count()
@@ -48,7 +42,7 @@ export class MainPageService {
 
   async findOne(lang: LANG): Promise<MainPage> {
     const entity = await this.countryRepo.findOne({
-      where: { lang }
+      where: { lang },
     })
 
     if (!entity) throw new NotFoundException('entity of main-page NOT_FOUND')

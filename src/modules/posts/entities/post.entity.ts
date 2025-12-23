@@ -1,3 +1,4 @@
+import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
 import {
   Entity,
   Column,
@@ -7,11 +8,11 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
-  Index
+  Index,
 } from 'typeorm'
-import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
-import { PostTranslate } from './post-translate.entity'
+
 import { PostImage } from './post-image.entity'
+import { PostTranslate } from './post-translate.entity'
 
 @Entity()
 @Index(['category_id', 'is_top_main', 'created_at'])
@@ -57,15 +58,12 @@ export class Post {
   content: string
 
   @ManyToOne(() => PostCategory, (category: PostCategory) => category.id, {
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'category_id' })
   category_id: PostCategory
 
-  @OneToMany(
-    () => PostTranslate,
-    (translate: PostTranslate) => translate.entity_id
-  )
+  @OneToMany(() => PostTranslate, (translate: PostTranslate) => translate.entity_id)
   translates: PostTranslate[]
 
   @OneToMany(() => PostImage, (image: PostImage) => image.entity_id)

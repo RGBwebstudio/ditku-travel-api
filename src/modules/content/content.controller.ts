@@ -1,23 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  Req,
-  UseGuards
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Req, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { ContentService } from './content.service'
 import { CreateContentDto } from './dto/create-content.dto'
 import { UpdateContentDto } from './dto/update-content.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { Request } from 'express'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 @ApiTags('Content')
 @Controller('content')
@@ -27,7 +17,7 @@ export class ContentController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати частину контенту' })
   findAll(@Query() { take, skip }: TakeAndSkipDto) {
@@ -37,7 +27,7 @@ export class ContentController {
   @Get(':lang')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
   @ApiOperation({ summary: 'Отримати контент за мовою' })
@@ -49,7 +39,7 @@ export class ContentController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутність успішно створено'
+    description: 'SUCCESS - Сутність успішно створено',
   })
   @ApiOperation({ summary: 'Створення контенту' })
   create(@Body() dto: CreateContentDto) {

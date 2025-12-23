@@ -12,34 +12,26 @@ import {
   ParseIntPipe,
   UseInterceptors,
   UploadedFiles,
-  HttpCode
+  HttpCode,
 } from '@nestjs/common'
 import { FilesInterceptor } from '@nestjs/platform-express'
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiConsumes,
-  ApiBody,
-  ApiBearerAuth
-} from '@nestjs/swagger'
-import { Request } from 'express'
+import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger'
 
-import { PostService } from './post.service'
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
-import { PostCreateDto } from './dto/post-create.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { PostUpdateDto } from './dto/post-update.dto'
-import { PostFilterDto } from './dto/post-filter.dto'
-import { PostCreateTranslateDto } from './dto/post-create-translate.dto'
-import { PostUpdateTranslateDto } from './dto/post-update-translate.dto'
 import { PostCreateImageDto } from './dto/post-create-image.dto'
-import { PostUpdateImageDto } from './dto/post-update-image.dto'
+import { PostCreateTranslateDto } from './dto/post-create-translate.dto'
+import { PostCreateDto } from './dto/post-create.dto'
 import { PostDeleteImagesDto } from './dto/post-delete-images.dto'
+import { PostFilterDto } from './dto/post-filter.dto'
+import { PostUpdateImageDto } from './dto/post-update-image.dto'
+import { PostUpdateTranslateDto } from './dto/post-update-translate.dto'
+import { PostUpdateDto } from './dto/post-update.dto'
 import { PostUploadImageDto } from './dto/post-upload-image.dto'
-
-import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
+import { PostService } from './post.service'
 
 @ApiTags('Пости')
 @Controller('posts')
@@ -49,13 +41,13 @@ export class PostController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати частину постів' })
   find(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
     const filter: Partial<PostFilterDto> = {
       limit: take,
-      offset: skip
+      offset: skip,
     }
 
     return this.postService.findAll(filter as PostFilterDto, req.lang)
@@ -100,10 +92,7 @@ export class PostController {
   @ApiOperation({ summary: 'Оновити пост' })
   @ApiResponse({ status: 200, description: 'Пост успішно оновлено' })
   @ApiResponse({ status: 404, description: 'Пост не знайдено' })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updatePostDto: PostUpdateDto
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updatePostDto: PostUpdateDto) {
     return this.postService.update(id, updatePostDto)
   }
 
@@ -123,10 +112,7 @@ export class PostController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Створити переклад для посту' })
   @ApiResponse({ status: 201, description: 'Переклад успішно створено' })
-  async createTranslate(
-    @Param('id', ParseIntPipe) postId: number,
-    @Body() createTranslateDto: PostCreateTranslateDto
-  ) {
+  async createTranslate(@Param('id', ParseIntPipe) postId: number, @Body() createTranslateDto: PostCreateTranslateDto) {
     return this.postService.createTranslate(postId, createTranslateDto)
   }
 
@@ -148,9 +134,7 @@ export class PostController {
   @HttpCode(204)
   @ApiOperation({ summary: 'Видалити переклад посту' })
   @ApiResponse({ status: 204, description: 'Переклад успішно видалено' })
-  async removeTranslate(
-    @Param('translateId', ParseIntPipe) translateId: number
-  ) {
+  async removeTranslate(@Param('translateId', ParseIntPipe) translateId: number) {
     return this.postService.removeTranslate(translateId)
   }
 
@@ -166,10 +150,10 @@ export class PostController {
       properties: {
         files: {
           type: 'array',
-          items: { type: 'string', format: 'binary' }
-        }
-      }
-    }
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 201, description: 'Зображення успішно завантажено' })
   async uploadImage(
@@ -185,10 +169,7 @@ export class PostController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Створити зображення для посту' })
   @ApiResponse({ status: 201, description: 'Зображення успішно створено' })
-  async createImage(
-    @Param('id', ParseIntPipe) postId: number,
-    @Body() createImageDto: PostCreateImageDto
-  ) {
+  async createImage(@Param('id', ParseIntPipe) postId: number, @Body() createImageDto: PostCreateImageDto) {
     return this.postService.createImage(postId, createImageDto)
   }
 
@@ -197,10 +178,7 @@ export class PostController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Оновити зображення посту' })
   @ApiResponse({ status: 200, description: 'Зображення успішно оновлено' })
-  async updateImage(
-    @Param('imageId', ParseIntPipe) imageId: number,
-    @Body() updateImageDto: PostUpdateImageDto
-  ) {
+  async updateImage(@Param('imageId', ParseIntPipe) imageId: number, @Body() updateImageDto: PostUpdateImageDto) {
     return this.postService.updateImage(imageId, updateImageDto)
   }
 
@@ -210,10 +188,7 @@ export class PostController {
   @HttpCode(204)
   @ApiOperation({ summary: 'Видалити множинні зображення посту' })
   @ApiResponse({ status: 204, description: 'Зображення успішно видалено' })
-  async deleteImages(
-    @Param('id', ParseIntPipe) postId: number,
-    @Body() deleteImagesDto: PostDeleteImagesDto
-  ) {
+  async deleteImages(@Param('id', ParseIntPipe) postId: number, @Body() deleteImagesDto: PostDeleteImagesDto) {
     return this.postService.deleteImages(postId, deleteImagesDto)
   }
 

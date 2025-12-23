@@ -1,16 +1,10 @@
-import {
-  IsBoolean,
-  IsString,
-  IsInt,
-  Min,
-  IsOptional,
-  IsPositive,
-  IsArray
-} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
-import { Product } from '../entities/product.entity'
+
+import { IsBoolean, IsString, IsInt, Min, IsOptional, IsPositive, IsArray } from 'class-validator'
 import { Category } from 'src/modules/category/entities/category.entity'
+import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
+
+import { Product } from '../entities/product.entity'
 
 export class ProductCreateDto {
   @ApiProperty({ example: false, description: 'Show product on main page' })
@@ -87,7 +81,7 @@ export class ProductCreateDto {
 
   @ApiPropertyOptional({
     type: [Number],
-    description: 'Array of Format group ids'
+    description: 'Array of Format group ids',
   })
   @IsOptional()
   @IsArray()
@@ -96,7 +90,7 @@ export class ProductCreateDto {
 
   @ApiPropertyOptional({
     example: 'історію, культуру, побут, архітектуру',
-    description: 'Навички (через кому)'
+    description: 'Навички (через кому)',
   })
   @IsOptional()
   @IsString()
@@ -104,14 +98,14 @@ export class ProductCreateDto {
 
   @ApiPropertyOptional({
     example: 'критичне мислення, пізнання світу, емоційний досвід',
-    description: 'Досліджуємо (через кому)'
+    description: 'Досліджуємо (через кому)',
   })
   @IsOptional()
   @IsString()
   discover?: string
 
   @ApiPropertyOptional({
-    description: 'Структура контенту блоків'
+    description: 'Структура контенту блоків',
   })
   @IsOptional()
   @IsString()

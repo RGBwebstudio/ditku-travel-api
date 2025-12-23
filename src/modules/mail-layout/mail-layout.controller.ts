@@ -1,21 +1,12 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Query,
-  UseGuards
-} from '@nestjs/common'
-import { MailLayoutService } from './mail-layout.service'
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
+
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { CreateMailLayoutDto } from './dto/create-mail-layout.dto'
 import { UpdateMailLayoutDto } from './dto/update-mail-layout.dto'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { MailLayoutService } from './mail-layout.service'
 
 @ApiTags('Шаблони листів')
 @Controller('mail-layout')
@@ -42,10 +33,7 @@ export class MailLayoutController {
   @UseGuards(AuthAdminGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Оновити шаблон листа' })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateMailLayoutDto
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateMailLayoutDto) {
     return this.mailLayoutService.update(id, dto)
   }
 

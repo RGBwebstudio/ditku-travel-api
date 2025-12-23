@@ -1,22 +1,19 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
-import { Post } from './entities/post.entity'
-import { PostTranslate } from './entities/post-translate.entity'
-import { PostImage } from './entities/post-image.entity'
+import { IsExist } from 'src/common/validators/isExist.validator'
 import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
 
-import { PostService } from './post.service'
+import { PostImage } from './entities/post-image.entity'
+import { PostTranslate } from './entities/post-translate.entity'
+import { Post } from './entities/post.entity'
 import { PostController } from './post.controller'
-
-import { IsExist } from 'src/common/validators/isExist.validator'
+import { PostService } from './post.service'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Post, PostTranslate, PostImage, PostCategory])
-  ],
+  imports: [TypeOrmModule.forFeature([Post, PostTranslate, PostImage, PostCategory])],
   controllers: [PostController],
   providers: [PostService, IsExist],
-  exports: [PostService]
+  exports: [PostService],
 })
 export class PostModule {}

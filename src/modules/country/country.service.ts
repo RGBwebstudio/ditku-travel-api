@@ -1,19 +1,16 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
-import { CreateCountryDto } from './dto/create-country.dto'
-import { UpdateCountryDto } from './dto/update-country.dto'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { Country } from './entities/country.entity'
+
 import { LANG } from 'src/common/enums/translation.enum'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
-import { CountryTranslate } from './entities/country-translate.entity'
+import { Repository } from 'typeorm'
+
 import { CountryCreateTranslateDto } from './dto/country-create-translate.dto'
 import { CountryUpdateTranslateDto } from './dto/country-update-translate.dto'
+import { CreateCountryDto } from './dto/create-country.dto'
+import { UpdateCountryDto } from './dto/update-country.dto'
+import { CountryTranslate } from './entities/country-translate.entity'
+import { Country } from './entities/country.entity'
 
 @Injectable()
 export class CountryService {
@@ -33,7 +30,7 @@ export class CountryService {
     const exists = await this.countryRepo
       .createQueryBuilder('country')
       .where('LOWER(country.title) = :title', {
-        title: (dto.title || '').toLowerCase()
+        title: (dto.title || '').toLowerCase(),
       })
       .getOne()
 
@@ -47,16 +44,12 @@ export class CountryService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number,
-    lang: LANG
-  ): Promise<{ entities: Country[]; count: number }> {
+  async findAll(take: number, skip: number, lang: LANG): Promise<{ entities: Country[]; count: number }> {
     const entities = await this.countryRepo.find({
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: ['translates']
+      relations: ['translates'],
     })
 
     const mappedEntities = applyTranslations([entities], lang)
@@ -68,7 +61,7 @@ export class CountryService {
   async getAllList(lang: LANG): Promise<{ entities: Country[] }> {
     const entities = await this.countryRepo.find({
       order: { created_at: 'DESC' },
-      relations: ['translates']
+      relations: ['translates'],
     })
 
     const mappedEntities = applyTranslations(entities, lang)
@@ -76,17 +69,14 @@ export class CountryService {
     return { entities: mappedEntities }
   }
 
-  async searchByTitle(
-    query: string,
-    lang: LANG
-  ): Promise<{ entities: Country[] }> {
+  async searchByTitle(query: string, lang: LANG): Promise<{ entities: Country[] }> {
     if (!query || query.trim().length === 0) return { entities: [] }
 
     let qb = this.countryRepo
       .createQueryBuilder('country')
       .leftJoinAndSelect('country.translates', 'translates')
       .where('LOWER(country.title) LIKE :title', {
-        title: `%${query.toLowerCase()}%`
+        title: `%${query.toLowerCase()}%`,
       })
       .orderBy('country.created_at', 'DESC')
       .take(20)
@@ -98,7 +88,7 @@ export class CountryService {
         .createQueryBuilder('country')
         .leftJoinAndSelect('country.translates', 'translates')
         .where('LOWER(translates.value) LIKE :title', {
-          title: `%${query.toLowerCase()}%`
+          title: `%${query.toLowerCase()}%`,
         })
         .andWhere('translates.field = :field', { field: 'title' })
         .orderBy('country.created_at', 'DESC')
@@ -115,7 +105,7 @@ export class CountryService {
   async findOne(id: number, lang: LANG): Promise<Country> {
     const entity = await this.countryRepo.findOne({
       where: { id },
-      relations: ['translates']
+      relations: ['translates'],
     })
 
     if (!entity) throw new NotFoundException('country is NOT_FOUND')
@@ -127,7 +117,7 @@ export class CountryService {
   async update(id: number, dto: UpdateCountryDto): Promise<Country | null> {
     const country = await this.countryRepo.findOne({
       where: { id },
-      relations: ['translates']
+      relations: ['translates'],
     })
     if (!country) throw new NotFoundException('country is NOT_FOUND')
 
@@ -138,7 +128,7 @@ export class CountryService {
       const exists = await this.countryRepo
         .createQueryBuilder('country')
         .where('LOWER(country.title) = :title', {
-          title: dto.title.toLowerCase()
+          title: dto.title.toLowerCase(),
         })
         .andWhere('country.id != :id', { id })
         .getOne()
@@ -168,9 +158,7 @@ export class CountryService {
     return { message: 'SUCCESS' }
   }
 
-  async createTranslates(
-    dto: CountryCreateTranslateDto[]
-  ): Promise<CountryTranslate[] | null> {
+  async createTranslates(dto: CountryCreateTranslateDto[]): Promise<CountryTranslate[] | null> {
     if (dto?.length) {
       const results: CountryTranslate[] = []
 
@@ -186,21 +174,18 @@ export class CountryService {
     return null
   }
 
-  async updateTranslates(
-    dto: CountryUpdateTranslateDto[]
-  ): Promise<CountryTranslate[] | null> {
+  async updateTranslates(dto: CountryUpdateTranslateDto[]): Promise<CountryTranslate[] | null> {
     const results: CountryTranslate[] = []
 
     for (const translate of dto) {
       const result = await this.entityTranslateRepo.update(translate.id, {
-        ...translate
+        ...translate,
       })
 
-      if (result.affected === 0)
-        throw new NotFoundException('country translate is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('country translate is NOT_FOUND')
 
       const updatedEntitiyTranslates = await this.entityTranslateRepo.findOne({
-        where: { id: translate.id }
+        where: { id: translate.id },
       })
 
       if (updatedEntitiyTranslates) results.push(updatedEntitiyTranslates)
@@ -209,9 +194,7 @@ export class CountryService {
     return results
   }
 
-  async deleteTranslate(
-    id: number
-  ): Promise<{ message: string } | NotFoundException> {
+  async deleteTranslate(id: number): Promise<{ message: string } | NotFoundException> {
     const result = await this.entityTranslateRepo.delete(id)
 
     if (result.affected === 0) {

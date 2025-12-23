@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { LANG } from 'src/common/enums/translation.enum'
 import { Repository } from 'typeorm'
-import { Cookie } from './entities/cookie.entity'
+
 import { CreateCookieDto } from './dto/create-cookie.dto'
 import { UpdateCookieDto } from './dto/update-cookie.dto'
-import { LANG } from 'src/common/enums/translation.enum'
+import { Cookie } from './entities/cookie.entity'
 
 @Injectable()
 export class CookieService {
@@ -30,14 +27,11 @@ export class CookieService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: Cookie[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: Cookie[]; count: number }> {
     const entities = await this.repo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
     const count = await this.repo.count()
     return { entities, count }
@@ -65,8 +59,7 @@ export class CookieService {
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('entity of cookie NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('entity of cookie NOT_FOUND')
     } catch (err) {
       if (err.code === '23503') {
         throw new BadRequestException('entity of cookie HAS_CHILDS')

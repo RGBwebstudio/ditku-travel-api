@@ -1,25 +1,15 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  Put,
-  UseGuards,
-  Req
-} from '@nestjs/common'
-import { FaqService } from './faq.service'
-import { CreateFaqDto } from './dto/create-faq.dto'
-import { UpdateFaqDto } from './dto/update-faq.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { Controller, Get, Post, Body, Param, Delete, Query, ParseIntPipe, Put, UseGuards, Req } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
-import { FaqUpdateTranslateDto } from './dto/faq-update-translate.dto'
-import { FaqCreateTranslateDto } from './dto/faq-create-translate.dto'
+
 import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
+import { CreateFaqDto } from './dto/create-faq.dto'
+import { FaqCreateTranslateDto } from './dto/faq-create-translate.dto'
+import { FaqUpdateTranslateDto } from './dto/faq-update-translate.dto'
+import { UpdateFaqDto } from './dto/update-faq.dto'
+import { FaqService } from './faq.service'
 
 @ApiTags('Запитання та відповіді')
 @Controller('faq')
@@ -29,7 +19,7 @@ export class FaqController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутності успішно отримано'
+    description: 'SUCCESS - Сутності успішно отримано',
   })
   @ApiOperation({ summary: 'Отримати всі FAQ' })
   findAll(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
@@ -39,11 +29,11 @@ export class FaqController {
   @Get(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Отримати запис FAQ' })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
@@ -55,11 +45,11 @@ export class FaqController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'CREATED - Сутність успішно створено'
+    description: 'CREATED - Сутність успішно створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Cутність не cтворено'
+    description: 'NOT_CREATED - Cутність не cтворено',
   })
   create(@Body() dto: CreateFaqDto) {
     return this.faqService.create(dto)
@@ -68,11 +58,11 @@ export class FaqController {
   @Put(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити запис FAQ' })
   @UseGuards(AuthAdminGuard)
@@ -83,11 +73,11 @@ export class FaqController {
   @Delete(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Видалити запис FAQ' })
   @UseGuards(AuthAdminGuard)
@@ -99,14 +89,14 @@ export class FaqController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутності успішно створено'
+    description: 'SUCCESS - Сутності успішно створено',
   })
   @ApiOperation({ summary: 'Отримати всі переклади FAQ' })
   @ApiBody({
     description: 'Масив перекладів',
     type: FaqCreateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   createTranslates(@Body() dto: FaqCreateTranslateDto[]) {
     return this.faqService.createTranslates(dto)
@@ -116,17 +106,17 @@ export class FaqController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутності успішно оновлено'
+    description: 'SUCCESS - Сутності успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiBody({
     description: 'Масив перекладів',
     type: FaqUpdateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   @ApiOperation({ summary: 'Оновити переклади FAQ' })
   updateTranslates(@Body() dto: FaqUpdateTranslateDto[]) {
@@ -137,11 +127,11 @@ export class FaqController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити переклади FAQ' })
   deleteTranslate(@Param('id', ParseIntPipe) id: number) {

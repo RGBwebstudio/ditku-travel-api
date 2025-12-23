@@ -11,29 +11,24 @@ import {
   UseInterceptors,
   Req,
   UploadedFiles,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common'
-import { CategoryCreateDto } from './dto/category-create.dto'
-import { CategoryUpdateDto } from './dto/category-update.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { CategoryService } from './category.service'
-import { CategoryCreateTranslateDto } from './dto/category-create-translate.dto'
-import { CategoryUpdateTranslateDto } from './dto/category-update-translate.dto'
-import { CategoryUploadImageDto } from './dto/category-upload-image.dto'
 import { FilesInterceptor } from '@nestjs/platform-express'
-import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+
 import { Request } from 'express'
-import {
-  ApiBody,
-  ApiConsumes,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags
-} from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
 import { IdOrUrlValidationPipe } from 'src/common/pipes/id-or-url.pipe'
 import { FineOneWhereType } from 'src/common/types/category.types'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
+import { CategoryService } from './category.service'
+import { CategoryCreateTranslateDto } from './dto/category-create-translate.dto'
+import { CategoryCreateDto } from './dto/category-create.dto'
+import { CategoryUpdateTranslateDto } from './dto/category-update-translate.dto'
+import { CategoryUpdateDto } from './dto/category-update.dto'
+import { CategoryUploadImageDto } from './dto/category-upload-image.dto'
 
 @ApiTags('Категорії')
 @Controller('category')
@@ -43,7 +38,7 @@ export class CategoryController {
   @Get('all')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано всі сутності'
+    description: 'SUCCESS - Успішно отримано всі сутності',
   })
   @ApiOperation({ summary: 'Отримати всі категорії' })
   findAllList(@Req() req: Request) {
@@ -60,10 +55,10 @@ export class CategoryController {
   @Get('showroom')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано чистину сутностей'
+    description: 'SUCCESS - Успішно отримано чистину сутностей',
   })
   @ApiOperation({
-    summary: 'Отримати список категорій з товарами для головної сторінки'
+    summary: 'Отримати список категорій з товарами для головної сторінки',
   })
   findInShowRoom(@Req() req: Request) {
     return this.categoryService.findInShowRoom(req.lang)
@@ -72,7 +67,7 @@ export class CategoryController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано чистину сутностей'
+    description: 'SUCCESS - Успішно отримано чистину сутностей',
   })
   @ApiOperation({ summary: 'Отримати частину категорій' })
   find(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
@@ -82,35 +77,31 @@ export class CategoryController {
   @Get(':value')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiParam({
     name: 'value',
     required: true,
     type: String,
     description: 'Id або url категорії (наприклад: 1 або "yabluka")',
-    example: '1'
+    example: '1',
   })
   @ApiOperation({ summary: 'Отримати категорію' })
-  findOne(
-    @Param('value', IdOrUrlValidationPipe) value: FineOneWhereType,
-    @Req() req: Request
-  ) {
+  findOne(@Param('value', IdOrUrlValidationPipe) value: FineOneWhereType, @Req() req: Request) {
     return this.categoryService.findOne(value, req.lang)
   }
 
   @Get(':id/additional-filters')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Отримано додаткові фільтри для категорії'
+    description: 'SUCCESS - Отримано додаткові фільтри для категорії',
   })
   @ApiOperation({
-    summary:
-      'Отримати додаткові фільтри (start/end точки roadmap) для товарів у категорії'
+    summary: 'Отримати додаткові фільтри (start/end точки roadmap) для товарів у категорії',
   })
   findAdditionalFilters(@Param('id', ParseIntPipe) id: number) {
     return this.categoryService.getAdditionalFilters(id)
@@ -119,59 +110,50 @@ export class CategoryController {
   @Get('/tree/all')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутності успішно отримано'
+    description: 'SUCCESS - Сутності успішно отримано',
   })
   @ApiOperation({
-    summary: 'Отримати всі кореневі категорії з дітьми до depth'
+    summary: 'Отримати всі кореневі категорії з дітьми до depth',
   })
   findAllSubtree(@Query('depth') depth: string, @Req() req: Request) {
     console.log('fire')
     const parsedDepth = depth !== undefined ? parseInt(depth, 10) : 1
-    return this.categoryService.findAllSubtree(
-      isNaN(parsedDepth) ? 1 : parsedDepth,
-      req.lang
-    )
+    return this.categoryService.findAllSubtree(isNaN(parsedDepth) ? 1 : parsedDepth, req.lang)
   }
 
   @Get(':value/subtree')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність та її піддерево успішно отримано'
+    description: 'SUCCESS - Сутність та її піддерево успішно отримано',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiParam({
     name: 'value',
     required: true,
     type: String,
     description: 'Id або url категорії (наприклад: 1 або "yabluka")',
-    example: '1'
+    example: '1',
   })
   @ApiOperation({
-    summary: 'Отримати піддерево категорії до заданої глибини'
+    summary: 'Отримати піддерево категорії до заданої глибини',
   })
-  findSubtree(
-    @Param('value', IdOrUrlValidationPipe) value: FineOneWhereType,
-    @Query('depth') depth: string
-  ) {
+  findSubtree(@Param('value', IdOrUrlValidationPipe) value: FineOneWhereType, @Query('depth') depth: string) {
     const parsedDepth = depth !== undefined ? parseInt(depth, 10) : 1
-    return this.categoryService.findSubtree(
-      value,
-      isNaN(parsedDepth) ? 1 : parsedDepth
-    )
+    return this.categoryService.findSubtree(value, isNaN(parsedDepth) ? 1 : parsedDepth)
   }
 
   @Post()
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'CREATED - Сутність успішно створено'
+    description: 'CREATED - Сутність успішно створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Cутність не знайдено'
+    description: 'NOT_CREATED - Cутність не знайдено',
   })
   @ApiOperation({ summary: 'Створити категорію' })
   create(@Body() dto: CategoryCreateDto) {
@@ -183,21 +165,17 @@ export class CategoryController {
   @ApiOperation({ summary: 'Оновити категорію' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiResponse({
     status: 400,
-    description: 'IS_EXIST - Cутність з таким значенням title вже існує'
+    description: 'IS_EXIST - Cутність з таким значенням title вже існує',
   })
-  update(
-    @Body() dto: CategoryUpdateDto,
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: Request
-  ) {
+  update(@Body() dto: CategoryUpdateDto, @Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.categoryService.update(id, req.lang, dto)
   }
 
@@ -205,15 +183,15 @@ export class CategoryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiResponse({
     status: 400,
-    description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена'
+    description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена',
   })
   @ApiOperation({ summary: 'Видалити категорію' })
   delete(@Param('id', ParseIntPipe) id: number) {
@@ -224,14 +202,14 @@ export class CategoryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутності успішно створено'
+    description: 'SUCCESS - Сутності успішно створено',
   })
   @ApiOperation({ summary: 'Отримати всі переклади категорії' })
   @ApiBody({
     description: 'Масив перекладів',
     type: CategoryCreateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   createTranslates(@Body() dto: CategoryCreateTranslateDto[]) {
     return this.categoryService.createTranslates(dto)
@@ -241,17 +219,17 @@ export class CategoryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутності успішно оновлено'
+    description: 'SUCCESS - Сутності успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiBody({
     description: 'Масив перекладів',
     type: CategoryUpdateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   @ApiOperation({ summary: 'Оновити переклади категорії' })
   updateTranslates(@Body() dto: CategoryUpdateTranslateDto[]) {
@@ -262,11 +240,11 @@ export class CategoryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити переклади категорії' })
   deleteTranslate(@Param('id', ParseIntPipe) id: number) {
@@ -278,22 +256,21 @@ export class CategoryController {
   @UseInterceptors(FilesInterceptor('files'))
   @ApiResponse({
     status: 201,
-    description:
-      "SUCCESS - Сутність успішно завантажено і прикріплено до об'єкту"
+    description: "SUCCESS - Сутність успішно завантажено і прикріплено до об'єкту",
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Сутність не створено'
+    description: 'NOT_CREATED - Сутність не створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_UPLOADED - Сутність не завантажено'
+    description: 'NOT_UPLOADED - Сутність не завантажено',
   })
   @ApiOperation({ summary: 'Завантажити зображення категорії' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Завантаження фото категорії',
-    type: CategoryUploadImageDto
+    type: CategoryUploadImageDto,
   })
   @ApiBody({
     description: 'Завантаження фото категорії',
@@ -304,17 +281,17 @@ export class CategoryController {
           type: 'array',
           items: {
             type: 'string',
-            format: 'binary'
-          }
-        }
-      }
-    }
+            format: 'binary',
+          },
+        },
+      },
+    },
   })
   @ApiParam({
     name: 'id',
     required: true,
     type: Number,
-    description: 'Id категорії'
+    description: 'Id категорії',
   })
   uploadFile(
     @UploadedFiles(new FilesSizeValidationPipe()) files: Express.Multer.File[],
@@ -327,11 +304,11 @@ export class CategoryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Cутність успішно видалено'
+    description: 'SUCCESS - Cутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiOperation({ summary: 'Видалити зображення категорії' })
   deleteEntityImage(@Param('id', ParseIntPipe) id: number) {

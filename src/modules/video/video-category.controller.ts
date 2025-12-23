@@ -1,17 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  ParseIntPipe,
-  Put,
-  Delete
-} from '@nestjs/common'
-import { VideoCategoryService } from './video-category.service'
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Put, Delete } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
+
 import { CreateVideoCategoryDto } from './dto/create-video-category.dto'
 import { UpdateVideoCategoryDto } from './dto/update-video-category.dto'
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { VideoCategoryService } from './video-category.service'
 
 @ApiTags('Категорії відео')
 @Controller('video-category')
@@ -46,10 +38,7 @@ export class VideoCategoryController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Update video category' })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateVideoCategoryDto
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateVideoCategoryDto) {
     return this.service.update(id, dto)
   }
 

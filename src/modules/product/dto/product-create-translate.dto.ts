@@ -1,13 +1,9 @@
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsString
-} from 'class-validator'
-import { LANG } from 'src/common/enums/translation.enum'
-import { Product } from '../entities/product.entity'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
+import { LANG } from 'src/common/enums/translation.enum'
+
+import { Product } from '../entities/product.entity'
 
 export class ProductCreateTranslateDto {
   @ApiProperty({ example: 'title' })

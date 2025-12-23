@@ -1,18 +1,16 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException
-} from '@nestjs/common'
-import { CreateFaqDto } from './dto/create-faq.dto'
-import { UpdateFaqDto } from './dto/update-faq.dto'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Faq } from './entities/faq.entity'
-import { Repository } from 'typeorm'
-import { FaqCreateTranslateDto } from './dto/faq-create-translate.dto'
-import { FaqTranslate } from './entities/faq-translate.entity'
-import { FaqUpdateTranslateDto } from './dto/faq-update-translate.dto'
-import { applyTranslations } from 'src/common/utils/apply-translates.util'
+
 import { LANG } from 'src/common/enums/translation.enum'
+import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { Repository } from 'typeorm'
+
+import { CreateFaqDto } from './dto/create-faq.dto'
+import { FaqCreateTranslateDto } from './dto/faq-create-translate.dto'
+import { FaqUpdateTranslateDto } from './dto/faq-update-translate.dto'
+import { UpdateFaqDto } from './dto/update-faq.dto'
+import { FaqTranslate } from './entities/faq-translate.entity'
+import { Faq } from './entities/faq.entity'
 
 @Injectable()
 export class FaqService {
@@ -27,7 +25,7 @@ export class FaqService {
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: ['translates']
+      relations: ['translates'],
     })
 
     const mappedEntities = applyTranslations(entities, lang)
@@ -39,7 +37,7 @@ export class FaqService {
   async findOne(id: number, lang: LANG) {
     const result = await this.faqRepo.findOne({
       where: { id },
-      relations: ['translates']
+      relations: ['translates'],
     })
     if (!result) throw new NotFoundException('faq entity is NOT_FOUND')
 
@@ -51,7 +49,7 @@ export class FaqService {
     const exists = await this.faqRepo
       .createQueryBuilder('faq')
       .where('LOWER(faq.title) = :title', {
-        title: (dto.title || '').toLowerCase()
+        title: (dto.title || '').toLowerCase(),
       })
       .getOne()
 
@@ -96,9 +94,7 @@ export class FaqService {
     return { message: 'SUCCESS' }
   }
 
-  async createTranslates(
-    dto: FaqCreateTranslateDto[]
-  ): Promise<FaqTranslate[] | null> {
+  async createTranslates(dto: FaqCreateTranslateDto[]): Promise<FaqTranslate[] | null> {
     if (dto?.length) {
       const results: FaqTranslate[] = []
 
@@ -113,21 +109,18 @@ export class FaqService {
     return null
   }
 
-  async updateTranslates(
-    dto: FaqUpdateTranslateDto[]
-  ): Promise<FaqTranslate[] | null> {
+  async updateTranslates(dto: FaqUpdateTranslateDto[]): Promise<FaqTranslate[] | null> {
     const results: FaqTranslate[] = []
 
     for (const translate of dto) {
       const result = await this.entityTranslateRepo.update(translate.id, {
-        ...translate
+        ...translate,
       })
 
-      if (result.affected === 0)
-        throw new NotFoundException('faq entity is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('faq entity is NOT_FOUND')
 
       const updatedEntityTranslate = await this.entityTranslateRepo.findOne({
-        where: { id: translate.id }
+        where: { id: translate.id },
       })
 
       if (updatedEntityTranslate) results.push(updatedEntityTranslate)
@@ -136,9 +129,7 @@ export class FaqService {
     return results
   }
 
-  async deleteTranslate(
-    id: number
-  ): Promise<{ message: string } | NotFoundException> {
+  async deleteTranslate(id: number): Promise<{ message: string } | NotFoundException> {
     const result = await this.entityTranslateRepo.delete(id)
 
     if (result.affected === 0) {

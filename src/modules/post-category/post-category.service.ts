@@ -1,19 +1,16 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger
-} from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { PostCategory } from './entities/post-category.entity'
-import { PostCategoryTranslate } from './entities/post-category-translate.entity'
-import { PostCategoryCreateDto } from './dto/post-category-create.dto'
-import { PostCategoryUpdateDto } from './dto/post-category-update.dto'
-import { PostCategoryCreateTranslateDto } from './dto/post-category-create-translate.dto'
-import { PostCategoryUpdateTranslateDto } from './dto/post-category-update-translate.dto'
+
 import { LANG } from 'src/common/enums/translation.enum'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { Repository } from 'typeorm'
+
+import { PostCategoryCreateTranslateDto } from './dto/post-category-create-translate.dto'
+import { PostCategoryCreateDto } from './dto/post-category-create.dto'
+import { PostCategoryUpdateTranslateDto } from './dto/post-category-update-translate.dto'
+import { PostCategoryUpdateDto } from './dto/post-category-update.dto'
+import { PostCategoryTranslate } from './entities/post-category-translate.entity'
+import { PostCategory } from './entities/post-category.entity'
 
 @Injectable()
 export class PostCategoryService {
@@ -27,17 +24,14 @@ export class PostCategoryService {
   ) {}
 
   async findAll(take?: number, skip?: number, lang?: LANG) {
-    const [postCategories, count] =
-      await this.postCategoryRepository.findAndCount({
-        relations: ['translates'],
-        take,
-        skip,
-        order: { created_at: 'DESC' }
-      })
+    const [postCategories, count] = await this.postCategoryRepository.findAndCount({
+      relations: ['translates'],
+      take,
+      skip,
+      order: { created_at: 'DESC' },
+    })
 
-    const translatedPostCategories = lang
-      ? applyTranslations(postCategories, lang)
-      : postCategories
+    const translatedPostCategories = lang ? applyTranslations(postCategories, lang) : postCategories
 
     return { entities: translatedPostCategories, count }
   }
@@ -45,12 +39,10 @@ export class PostCategoryService {
   async findAllList(lang?: LANG) {
     const postCategories = await this.postCategoryRepository.find({
       relations: ['translates'],
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
 
-    const translated = lang
-      ? applyTranslations(postCategories, lang)
-      : postCategories
+    const translated = lang ? applyTranslations(postCategories, lang) : postCategories
 
     return { entities: translated }
   }
@@ -58,7 +50,7 @@ export class PostCategoryService {
   async findOne(id: number, lang?: LANG): Promise<PostCategory> {
     const postCategory = await this.postCategoryRepository.findOne({
       where: { id },
-      relations: ['translates']
+      relations: ['translates'],
     })
     if (!postCategory) throw new NotFoundException('post category is NOT_FOUND')
     if (lang) {
@@ -75,8 +67,7 @@ export class PostCategoryService {
         .createQueryBuilder('c')
         .where('LOWER(c.title) = :title', { title: title.toLowerCase() })
         .getOne()
-      if (existingWithSameTitle)
-        throw new BadRequestException('NAME_ALREADY_RESERVED')
+      if (existingWithSameTitle) throw new BadRequestException('NAME_ALREADY_RESERVED')
     }
 
     const postCategoryData = this.postCategoryRepository.create(createDto)
@@ -88,31 +79,20 @@ export class PostCategoryService {
     }
   }
 
-  async update(
-    id: number,
-    updateDto: PostCategoryUpdateDto
-  ): Promise<PostCategory> {
+  async update(id: number, updateDto: PostCategoryUpdateDto): Promise<PostCategory> {
     const existingPostCategory = await this.postCategoryRepository.findOne({
-      where: { id }
+      where: { id },
     })
-    if (!existingPostCategory)
-      throw new NotFoundException('post category is NOT_FOUND')
+    if (!existingPostCategory) throw new NotFoundException('post category is NOT_FOUND')
 
-    const newTitle = updateDto.title
-      ? String(updateDto.title).trim()
-      : undefined
-    if (
-      newTitle &&
-      newTitle.toLowerCase() !==
-        String(existingPostCategory.title || '').toLowerCase()
-    ) {
+    const newTitle = updateDto.title ? String(updateDto.title).trim() : undefined
+    if (newTitle && newTitle.toLowerCase() !== String(existingPostCategory.title || '').toLowerCase()) {
       const duplicateTitleEntity = await this.postCategoryRepository
         .createQueryBuilder('c')
         .where('LOWER(c.title) = :title', { title: newTitle.toLowerCase() })
         .andWhere('c.id != :id', { id })
         .getOne()
-      if (duplicateTitleEntity)
-        throw new BadRequestException('NAME_ALREADY_RESERVED')
+      if (duplicateTitleEntity) throw new BadRequestException('NAME_ALREADY_RESERVED')
     }
 
     try {
@@ -127,43 +107,32 @@ export class PostCategoryService {
 
   async delete(id: number) {
     const deleteResult = await this.postCategoryRepository.delete(id)
-    if (deleteResult.affected === 0)
-      throw new NotFoundException('post category is NOT_FOUND')
+    if (deleteResult.affected === 0) throw new NotFoundException('post category is NOT_FOUND')
     return { message: 'SUCCESS' }
   }
 
-  async createTranslates(
-    createTranslatesDto: PostCategoryCreateTranslateDto[]
-  ) {
+  async createTranslates(createTranslatesDto: PostCategoryCreateTranslateDto[]) {
     if (!createTranslatesDto?.length) return null
     const results: PostCategoryTranslate[] = []
     for (const translateDto of createTranslatesDto) {
       const translateData = this.postCategoryTranslateRepository.create({
         ...translateDto,
-        entity_id: { id: translateDto.entity_id } as any
+        entity_id: { id: translateDto.entity_id } as any,
       })
-      const savedTranslate =
-        await this.postCategoryTranslateRepository.save(translateData)
+      const savedTranslate = await this.postCategoryTranslateRepository.save(translateData)
       results.push(savedTranslate)
     }
     return results
   }
 
-  async updateTranslates(
-    updateTranslatesDto: PostCategoryUpdateTranslateDto[]
-  ) {
+  async updateTranslates(updateTranslatesDto: PostCategoryUpdateTranslateDto[]) {
     const results: PostCategoryTranslate[] = []
     for (const translateDto of updateTranslatesDto) {
-      const updateResult = await this.postCategoryTranslateRepository.update(
-        translateDto.id,
-        { ...translateDto }
-      )
-      if (updateResult.affected === 0)
-        throw new NotFoundException('post category translate is NOT_FOUND')
-      const updatedTranslate =
-        await this.postCategoryTranslateRepository.findOne({
-          where: { id: translateDto.id }
-        })
+      const updateResult = await this.postCategoryTranslateRepository.update(translateDto.id, { ...translateDto })
+      if (updateResult.affected === 0) throw new NotFoundException('post category translate is NOT_FOUND')
+      const updatedTranslate = await this.postCategoryTranslateRepository.findOne({
+        where: { id: translateDto.id },
+      })
       if (updatedTranslate) results.push(updatedTranslate)
     }
     return results
@@ -171,8 +140,7 @@ export class PostCategoryService {
 
   async deleteTranslate(id: number) {
     const deleteResult = await this.postCategoryTranslateRepository.delete(id)
-    if (deleteResult.affected === 0)
-      throw new NotFoundException('post category translate is NOT_FOUND')
+    if (deleteResult.affected === 0) throw new NotFoundException('post category translate is NOT_FOUND')
     return { message: 'OK' }
   }
 }

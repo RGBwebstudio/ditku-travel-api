@@ -1,4 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+
 import { Product } from './product.entity'
 
 @Entity()
@@ -16,7 +17,7 @@ export class ProductImage {
   order: number
 
   @ManyToOne(() => Product, (product) => product.images, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   entity_id: Product
 }

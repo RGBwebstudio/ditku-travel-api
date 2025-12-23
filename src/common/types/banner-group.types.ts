@@ -1,4 +1,4 @@
 export enum BannerType {
   UNCATEGORIZED = 'uncategorized',
-  MAIN_PAGE = 'main_page'
+  MAIN_PAGE = 'main_page',
 }

@@ -1,14 +1,11 @@
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  NotFoundException
-} from '@nestjs/common'
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
 import { Repository } from 'typeorm'
-import { FormatGroup } from './entities/format-group.entity'
+
 import { FormatGroupCreateDto } from './dto/format-group-create.dto'
 import { FormatGroupUpdateDto } from './dto/format-group-update.dto'
+import { FormatGroup } from './entities/format-group.entity'
 
 @Injectable()
 export class FormatGroupService {
@@ -23,7 +20,7 @@ export class FormatGroupService {
     const [entities, count] = await this.repo.findAndCount({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
     return { entities, count }
   }
@@ -34,7 +31,7 @@ export class FormatGroupService {
     const result = await this.repo
       .createQueryBuilder('fg')
       .where('LOWER(fg.title) LIKE :title', {
-        title: `%${query.toLowerCase()}%`
+        title: `%${query.toLowerCase()}%`,
       })
       .orderBy('fg.created_at', 'DESC')
       .take(20)
@@ -58,7 +55,7 @@ export class FormatGroupService {
     const exists = await this.repo
       .createQueryBuilder('fg')
       .where('LOWER(fg.title) = :title', {
-        title: String(dto.title).toLowerCase()
+        title: String(dto.title).toLowerCase(),
       })
       .getOne()
 
@@ -93,8 +90,7 @@ export class FormatGroupService {
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('format_group is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('format_group is NOT_FOUND')
     } catch (err) {
       this.logger.error(`Error while deleting format_group: ${err}`)
       throw err

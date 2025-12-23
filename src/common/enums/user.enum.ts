@@ -1,15 +1,15 @@
 export enum Genders {
   MALE = 'male',
-  FEMALE = 'female'
+  FEMALE = 'female',
 }
 
 export enum Roles {
   USER = 'user',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
 }
 
 export enum UserType {
   GUEST = 'guest',
   STAFF = 'staff',
-  GHOST = 'ghost'
+  GHOST = 'ghost',
 }

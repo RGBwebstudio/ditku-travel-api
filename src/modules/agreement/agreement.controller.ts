@@ -1,23 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  Req,
-  UseGuards
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Req, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { AgreementService } from './agreement.service'
 import { CreateAgreementDto } from './dto/create-agreement.dto'
 import { UpdateAgreementDto } from './dto/update-agreement.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { Request } from 'express'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 @ApiTags('Terms of use')
 @Controller('terms-of-use')
@@ -27,7 +17,7 @@ export class AgreementController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати весь контент agreement' })
   findAll(@Query() { take, skip }: TakeAndSkipDto) {
@@ -37,7 +27,7 @@ export class AgreementController {
   @Get(':lang')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
   @ApiOperation({ summary: 'Отримати контент agreement' })
@@ -49,7 +39,7 @@ export class AgreementController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутність успішно створено'
+    description: 'SUCCESS - Сутність успішно створено',
   })
   @ApiOperation({ summary: 'Створення контенту agreement' })
   create(@Body() dto: CreateAgreementDto) {

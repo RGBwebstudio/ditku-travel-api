@@ -1,5 +1,6 @@
-import { IsEnum, IsInt, IsString } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
+
+import { IsEnum, IsInt, IsString } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
 
 export class PostCategoryCreateTranslateDto {

@@ -1,23 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  Req,
-  UseGuards
-} from '@nestjs/common'
-import { PrivacyPolicyService } from './privacy-policy.service'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Req, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { CreatePrivacyPolicyDto } from './dto/create-privacy-policy.dto'
 import { UpdatePrivacyPolicyDto } from './dto/update-privacy-policy.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { Request } from 'express'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { PrivacyPolicyService } from './privacy-policy.service'
 
 @ApiTags('Private Policy')
 @Controller('privacy-policy')
@@ -27,7 +17,7 @@ export class PrivacyPolicyController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати весь контент privacy policy' })
   findAll(@Query() { take, skip }: TakeAndSkipDto) {
@@ -37,7 +27,7 @@ export class PrivacyPolicyController {
   @Get(':lang')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
   @ApiOperation({ summary: 'Отримати контент privacy policy' })
@@ -49,7 +39,7 @@ export class PrivacyPolicyController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутність успішно створено'
+    description: 'SUCCESS - Сутність успішно створено',
   })
   @ApiOperation({ summary: 'Створення контенту privacy policy' })
   create(@Body() dto: CreatePrivacyPolicyDto) {

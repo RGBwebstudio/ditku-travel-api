@@ -1,11 +1,5 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  OneToMany,
-  CreateDateColumn,
-  UpdateDateColumn
-} from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm'
+
 import { Video } from './video.entity'
 
 @Entity()

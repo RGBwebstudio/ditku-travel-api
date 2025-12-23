@@ -4,5 +4,5 @@ export enum SORT_BY {
   RATING_ASC = 'rating_asc',
   RATING_DESC = 'rating_desc',
   POPULAR_ASC = 'popular_asc',
-  POPULAR_DESC = 'popular_desc'
+  POPULAR_DESC = 'popular_desc',
 }

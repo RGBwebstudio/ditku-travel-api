@@ -1,27 +1,26 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { join } from 'path'
 
-import { NestFactory } from '@nestjs/core'
-import { ConfigService } from '@nestjs/config'
 import { ValidationPipe } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+
 import * as bodyParser from 'body-parser'
 import { useContainer } from 'class-validator'
-import * as session from 'express-session'
 import * as pgSession from 'connect-pg-simple'
-import { AppModule } from './core/app.module'
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+import session from 'express-session'
+
 import { LanguageInterceptor } from './common/interceptors/language.interceptor'
+import { AppModule } from './core/app.module'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger: ['log', 'fatal', 'error', 'warn']
+    logger: ['log', 'fatal', 'error', 'warn'],
   })
 
   app.use(bodyParser.json({ limit: '100mb' }))
   app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }))
-
   app.useGlobalInterceptors(new LanguageInterceptor())
 
   const configService = app.get(ConfigService)
@@ -34,8 +33,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true
-      }
+        enableImplicitConversion: true,
+      },
     })
   )
 
@@ -44,13 +43,13 @@ async function bootstrap() {
   app.enableCors({
     origin: true,
     methods: 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS',
-    credentials: true
+    credentials: true,
   })
 
   app.use(
     session({
       store: new PgSession({
-        conString: configService.get<string>('DB_CONNECTION_STRING')
+        conString: configService.get<string>('DB_CONNECTION_STRING'),
       }),
       secret: process.env.SESSION_SECRET as string,
       resave: false,
@@ -60,13 +59,13 @@ async function bootstrap() {
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
-        path: '/'
-      }
+        path: '/',
+      },
     })
   )
 
   app.useStaticAssets(join(__dirname, '../..', 'uploads'), {
-    prefix: '/uploads/'
+    prefix: '/uploads/',
   })
 
   const config = new DocumentBuilder()
@@ -78,8 +77,8 @@ async function bootstrap() {
       name: 'X-Language',
       description: 'Код мови (ua, ru, en)',
       schema: {
-        example: 'ua'
-      }
+        example: 'ua',
+      },
     })
     .addBearerAuth(
       {
@@ -88,7 +87,7 @@ async function bootstrap() {
         bearerFormat: 'JWT',
         name: 'JWT',
         description: 'Введіть JWT токен авторизації',
-        in: 'header'
+        in: 'header',
       },
       'jwt'
     )
@@ -131,11 +130,12 @@ async function bootstrap() {
           'Private Policy',
           'Terms of use',
           'Cookie',
-          'Налаштування'
+          'Налаштування',
         ]
+
         return order.indexOf(a) - order.indexOf(b)
-      }
-    }
+      },
+    },
   })
 
   await app.listen(configService.get<string>('PORT') ?? 3000)

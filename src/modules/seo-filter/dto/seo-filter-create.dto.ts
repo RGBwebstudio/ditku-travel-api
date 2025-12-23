@@ -1,11 +1,6 @@
-import {
-  IsString,
-  IsOptional,
-  IsArray,
-  IsInt,
-  IsNotEmpty
-} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsString, IsOptional, IsArray, IsInt, IsNotEmpty } from 'class-validator'
 
 export class SeoFilterCreateDto {
   @ApiProperty({ example: 'З Харкова' })

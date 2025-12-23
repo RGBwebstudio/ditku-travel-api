@@ -1,4 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+
 import { Category } from './category.entity'
 
 @Entity()
@@ -12,7 +13,7 @@ export class CategoryImage {
   path: string
 
   @ManyToOne(() => Category, (category: Category) => category.images, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   entity_id: Category
 }

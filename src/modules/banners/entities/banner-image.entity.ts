@@ -1,4 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+
 import { BannerGroup } from './banners.entity'
 
 @Entity()
@@ -18,7 +19,7 @@ export class BannerImage {
   order: number
 
   @ManyToOne(() => BannerGroup, (banner) => banner.images, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   entity_id: BannerGroup
 }

@@ -1,18 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  Body,
-  ParseIntPipe,
-  Delete,
-  Put
-} from '@nestjs/common'
+import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { CityService } from './city.service'
 import { CreateCityDto } from './dto/create-city.dto'
 import { UpdateCityDto } from './dto/update-city.dto'
-import { CityService } from './city.service'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 @ApiTags('Міста')
 @Controller('city')
@@ -21,19 +12,11 @@ export class CityController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати частину міст' })
-  find(
-    @Query('take') take: number = 20,
-    @Query('skip') skip: number = 0,
-    @Query('country_id') country_id?: string
-  ) {
-    if (
-      country_id !== undefined &&
-      country_id !== null &&
-      String(country_id).trim() !== ''
-    ) {
+  find(@Query('take') take: number = 20, @Query('skip') skip: number = 0, @Query('country_id') country_id?: string) {
+    if (country_id !== undefined && country_id !== null && String(country_id).trim() !== '') {
       return this.cityService.findByCountry(Number(country_id))
     }
 
@@ -42,11 +25,7 @@ export class CityController {
 
   @Get('all')
   async getAllList(@Query('country_id') country_id?: string) {
-    if (
-      country_id !== undefined &&
-      country_id !== null &&
-      String(country_id).trim() !== ''
-    ) {
+    if (country_id !== undefined && country_id !== null && String(country_id).trim() !== '') {
       const entities = await this.cityService.findByCountry(Number(country_id))
       return { entities }
     }

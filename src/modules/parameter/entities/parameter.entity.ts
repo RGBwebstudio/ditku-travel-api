@@ -1,3 +1,5 @@
+import { ParameterCategory } from 'src/modules/parameter-category/entities/parameter-category.entity'
+import { Product } from 'src/modules/product/entities/product.entity'
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,10 +8,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinTable,
-  OneToMany
+  OneToMany,
 } from 'typeorm'
-import { ParameterCategory } from 'src/modules/parameter-category/entities/parameter-category.entity'
-import { Product } from 'src/modules/product/entities/product.entity'
+
 import { ParameterTranslate } from './category-translate.entity'
 
 @Entity()
@@ -19,18 +20,14 @@ export class Parameter {
   @Column()
   title: string
 
-  @ManyToMany(
-    () => ParameterCategory,
-    (parameterCategory) => parameterCategory.parameters,
-    { onDelete: 'CASCADE' }
-  )
+  @ManyToMany(() => ParameterCategory, (parameterCategory) => parameterCategory.parameters, { onDelete: 'CASCADE' })
   @JoinTable({
     name: 'parameter_categories',
     joinColumn: { name: 'parameter_id', referencedColumnName: 'id' },
     inverseJoinColumn: {
       name: 'parameter_category_id',
-      referencedColumnName: 'id'
-    }
+      referencedColumnName: 'id',
+    },
   })
   category_ids: ParameterCategory[]
 
@@ -38,15 +35,15 @@ export class Parameter {
   order_in_list: number
 
   @ManyToMany(() => Product, (product) => product.parameters, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @JoinTable({
     name: 'product_and_parameter',
     joinColumn: { name: 'parameter_id', referencedColumnName: 'id' },
     inverseJoinColumn: {
       name: 'product_id',
-      referencedColumnName: 'id'
-    }
+      referencedColumnName: 'id',
+    },
   })
   products: Product[]
 

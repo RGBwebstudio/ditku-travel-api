@@ -1,16 +1,13 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger
-} from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { City } from 'src/modules/city/entities/city.entity'
+import { Product } from 'src/modules/product/entities/product.entity'
 import { Repository, DeepPartial } from 'typeorm'
-import { Roadmap } from './entities/roadmap.entity'
+
 import { CreateRoadmapDto } from './dto/create-roadmap.dto'
 import { UpdateRoadmapDto } from './dto/update-roadmap.dto'
-import { Product } from 'src/modules/product/entities/product.entity'
-import { City } from 'src/modules/city/entities/city.entity'
+import { Roadmap } from './entities/roadmap.entity'
 
 @Injectable()
 export class RoadmapService {
@@ -31,7 +28,7 @@ export class RoadmapService {
     const [entities, count] = await this.repo.findAndCount({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
 
     return { entities, count }
@@ -43,7 +40,7 @@ export class RoadmapService {
       end_point: dto.end_point,
       time: dto.time,
       description: dto.description,
-      order: dto.order
+      order: dto.order,
     }
 
     if (typeof dto.city_id !== 'undefined' && dto.city_id !== null) {
@@ -71,7 +68,7 @@ export class RoadmapService {
       end_point: dto.end_point,
       time: dto.time,
       description: dto.description,
-      order: dto.order
+      order: dto.order,
     }
 
     if (typeof dto.city_id !== 'undefined') {
@@ -87,7 +84,7 @@ export class RoadmapService {
         updatePayload.product_id = null
       } else {
         updatePayload.product_id = Object.assign({
-          id: dto.product_id
+          id: dto.product_id,
         } as Product)
       }
     }
@@ -104,8 +101,7 @@ export class RoadmapService {
   async delete(id: number): Promise<{ message: string }> {
     const result = await this.repo.delete(id)
 
-    if (result.affected === 0)
-      throw new NotFoundException('roadmap is NOT_FOUND')
+    if (result.affected === 0) throw new NotFoundException('roadmap is NOT_FOUND')
 
     return { message: 'SUCCESS' }
   }
@@ -119,7 +115,7 @@ export class RoadmapService {
         end_point: dto.end_point,
         time: dto.time,
         description: dto.description,
-        order: dto.order
+        order: dto.order,
       }
 
       if (typeof dto.city_id !== 'undefined' && dto.city_id !== null) {
@@ -128,7 +124,7 @@ export class RoadmapService {
 
       if (dto.product_id) {
         payload.product_id = Object.assign({
-          id: dto.product_id
+          id: dto.product_id,
         } as Product)
       }
 
@@ -146,9 +142,7 @@ export class RoadmapService {
     }
   }
 
-  async updateFromArray(
-    items: Array<UpdateRoadmapDto & { id: number }>
-  ): Promise<Roadmap[]> {
+  async updateFromArray(items: Array<UpdateRoadmapDto & { id: number }>): Promise<Roadmap[]> {
     if (!Array.isArray(items) || items.length === 0) return []
 
     const results: Roadmap[] = []
@@ -173,7 +167,7 @@ export class RoadmapService {
           entity.product_id = null
         } else {
           entity.product_id = Object.assign({
-            id: dto.product_id
+            id: dto.product_id,
           } as Product)
         }
       }

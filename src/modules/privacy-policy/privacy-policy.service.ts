@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { LANG } from 'src/common/enums/translation.enum'
 import { Repository } from 'typeorm'
-import { PrivacyPolicy } from './entities/privacy-policy.entity'
+
 import { CreatePrivacyPolicyDto } from './dto/create-privacy-policy.dto'
 import { UpdatePrivacyPolicyDto } from './dto/update-privacy-policy.dto'
-import { LANG } from 'src/common/enums/translation.enum'
+import { PrivacyPolicy } from './entities/privacy-policy.entity'
 
 @Injectable()
 export class PrivacyPolicyService {
@@ -30,14 +27,11 @@ export class PrivacyPolicyService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: PrivacyPolicy[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: PrivacyPolicy[]; count: number }> {
     const entities = await this.repo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
     const count = await this.repo.count()
     return { entities, count }
@@ -45,8 +39,7 @@ export class PrivacyPolicyService {
 
   async findOne(lang: LANG): Promise<PrivacyPolicy> {
     const entity = await this.repo.findOne({ where: { lang } })
-    if (!entity)
-      throw new NotFoundException('entity of privacy-policy NOT_FOUND')
+    if (!entity) throw new NotFoundException('entity of privacy-policy NOT_FOUND')
     return entity
   }
 
@@ -66,8 +59,7 @@ export class PrivacyPolicyService {
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('entity of privacy-policy NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('entity of privacy-policy NOT_FOUND')
     } catch (err) {
       if (err.code === '23503') {
         throw new BadRequestException('entity of privacy-policy HAS_CHILDS')

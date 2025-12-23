@@ -1,13 +1,9 @@
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsString
-} from 'class-validator'
-import { LANG } from 'src/common/enums/translation.enum'
-import { SectionTranslate } from '../entities/section-translate.entity'
 import { ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
+import { LANG } from 'src/common/enums/translation.enum'
+
+import { SectionTranslate } from '../entities/section-translate.entity'
 
 export class SectionUpdateTranslateDto {
   @ApiPropertyOptional({ example: 'title' })

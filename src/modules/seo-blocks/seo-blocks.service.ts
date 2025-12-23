@@ -1,13 +1,11 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException
-} from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
 import { Repository } from 'typeorm'
-import { SeoBlock } from './entities/seo-block.entity'
+
 import { CreateSeoBlockDto } from './dto/create-seo-block.dto'
 import { UpdateSeoBlockDto } from './dto/update-seo-block.dto'
+import { SeoBlock } from './entities/seo-block.entity'
 
 @Injectable()
 export class SeoBlocksService {
@@ -25,7 +23,7 @@ export class SeoBlocksService {
       const exists = await this.repo
         .createQueryBuilder('seoBlock')
         .where('LOWER(seoBlock.meta_title) = :title', {
-          title: dto.meta_title.toLowerCase()
+          title: dto.meta_title.toLowerCase(),
         })
         .getOne()
 
@@ -41,7 +39,7 @@ export class SeoBlocksService {
       const exists = await this.repo
         .createQueryBuilder('seoBlock')
         .where('LOWER(seoBlock.meta_title) = :title', {
-          title: dto.meta_title.toLowerCase()
+          title: dto.meta_title.toLowerCase(),
         })
         .andWhere('seoBlock.id != :id', { id })
         .getOne()

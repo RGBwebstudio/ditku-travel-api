@@ -1,13 +1,7 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany
-} from 'typeorm'
-import { BannerImage } from './banner-image.entity'
 import { BannerType } from 'src/common/types/banner-group.types'
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm'
+
+import { BannerImage } from './banner-image.entity'
 
 @Entity()
 export class BannerGroup {
@@ -23,7 +17,7 @@ export class BannerGroup {
   order: number
 
   @OneToMany(() => BannerImage, (image) => image.entity_id, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   images: BannerImage[]
 

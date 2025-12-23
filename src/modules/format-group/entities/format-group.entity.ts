@@ -1,12 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany,
-  CreateDateColumn,
-  UpdateDateColumn
-} from 'typeorm'
 import { Product } from 'src/modules/product/entities/product.entity'
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm'
 
 @Entity()
 export class FormatGroup {

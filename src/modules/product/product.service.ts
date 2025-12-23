@@ -1,32 +1,30 @@
-import * as sharp from 'sharp'
 import * as path from 'path'
-import * as fs from 'fs-extra'
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  Logger
-} from '@nestjs/common'
+
+import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Product } from './entities/product.entity'
-import { In, Repository, DeepPartial } from 'typeorm'
+
+import { Request } from 'express'
+import * as fs from 'fs-extra'
+import * as sharp from 'sharp'
+import { LANG } from 'src/common/enums/translation.enum'
+import { ProductWithoutRatings } from 'src/common/utils/apply-rating'
+import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { Category } from 'src/modules/category/entities/category.entity'
+import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
+import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
 import { ProductUpdateDto } from 'src/modules/product/dto/product-update.dto'
-import { Section } from 'src/modules/section/entities/section.entity'
-import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
-import { ProductParametersDto } from './dto/product-parameters.dto'
-import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
-import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
-import { LANG } from 'src/common/enums/translation.enum'
-import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
-import { ProductTranslate } from './entities/product-translate.entity'
-import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
+import { Section } from 'src/modules/section/entities/section.entity'
+import { In, Repository, DeepPartial } from 'typeorm'
+
 import { ProductCreateImageDto } from './dto/product-create-image.dto'
+import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
+import { ProductParametersDto } from './dto/product-parameters.dto'
+import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
 import { ProductImage } from './entities/product-image.entity'
-import { ProductWithoutRatings } from 'src/common/utils/apply-rating'
-import { Request } from 'express'
-import { Category } from 'src/modules/category/entities/category.entity'
+import { ProductTranslate } from './entities/product-translate.entity'
+import { Product } from './entities/product.entity'
 
 type RawRoadmap = {
   id: number
@@ -70,14 +68,11 @@ export class ProductService {
       .leftJoinAndSelect('product.images', 'images')
       .addSelect(
         (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
+          subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
         'average_rating'
       )
       .where('LOWER(product.title) LIKE :title', {
-        title: `%${query.toLowerCase()}%`
+        title: `%${query.toLowerCase()}%`,
       })
       .orderBy('product.created_at', 'DESC')
       .take(5)
@@ -93,14 +88,11 @@ export class ProductService {
         .leftJoinAndSelect('product.images', 'images')
         .addSelect(
           (subQuery) =>
-            subQuery
-              .select('COALESCE(AVG(r.rating), 0)')
-              .from('rating', 'r')
-              .where('r.productIdId = product.id'),
+            subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
           'average_rating'
         )
         .where('LOWER(translates.value) LIKE :title', {
-          title: `%${query.toLowerCase()}%`
+          title: `%${query.toLowerCase()}%`,
         })
         .andWhere('translates.field = :field', { field: 'title' })
         .orderBy('product.created_at', 'DESC')
@@ -127,41 +119,29 @@ export class ProductService {
               id: e.category_id.id,
               title: e.category_id.title,
               url: e.category_id.url,
-              images: e.category_id.images
-            }
+              images: e.category_id.images,
+            },
           ])
-      ).values()
+      ).values(),
     ]
 
     const mappedEntities = applyTranslations(entities, lang)
 
     for (const mappedProductItem of mappedEntities) {
-      if (
-        mappedProductItem.category_id &&
-        mappedProductItem.category_id.translates
-      ) {
-        mappedProductItem.category_id = applyTranslations(
-          [mappedProductItem.category_id],
-          lang
-        )[0]
+      if (mappedProductItem.category_id && mappedProductItem.category_id.translates) {
+        mappedProductItem.category_id = applyTranslations([mappedProductItem.category_id], lang)[0]
       }
 
-      if (
-        mappedProductItem.parameters &&
-        Array.isArray(mappedProductItem.parameters)
-      ) {
-        mappedProductItem.parameters = mappedProductItem.parameters.map(
-          (parameter) =>
-            parameter && parameter.translates
-              ? applyTranslations([parameter], lang)[0]
-              : parameter
+      if (mappedProductItem.parameters && Array.isArray(mappedProductItem.parameters)) {
+        mappedProductItem.parameters = mappedProductItem.parameters.map((parameter) =>
+          parameter && parameter.translates ? applyTranslations([parameter], lang)[0] : parameter
         )
       }
     }
 
     return {
       entities: mappedEntities,
-      categories
+      categories,
     }
   }
 
@@ -177,14 +157,11 @@ export class ProductService {
       .leftJoinAndSelect('parameters.translates', 'parameter_translates')
       .addSelect(
         (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
+          subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
         'average_rating'
       )
       .where('product.show_on_main_page = :showOnMainPage', {
-        showOnMainPage: true
+        showOnMainPage: true,
       })
       .take(20)
       .getRawAndEntities()
@@ -206,9 +183,7 @@ export class ProductService {
 
       if (product.parameters && Array.isArray(product.parameters)) {
         product.parameters = product.parameters.map((param: Parameter) =>
-          param && param.translates
-            ? applyTranslations([param], lang)[0]
-            : param
+          param && param.translates ? applyTranslations([param], lang)[0] : param
         )
       }
     }
@@ -216,11 +191,7 @@ export class ProductService {
     return mappedEntities
   }
 
-  async find(
-    take: number,
-    skip: number,
-    lang: LANG
-  ): Promise<{ entities: ProductWithoutRatings[]; count: number }> {
+  async find(take: number, skip: number, lang: LANG): Promise<{ entities: ProductWithoutRatings[]; count: number }> {
     const result = await this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
@@ -230,10 +201,7 @@ export class ProductService {
       .leftJoinAndSelect('product.translates', 'translates')
       .addSelect(
         (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
+          subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
         'average_rating'
       )
       .orderBy('product.created_at', 'DESC')
@@ -256,9 +224,7 @@ export class ProductService {
     return { entities: mappedEntities, count }
   }
 
-  private async getAllChildrenCategoryUrls(
-    categoryUrls: string[]
-  ): Promise<string[]> {
+  private async getAllChildrenCategoryUrls(categoryUrls: string[]): Promise<string[]> {
     if (!categoryUrls?.length) return []
 
     const treeRepo = this.categoryRepo.manager.getTreeRepository(Category)
@@ -278,9 +244,7 @@ export class ProductService {
     return Array.from(urls)
   }
 
-  private async getAllChildrenCategoryIds(
-    categoryIds: number[]
-  ): Promise<number[]> {
+  private async getAllChildrenCategoryIds(categoryIds: number[]): Promise<number[]> {
     if (!categoryIds?.length) return []
 
     const treeRepo = this.categoryRepo.manager.getTreeRepository(Category)
@@ -300,10 +264,7 @@ export class ProductService {
     return Array.from(ids)
   }
 
-  async findByCategory(
-    categoryId: number,
-    lang: LANG
-  ): Promise<ProductWithoutRatings[]> {
+  async findByCategory(categoryId: number, lang: LANG): Promise<ProductWithoutRatings[]> {
     const root = await this.categoryRepo.findOne({ where: { id: categoryId } })
     if (!root) return []
 
@@ -322,10 +283,7 @@ export class ProductService {
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .addSelect(
         (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
+          subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
         'average_rating'
       )
       .where('product.category_id IN (:...categoryIds)', { categoryIds })
@@ -350,9 +308,7 @@ export class ProductService {
 
       if (product.parameters && Array.isArray(product.parameters)) {
         product.parameters = product.parameters.map((param: Parameter) =>
-          param && param.translates
-            ? applyTranslations([param], lang)[0]
-            : param
+          param && param.translates ? applyTranslations([param], lang)[0] : param
         )
       }
 
@@ -374,17 +330,13 @@ export class ProductService {
     startAt?: string,
     endAt?: string
   ) {
-    const mappedCategories = categories?.trim().length
-      ? categories.split(',').map((item) => String(item))
-      : []
+    const mappedCategories = categories?.trim().length ? categories.split(',').map((item) => String(item)) : []
 
     const mappedParameters: number[] = parameters?.trim().length
       ? parameters.split(',').map((item) => Number(item))
       : []
 
-    const mappedSections: number[] = sections?.trim().length
-      ? sections.split(',').map((item) => Number(item))
-      : []
+    const mappedSections: number[] = sections?.trim().length ? sections.split(',').map((item) => Number(item)) : []
 
     const allCategoryUrls: string[] = mappedCategories.length
       ? await this.getAllChildrenCategoryUrls(mappedCategories)
@@ -400,7 +352,7 @@ export class ProductService {
 
     if (allCategoryUrls.length > 0) {
       queryBuilder.andWhere('category_id.url IN (:...categories)', {
-        categories: allCategoryUrls
+        categories: allCategoryUrls,
       })
     }
 
@@ -411,11 +363,11 @@ export class ProductService {
           .select('pp.product_id')
           .from('product_parameters', 'pp')
           .where('pp.parameter_id IN (:...parameters)', {
-            parameters: mappedParameters
+            parameters: mappedParameters,
           })
           .groupBy('pp.product_id')
           .having('COUNT(DISTINCT pp.parameter_id) = :paramCount', {
-            paramCount: mappedParameters.length
+            paramCount: mappedParameters.length,
           })
           .getQuery()
         return 'product.id IN ' + subQuery
@@ -429,7 +381,7 @@ export class ProductService {
           .select('ps.product_id')
           .from('product_section', 'ps')
           .where('ps.section_id IN (:...sections)', {
-            sections: mappedSections
+            sections: mappedSections,
           })
           .getQuery()
         return 'product.id IN ' + subQuery
@@ -437,27 +389,15 @@ export class ProductService {
     }
 
     if (start_point && typeof start_point === 'number') {
-      queryBuilder.innerJoin(
-        'roadmap',
-        'start_roadmap',
-        'start_roadmap.product_id = product.id'
-      )
-      queryBuilder.andWhere(
-        'start_roadmap.start_point = true AND start_roadmap.city_id = :startPoint',
-        { startPoint: start_point }
-      )
+      queryBuilder.innerJoin('roadmap', 'start_roadmap', 'start_roadmap.product_id = product.id')
+      queryBuilder.andWhere('start_roadmap.start_point = true AND start_roadmap.city_id = :startPoint', {
+        startPoint: start_point,
+      })
     }
 
     if (end_point && typeof end_point === 'number') {
-      queryBuilder.innerJoin(
-        'roadmap',
-        'end_roadmap',
-        'end_roadmap.product_id = product.id'
-      )
-      queryBuilder.andWhere(
-        'end_roadmap.end_point = true AND end_roadmap.city_id = :endPoint',
-        { endPoint: end_point }
-      )
+      queryBuilder.innerJoin('roadmap', 'end_roadmap', 'end_roadmap.product_id = product.id')
+      queryBuilder.andWhere('end_roadmap.end_point = true AND end_roadmap.city_id = :endPoint', { endPoint: end_point })
     }
 
     let queryStartDate: Date | null = null
@@ -477,7 +417,7 @@ export class ProductService {
         '(product.start_at <= :queryEnd AND (product.end_at IS NULL OR product.end_at >= :queryStart))',
         {
           queryStart: queryStartDate.toISOString(),
-          queryEnd: queryEndDate.toISOString()
+          queryEnd: queryEndDate.toISOString(),
         }
       )
     } else if (queryStartDate) {
@@ -516,8 +456,8 @@ export class ProductService {
         'format_groups',
         'ratings',
         'roadmaps',
-        'roadmaps.city_id'
-      ]
+        'roadmaps.city_id',
+      ],
     })
 
     if (!products.length) throw new NotFoundException('product is NOT_FOUND')
@@ -525,30 +465,17 @@ export class ProductService {
     let mappedProducts = applyTranslations(products, lang)
 
     mappedProducts = mappedProducts.map((mappedProductItem) => {
-      if (
-        mappedProductItem.category_id &&
-        mappedProductItem.category_id.translates
-      ) {
-        mappedProductItem.category_id = applyTranslations(
-          [mappedProductItem.category_id],
-          lang
-        )[0]
+      if (mappedProductItem.category_id && mappedProductItem.category_id.translates) {
+        mappedProductItem.category_id = applyTranslations([mappedProductItem.category_id], lang)[0]
       }
 
-      if (
-        mappedProductItem.parameters &&
-        Array.isArray(mappedProductItem.parameters)
-      ) {
-        mappedProductItem.parameters = mappedProductItem.parameters.map(
-          (parameter: Parameter) =>
-            parameter && parameter.translates
-              ? applyTranslations([parameter], lang)[0]
-              : parameter
+      if (mappedProductItem.parameters && Array.isArray(mappedProductItem.parameters)) {
+        mappedProductItem.parameters = mappedProductItem.parameters.map((parameter: Parameter) =>
+          parameter && parameter.translates ? applyTranslations([parameter], lang)[0] : parameter
         )
       }
 
-      const rawRoadmaps = (mappedProductItem as { roadmaps?: RawRoadmap[] })
-        .roadmaps
+      const rawRoadmaps = (mappedProductItem as { roadmaps?: RawRoadmap[] }).roadmaps
       if (Array.isArray(rawRoadmaps)) {
         const mappedRoadmaps = rawRoadmaps.map((rawRoadmap: RawRoadmap) =>
           Object.assign(new Roadmap(), {
@@ -556,15 +483,10 @@ export class ProductService {
             start_point: Boolean(rawRoadmap.start_point),
             end_point: Boolean(rawRoadmap.end_point),
             city_id:
-              rawRoadmap.city_id && typeof rawRoadmap.city_id === 'object'
-                ? rawRoadmap.city_id.id
-                : rawRoadmap.city_id,
+              rawRoadmap.city_id && typeof rawRoadmap.city_id === 'object' ? rawRoadmap.city_id.id : rawRoadmap.city_id,
             time: rawRoadmap.time || '',
             description: rawRoadmap.description || '',
-            order:
-              rawRoadmap.order !== undefined && rawRoadmap.order !== null
-                ? Number(rawRoadmap.order)
-                : undefined
+            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
           })
         )
 
@@ -596,8 +518,8 @@ export class ProductService {
         'parameters.translates',
         'ratings',
         'roadmaps',
-        'roadmaps.city_id'
-      ]
+        'roadmaps.city_id',
+      ],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
@@ -616,25 +538,18 @@ export class ProductService {
 
     mappedProducts = mappedProducts.map((productDto) => {
       if (productDto.category_id && productDto.category_id.translates) {
-        productDto.category_id = applyTranslations(
-          [productDto.category_id],
-          lang
-        )[0]
+        productDto.category_id = applyTranslations([productDto.category_id], lang)[0]
       }
 
       if (productDto.parameters && Array.isArray(productDto.parameters)) {
         productDto.parameters = productDto.parameters.map((param: Parameter) =>
-          param && param.translates
-            ? applyTranslations([param], lang)[0]
-            : param
+          param && param.translates ? applyTranslations([param], lang)[0] : param
         )
       }
 
       if (productDto.sections && Array.isArray(productDto.sections)) {
         productDto.sections = productDto.sections.map((section: Section) =>
-          section && section.translates
-            ? applyTranslations([section], lang)[0]
-            : section
+          section && section.translates ? applyTranslations([section], lang)[0] : section
         )
       }
 
@@ -651,9 +566,7 @@ export class ProductService {
         time: roadmapEntity.time || '',
         description: roadmapEntity.description || '',
         order:
-          roadmapEntity.order !== undefined && roadmapEntity.order !== null
-            ? Number(roadmapEntity.order)
-            : undefined
+          roadmapEntity.order !== undefined && roadmapEntity.order !== null ? Number(roadmapEntity.order) : undefined,
       })
     )
 
@@ -682,8 +595,8 @@ export class ProductService {
         'format_groups',
         'ratings',
         'roadmaps',
-        'roadmaps.city_id'
-      ]
+        'roadmaps.city_id',
+      ],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
@@ -711,8 +624,8 @@ export class ProductService {
           'translates',
           'parameters',
           'parameters.translates',
-          'format_groups'
-        ]
+          'format_groups',
+        ],
       })
     }
 
@@ -725,9 +638,7 @@ export class ProductService {
 
       if (prod.parameters && Array.isArray(prod.parameters)) {
         prod.parameters = prod.parameters.map((param: Parameter) =>
-          param && param.translates
-            ? applyTranslations([param], lang)[0]
-            : param
+          param && param.translates ? applyTranslations([param], lang)[0] : param
         )
       }
 
@@ -740,16 +651,10 @@ export class ProductService {
         id: roadmap.id,
         start_point: Boolean(roadmap.start_point),
         end_point: Boolean(roadmap.end_point),
-        city_id:
-          roadmap.city_id && typeof roadmap.city_id === 'object'
-            ? roadmap.city_id.id
-            : roadmap.city_id,
+        city_id: roadmap.city_id && typeof roadmap.city_id === 'object' ? roadmap.city_id.id : roadmap.city_id,
         time: roadmap.time || '',
         description: roadmap.description || '',
-        order:
-          roadmap.order !== undefined && roadmap.order !== null
-            ? Number(roadmap.order)
-            : undefined
+        order: roadmap.order !== undefined && roadmap.order !== null ? Number(roadmap.order) : undefined,
       })
     )
 
@@ -775,9 +680,7 @@ export class ProductService {
 
       if (child.parameters && Array.isArray(child.parameters)) {
         child.parameters = child.parameters.map((param) =>
-          param && param.translates
-            ? applyTranslations([param], lang)[0]
-            : param
+          param && param.translates ? applyTranslations([param], lang)[0] : param
         )
       }
 
@@ -786,14 +689,11 @@ export class ProductService {
 
     return {
       product: mappedProduct[0],
-      children: mappedChildren
+      children: mappedChildren,
     }
   }
 
-  async findRecommended(
-    productIds: number[],
-    lang: LANG
-  ): Promise<ProductWithoutRatings[]> {
+  async findRecommended(productIds: number[], lang: LANG): Promise<ProductWithoutRatings[]> {
     if (!productIds.length) return []
 
     const result = await this.productRepo
@@ -806,10 +706,7 @@ export class ProductService {
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .addSelect(
         (subQuery) =>
-          subQuery
-            .select('COALESCE(AVG(r.rating), 0)')
-            .from('rating', 'r')
-            .where('r.productIdId = product.id'),
+          subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
         'average_rating'
       )
       .where('recommendedBy.id IN (:...productIds)', { productIds })
@@ -819,8 +716,7 @@ export class ProductService {
     const recommendedProducts = result.entities.map((entity, index) => {
       const raw = result.raw[index]
       if (raw.average_rating !== undefined) {
-        entity.rating =
-          Math.round(parseFloat(raw.average_rating) * 10) / 10 || 0
+        entity.rating = Math.round(parseFloat(raw.average_rating) * 10) / 10 || 0
       }
       return entity
     })
@@ -839,28 +735,24 @@ export class ProductService {
 
   async create(dto: ProductCreateDto): Promise<Product> {
     const productPayload = {
-      ...dto
+      ...dto,
     }
 
     const sectionsIds = Array.isArray(dto.sections) ? dto.sections : undefined
     if (sectionsIds) delete productPayload.sections
 
     const formatGroupIds: number[] | undefined =
-      Array.isArray(dto.format_group) && dto.format_group.length
-        ? dto.format_group
-        : undefined
+      Array.isArray(dto.format_group) && dto.format_group.length ? dto.format_group : undefined
     if (formatGroupIds) delete productPayload.format_group
 
-    const product = this.productRepo.create(
-      productPayload as DeepPartial<Product>
-    )
+    const product = this.productRepo.create(productPayload as DeepPartial<Product>)
 
     try {
       const saved = await this.productRepo.save(product)
 
       if (formatGroupIds && formatGroupIds.length) {
         const formatGroups = await this.formatGroupRepo.findBy({
-          id: In(formatGroupIds)
+          id: In(formatGroupIds),
         })
         if (formatGroups.length !== formatGroupIds.length) {
           throw new BadRequestException('format_group is NOT_FOUND')
@@ -871,7 +763,7 @@ export class ProductService {
 
       if (sectionsIds && sectionsIds.length) {
         const sectionEntities = await this.sectionRepo.findBy({
-          id: In(sectionsIds)
+          id: In(sectionsIds),
         })
         saved.sections = sectionEntities.length ? sectionEntities : []
         await this.productRepo.save(saved)
@@ -892,31 +784,20 @@ export class ProductService {
     try {
       const sectionsIds = dto.sections !== undefined ? dto.sections : undefined
       const formatGroupIds: number[] | undefined =
-        dto.format_group !== undefined && Array.isArray(dto.format_group)
-          ? dto.format_group
-          : undefined
+        dto.format_group !== undefined && Array.isArray(dto.format_group) ? dto.format_group : undefined
 
       /* eslint-disable @typescript-eslint/no-unused-vars */
-      const { sections, format_group, ...rawUpdatePayload } =
-        dto as Partial<ProductUpdateDto>
+      const { sections, format_group, ...rawUpdatePayload } = dto as Partial<ProductUpdateDto>
 
-      const updatePayload = rawUpdatePayload as Omit<
-        Partial<ProductUpdateDto>,
-        'sections' | 'format_group'
-      >
+      const updatePayload = rawUpdatePayload as Omit<Partial<ProductUpdateDto>, 'sections' | 'format_group'>
 
-      await this.productRepo.update(
-        { id },
-        updatePayload as DeepPartial<Product>
-      )
+      await this.productRepo.update({ id }, updatePayload as DeepPartial<Product>)
 
       if (sectionsIds !== undefined) {
-        const sectionEntities = sectionsIds?.length
-          ? await this.sectionRepo.findBy({ id: In(sectionsIds) })
-          : []
+        const sectionEntities = sectionsIds?.length ? await this.sectionRepo.findBy({ id: In(sectionsIds) }) : []
 
         const existing = await this.productRepo.findOne({
-          where: { id }
+          where: { id },
         })
 
         if (!existing) throw new BadRequestException('NOT_UPDATED')
@@ -930,9 +811,7 @@ export class ProductService {
         const existing = await this.productRepo.findOne({ where: { id } })
         if (!existing) throw new BadRequestException('NOT_UPDATED')
 
-        const formatGroups = formatGroupIds.length
-          ? await this.formatGroupRepo.findBy({ id: In(formatGroupIds) })
-          : []
+        const formatGroups = formatGroupIds.length ? await this.formatGroupRepo.findBy({ id: In(formatGroupIds) }) : []
 
         if (formatGroups.length !== (formatGroupIds || []).length) {
           throw new BadRequestException('format_group is NOT_FOUND')
@@ -949,16 +828,13 @@ export class ProductService {
     }
   }
 
-  async updateParameters(
-    id: number,
-    dto: ProductParametersDto
-  ): Promise<Product | null> {
+  async updateParameters(id: number, dto: ProductParametersDto): Promise<Product | null> {
     const product = await this.productRepo.findOne({ where: { id } })
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
     try {
       const parameters = await this.parameterRepo.findBy({
-        id: In(dto.parameters)
+        id: In(dto.parameters),
       })
 
       product.parameters = parameters.length ? parameters : []
@@ -971,21 +847,11 @@ export class ProductService {
     try {
       return (await this.productRepo.findOne({
         where: { id },
-        relations: [
-          'category_id',
-          'parent_id',
-          'images',
-          'translates',
-          'parameters',
-          'format_groups',
-          'ratings'
-        ]
+        relations: ['category_id', 'parent_id', 'images', 'translates', 'parameters', 'format_groups', 'ratings'],
       })) as Product
     } catch (err) {
       this.logger.error(`Error while fetching product with id ${id}: ${err}`)
-      throw new BadRequestException(
-        'Failed to fetch product after updating parameters SERVER_ERROR'
-      )
+      throw new BadRequestException('Failed to fetch product after updating parameters SERVER_ERROR')
     }
   }
 
@@ -1010,9 +876,7 @@ export class ProductService {
     return { message: 'SUCCESS' }
   }
 
-  async createTranslates(
-    dto: ProductCreateTranslateDto[]
-  ): Promise<ProductTranslate[] | null> {
+  async createTranslates(dto: ProductCreateTranslateDto[]): Promise<ProductTranslate[] | null> {
     if (dto?.length) {
       const results: ProductTranslate[] = []
 
@@ -1027,21 +891,18 @@ export class ProductService {
     return null
   }
 
-  async updateTranslates(
-    dto: ProductUpdateTranslateDto[]
-  ): Promise<ProductTranslate[] | null> {
+  async updateTranslates(dto: ProductUpdateTranslateDto[]): Promise<ProductTranslate[] | null> {
     const results: ProductTranslate[] = []
 
     for (const translate of dto) {
       const result = await this.entityTranslateRepo.update(translate.id, {
-        ...translate
+        ...translate,
       })
 
-      if (result.affected === 0)
-        throw new NotFoundException('product translate is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('product translate is NOT_FOUND')
 
       const updatedEntityTranslate = await this.entityTranslateRepo.findOne({
-        where: { id: translate.id }
+        where: { id: translate.id },
       })
 
       if (updatedEntityTranslate) results.push(updatedEntityTranslate)
@@ -1050,9 +911,7 @@ export class ProductService {
     return results
   }
 
-  async deleteTranslate(
-    id: number
-  ): Promise<{ message: string } | NotFoundException> {
+  async deleteTranslate(id: number): Promise<{ message: string } | NotFoundException> {
     const result = await this.entityTranslateRepo.delete(id)
 
     if (result.affected === 0) {
@@ -1063,12 +922,11 @@ export class ProductService {
   }
 
   async createImage(dto: ProductCreateImageDto): Promise<ProductImage> {
-    const entity_id =
-      typeof dto.entity_id === 'number' ? { id: dto.entity_id } : dto.entity_id
+    const entity_id = typeof dto.entity_id === 'number' ? { id: dto.entity_id } : dto.entity_id
 
     const newImage = this.entityImageRepo.create({
       ...dto,
-      entity_id
+      entity_id,
     })
     try {
       return await this.entityImageRepo.save(newImage)
@@ -1078,10 +936,7 @@ export class ProductService {
     }
   }
 
-  async uploadImages(
-    files: Express.Multer.File[],
-    entity_id: number
-  ): Promise<{ message: string }> {
+  async uploadImages(files: Express.Multer.File[], entity_id: number): Promise<{ message: string }> {
     for (const file of files) {
       const fileName = `${Date.now()}.webp`
 
@@ -1096,15 +951,13 @@ export class ProductService {
         const body: ProductCreateImageDto = {
           name: fileName,
           path: `/uploads/product/${fileName}`,
-          entity_id: entity_id
+          entity_id: entity_id,
         }
 
         try {
           await this.createImage(body)
         } catch (err) {
-          this.logger.warn(
-            `Error to create image for entity_id: ${entity_id}: ${err}`
-          )
+          this.logger.warn(`Error to create image for entity_id: ${entity_id}: ${err}`)
           throw new BadRequestException('product image is NOT_CREATED')
         }
       } catch (err) {
@@ -1114,7 +967,7 @@ export class ProductService {
     }
 
     return {
-      message: 'Images saved'
+      message: 'Images saved',
     }
   }
 
@@ -1138,13 +991,11 @@ export class ProductService {
 
   async deleteImages(entity_id: number): Promise<{ message: string } | void> {
     const deleteCandidates = await this.entityImageRepo.find({
-      where: { entity_id: { id: entity_id } }
+      where: { entity_id: { id: entity_id } },
     })
 
     if (deleteCandidates?.length) {
-      const filePathList = deleteCandidates.map(
-        (field: ProductImage) => field.path
-      )
+      const filePathList = deleteCandidates.map((field: ProductImage) => field.path)
 
       for (const filePath of filePathList) {
         try {
@@ -1208,7 +1059,7 @@ export class ProductService {
       this.logger.error(`Error in searchShort: ${err}`)
       throw new BadRequestException({
         message: 'SEARCH_FAILED',
-        code: 'SEARCH_FAILED'
+        code: 'SEARCH_FAILED',
       })
     }
   }
@@ -1220,27 +1071,22 @@ export class ProductService {
 
     const images = await this.entityImageRepo.find({
       where: { entity_id: { id: productId } },
-      order: { order: 'ASC' }
+      order: { order: 'ASC' },
     })
 
     return images
   }
 
-  async updateRecommendedProducts(
-    id: number,
-    productIds: number[]
-  ): Promise<Product> {
+  async updateRecommendedProducts(id: number, productIds: number[]): Promise<Product> {
     const product = await this.productRepo.findOne({
       where: { id },
-      relations: ['recommendedProducts']
+      relations: ['recommendedProducts'],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
     const recommended =
-      Array.isArray(productIds) && productIds.length
-        ? await this.productRepo.findBy({ id: In(productIds) })
-        : []
+      Array.isArray(productIds) && productIds.length ? await this.productRepo.findBy({ id: In(productIds) }) : []
 
     product.recommendedProducts = recommended
 
@@ -1257,8 +1103,8 @@ export class ProductService {
         'recommendedProducts',
         'recommendedProducts.images',
         'recommendedProducts.translates',
-        'recommendedProducts.category_id'
-      ]
+        'recommendedProducts.category_id',
+      ],
     })
 
     return updated as Product
@@ -1272,8 +1118,8 @@ export class ProductService {
         'recommendedProducts.images',
         'recommendedProducts.translates',
         'recommendedProducts.category_id',
-        'recommendedProducts.category_id.translates'
-      ]
+        'recommendedProducts.category_id.translates',
+      ],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')

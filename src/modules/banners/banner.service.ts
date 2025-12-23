@@ -1,20 +1,18 @@
-import * as sharp from 'sharp'
 import * as path from 'path'
-import * as fs from 'fs-extra'
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger
-} from '@nestjs/common'
+
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import * as fs from 'fs-extra'
+import * as sharp from 'sharp'
+import { BannerType } from 'src/common/types/banner-group.types'
 import { Repository } from 'typeorm'
+
+import { BannerCreateImageDto } from './dto/banner-create-image.dto'
 import { BannerCreateDto } from './dto/banner-create.dto'
 import { BannerUpdateDto } from './dto/banner-update.dto'
-import { BannerGroup } from './entities/banners.entity'
-import { BannerCreateImageDto } from './dto/banner-create-image.dto'
 import { BannerImage } from './entities/banner-image.entity'
-import { BannerType } from 'src/common/types/banner-group.types'
+import { BannerGroup } from './entities/banners.entity'
 
 @Injectable()
 export class BannerService {
@@ -44,7 +42,7 @@ export class BannerService {
     const exists = await this.bannerRepo
       .createQueryBuilder('banner')
       .where('LOWER(banner.title) = :title', {
-        title: (dto.title || '').toLowerCase()
+        title: (dto.title || '').toLowerCase(),
       })
       .getOne()
 
@@ -83,20 +81,14 @@ export class BannerService {
     return { entities }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: BannerGroup[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: BannerGroup[]; count: number }> {
     const queryBuilder = this.bannerRepo
       .createQueryBuilder('banner')
       .leftJoinAndSelect('banner.images', 'image')
       .orderBy('banner.created_at', 'DESC')
       .addOrderBy('image.order', 'ASC')
 
-    const [entities, count] = await queryBuilder
-      .skip(skip)
-      .take(take)
-      .getManyAndCount()
+    const [entities, count] = await queryBuilder.skip(skip).take(take).getManyAndCount()
 
     return { entities: entities, count }
   }
@@ -106,7 +98,7 @@ export class BannerService {
       const exists = await this.bannerRepo
         .createQueryBuilder('banner')
         .where('LOWER(banner.title) = :title', {
-          title: dto.title.toLowerCase()
+          title: dto.title.toLowerCase(),
         })
         .andWhere('banner.id != :id', { id })
         .getOne()
@@ -116,11 +108,10 @@ export class BannerService {
 
     const result = await this.bannerRepo.update(id, { ...dto })
 
-    if (result.affected === 0)
-      throw new NotFoundException('entity of banner is NOT_FOUND')
+    if (result.affected === 0) throw new NotFoundException('entity of banner is NOT_FOUND')
 
     const updatedBanner = await this.bannerRepo.findOne({
-      where: { id }
+      where: { id },
     })
 
     return updatedBanner
@@ -146,27 +137,21 @@ export class BannerService {
   }
 
   async createImage(dto: BannerCreateImageDto): Promise<BannerImage> {
-    const entity_id =
-      typeof dto.entity_id === 'number' ? { id: dto.entity_id } : dto.entity_id
+    const entity_id = typeof dto.entity_id === 'number' ? { id: dto.entity_id } : dto.entity_id
 
     const newImage = this.entityImageRepo.create({
       ...dto,
-      entity_id
+      entity_id,
     })
     return await this.entityImageRepo.save(newImage)
   }
 
-  async uploadImages(
-    files: Express.Multer.File[],
-    entity_id: number,
-    link: string
-  ): Promise<{ message: string }> {
+  async uploadImages(files: Express.Multer.File[], entity_id: number, link: string): Promise<{ message: string }> {
     const isBrandExist = await this.bannerRepo.findOne({
-      where: { id: entity_id }
+      where: { id: entity_id },
     })
 
-    if (!isBrandExist)
-      throw new NotFoundException('entity of brand is NOT_FOUND')
+    if (!isBrandExist) throw new NotFoundException('entity of brand is NOT_FOUND')
 
     for (const file of files) {
       const fileName = `${Date.now()}.webp`
@@ -183,15 +168,13 @@ export class BannerService {
           name: fileName,
           path: `/uploads/banner/${fileName}`,
           entity_id: entity_id,
-          link: link || ''
+          link: link || '',
         }
 
         try {
           await this.createImage(body)
         } catch (err) {
-          this.logger.warn(
-            `Error to create image for entity_id: ${entity_id}: ${err}`
-          )
+          this.logger.warn(`Error to create image for entity_id: ${entity_id}: ${err}`)
           throw new BadRequestException('entity of brand image is NOT_CREATED')
         }
       } catch (err) {
@@ -201,7 +184,7 @@ export class BannerService {
     }
 
     return {
-      message: 'Images saved'
+      message: 'Images saved',
     }
   }
 
@@ -244,13 +227,11 @@ export class BannerService {
 
   async deleteImages(entity_id: number): Promise<{ message: string } | void> {
     const deleteCandidates = await this.entityImageRepo.find({
-      where: { entity_id: { id: entity_id } }
+      where: { entity_id: { id: entity_id } },
     })
 
     if (deleteCandidates?.length) {
-      const filePathList = deleteCandidates.map((field) =>
-        path.join(process.cwd(), field.path.replace(/^\//, ''))
-      )
+      const filePathList = deleteCandidates.map((field) => path.join(process.cwd(), field.path.replace(/^\//, '')))
 
       for (const filePath of filePathList) {
         try {
@@ -268,33 +249,25 @@ export class BannerService {
       try {
         if (ids.length) await this.entityImageRepo.delete(ids)
       } catch (err) {
-        this.logger.error(
-          `Failed to delete image records for entity ${entity_id}: ${err}`
-        )
+        this.logger.error(`Failed to delete image records for entity ${entity_id}: ${err}`)
       }
     }
   }
 
-  async reorderImages(
-    bannerGroupId: number,
-    orders: { id: number; order: number }[]
-  ): Promise<{ message: string }> {
+  async reorderImages(bannerGroupId: number, orders: { id: number; order: number }[]): Promise<{ message: string }> {
     const banner = await this.bannerRepo.findOne({
       where: { id: bannerGroupId },
-      relations: ['images']
+      relations: ['images'],
     })
 
     if (!banner) throw new NotFoundException('banner group is NOT_FOUND')
 
-    if (!Array.isArray(orders))
-      throw new BadRequestException('orders is required')
+    if (!Array.isArray(orders)) throw new BadRequestException('orders is required')
 
     const imageIds = banner.images.map((i) => i.id)
     for (const o of orders) {
       if (!imageIds.includes(o.id)) {
-        throw new BadRequestException(
-          `image id ${o.id} is not part of banner group ${bannerGroupId}`
-        )
+        throw new BadRequestException(`image id ${o.id} is not part of banner group ${bannerGroupId}`)
       }
     }
 

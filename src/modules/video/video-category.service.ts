@@ -1,14 +1,11 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger
-} from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
 import { Repository } from 'typeorm'
-import { VideoCategory } from './entities/video-category.entity'
+
 import { CreateVideoCategoryDto } from './dto/create-video-category.dto'
 import { UpdateVideoCategoryDto } from './dto/update-video-category.dto'
+import { VideoCategory } from './entities/video-category.entity'
 
 @Injectable()
 export class VideoCategoryService {
@@ -38,23 +35,18 @@ export class VideoCategoryService {
     }
   }
 
-  async update(
-    id: number,
-    dto: UpdateVideoCategoryDto
-  ): Promise<VideoCategory> {
+  async update(id: number, dto: UpdateVideoCategoryDto): Promise<VideoCategory> {
     const updatePayload: Partial<VideoCategory> = {}
     if (typeof dto.title !== 'undefined') updatePayload.title = dto.title
 
     const result = await this.repo.update(id, updatePayload)
-    if (result.affected === 0)
-      throw new NotFoundException('video category is NOT_FOUND')
+    if (result.affected === 0) throw new NotFoundException('video category is NOT_FOUND')
     return (await this.repo.findOne({ where: { id } })) as VideoCategory
   }
 
   async delete(id: number): Promise<{ message: string }> {
     const result = await this.repo.delete(id)
-    if (result.affected === 0)
-      throw new NotFoundException('video category is NOT_FOUND')
+    if (result.affected === 0) throw new NotFoundException('video category is NOT_FOUND')
     return { message: 'SUCCESS' }
   }
 }

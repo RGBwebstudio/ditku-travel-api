@@ -1,3 +1,5 @@
+import { Product } from 'src/modules/product/entities/product.entity'
+import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import {
   Entity,
   Column,
@@ -6,11 +8,10 @@ import {
   ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
-  JoinTable
+  JoinTable,
 } from 'typeorm'
+
 import { SectionTranslate } from './section-translate.entity'
-import { Product } from 'src/modules/product/entities/product.entity'
-import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 
 @Entity()
 export class Section {
@@ -21,12 +22,12 @@ export class Section {
   title: string
 
   @ManyToMany(() => Product, (product) => product.sections, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @JoinTable({
     name: 'product_section',
     joinColumn: { name: 'section_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' },
   })
   products: Product[]
 

@@ -1,21 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  UseGuards
-} from '@nestjs/common'
-import { PromocodeService } from './promocode.service'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { CreatePromocodeDto } from './dto/create-promocode.dto'
 import { UpdatePromocodeDto } from './dto/update-promocode.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { PromocodeService } from './promocode.service'
 
 @ApiTags('Промокоди')
 @Controller('promocode')
@@ -25,7 +16,7 @@ export class PromocodeController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати всі промокоди' })
   findAll(@Query() { take, skip }: TakeAndSkipDto) {
@@ -35,7 +26,7 @@ export class PromocodeController {
   @Get(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
   @ApiOperation({ summary: 'Отримати промокод по id' })
@@ -47,7 +38,7 @@ export class PromocodeController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутність успішно створено'
+    description: 'SUCCESS - Сутність успішно створено',
   })
   @ApiOperation({ summary: 'Створити промокод' })
   create(@Body() dto: CreatePromocodeDto) {
@@ -58,14 +49,11 @@ export class PromocodeController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
   @ApiOperation({ summary: 'Оновити промокод' })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdatePromocodeDto
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePromocodeDto) {
     return this.promocodeService.update(id, dto)
   }
 
@@ -73,7 +61,7 @@ export class PromocodeController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
   @ApiOperation({ summary: 'Видалити промокод' })

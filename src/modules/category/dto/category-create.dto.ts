@@ -1,13 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
-import {
-  IsArray,
-  IsBoolean,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsString
-} from 'class-validator'
+
+import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString } from 'class-validator'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
+
 import { Category } from '../entities/category.entity'
 
 export class CategoryCreateDto {
@@ -55,7 +50,7 @@ export class CategoryCreateResponseDto {
   @ApiProperty({
     required: true,
     nullable: false,
-    type: () => [ProductCreateDto]
+    type: () => [ProductCreateDto],
   })
   @IsArray()
   products: ProductCreateDto[]

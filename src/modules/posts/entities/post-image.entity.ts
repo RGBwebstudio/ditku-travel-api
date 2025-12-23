@@ -1,4 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+
 import { Post } from './post.entity'
 
 @Entity()
@@ -15,7 +16,7 @@ export class PostImage {
   order: number
 
   @ManyToOne(() => Post, (post) => post.images, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   entity_id: Post
 }

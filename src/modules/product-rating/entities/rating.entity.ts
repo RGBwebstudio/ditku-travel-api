@@ -1,12 +1,5 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne
-} from 'typeorm'
 import { Product } from 'src/modules/product/entities/product.entity'
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm'
 
 @Entity()
 export class Rating {
@@ -26,7 +19,7 @@ export class Rating {
   approved: boolean
 
   @ManyToOne(() => Product, (product) => product.ratings, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   product_id: Product
 

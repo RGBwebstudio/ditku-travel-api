@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
 import { IsEnum, IsString, IsOptional } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
+
 import { PageType } from '../entities/page-constructor.entity'
 
 export class CreatePageConstructorDto {

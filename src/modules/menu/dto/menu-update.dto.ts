@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsInt, IsArray, IsOptional, IsPositive } from 'class-validator'
+
 import { Type } from 'class-transformer'
+import { IsInt, IsArray, IsOptional, IsPositive } from 'class-validator'
 
 export class MenuUpdateDto {
   @ApiProperty({ description: 'Category id', required: false })
@@ -13,7 +14,7 @@ export class MenuUpdateDto {
   @ApiProperty({
     description: 'Seo filter ids',
     required: false,
-    type: [Number]
+    type: [Number],
   })
   @IsOptional()
   @IsArray({ message: 'seo_filter_ids must be an array of numbers' })

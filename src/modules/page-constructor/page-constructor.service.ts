@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { LANG } from 'src/common/enums/translation.enum'
 import { Repository } from 'typeorm'
-import { PageConstructor, PageType } from './entities/page-constructor.entity'
+
 import { CreatePageConstructorDto } from './dto/create-page-constructor.dto'
 import { UpdatePageConstructorDto } from './dto/update-page-constructor.dto'
-import { LANG } from 'src/common/enums/translation.enum'
+import { PageConstructor, PageType } from './entities/page-constructor.entity'
 
 @Injectable()
 export class PageConstructorService {
@@ -31,14 +28,11 @@ export class PageConstructorService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: PageConstructor[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: PageConstructor[]; count: number }> {
     const entities = await this.repo.find({
       take,
       skip,
-      order: { order: 'ASC', created_at: 'ASC' }
+      order: { order: 'ASC', created_at: 'ASC' },
     })
     const count = await this.repo.count()
     return { entities, count }
@@ -50,24 +44,20 @@ export class PageConstructorService {
 
     const entities = await this.repo.find({
       where,
-      order: { order: 'ASC', created_at: 'ASC' }
+      order: { order: 'ASC', created_at: 'ASC' },
     })
-    if (!entities || entities.length === 0)
-      throw new NotFoundException('entity of page-constructor NOT_FOUND')
+    if (!entities || entities.length === 0) throw new NotFoundException('entity of page-constructor NOT_FOUND')
     return entities
   }
 
-  async update(
-    dto: UpdatePageConstructorDto & { id?: number }
-  ): Promise<PageConstructor | null> {
+  async update(dto: UpdatePageConstructorDto & { id?: number }): Promise<PageConstructor | null> {
     const { id } = dto
     if (!id) {
       throw new BadRequestException('id required for update')
     }
 
     const result = await this.repo.update(id, dto)
-    if (result.affected === 0)
-      throw new NotFoundException('entity of page-constructor NOT_FOUND')
+    if (result.affected === 0) throw new NotFoundException('entity of page-constructor NOT_FOUND')
 
     const entity = await this.repo.findOne({ where: { id } })
     return entity
@@ -85,18 +75,14 @@ export class PageConstructorService {
         throw new BadRequestException('entity of page-constructor HAS_CHILDS')
       }
 
-      this.logger.error(
-        e.message ?? 'Error while deleting page-constructor entity'
-      )
+      this.logger.error(e.message ?? 'Error while deleting page-constructor entity')
       throw err
     }
 
     return { message: 'SUCCESS' }
   }
 
-  async updateOrder(
-    items: { id: number; order: number }[]
-  ): Promise<{ message: string }> {
+  async updateOrder(items: { id: number; order: number }[]): Promise<{ message: string }> {
     if (!Array.isArray(items)) {
       throw new BadRequestException('items should be an array')
     }

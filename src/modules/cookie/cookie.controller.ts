@@ -1,23 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  Req,
-  UseGuards
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Req, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { CookieService } from './cookie.service'
 import { CreateCookieDto } from './dto/create-cookie.dto'
 import { UpdateCookieDto } from './dto/update-cookie.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { Request } from 'express'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 @ApiTags('Cookie')
 @Controller('cookie')
@@ -27,7 +17,7 @@ export class CookieController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати весь контент cookie' })
   findAll(@Query() { take, skip }: TakeAndSkipDto) {
@@ -37,7 +27,7 @@ export class CookieController {
   @Get(':lang')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
   @ApiOperation({ summary: 'Отримати контент cookie' })
@@ -49,7 +39,7 @@ export class CookieController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутність успішно створено'
+    description: 'SUCCESS - Сутність успішно створено',
   })
   @ApiOperation({ summary: 'Створення контенту cookie' })
   create(@Body() dto: CreateCookieDto) {

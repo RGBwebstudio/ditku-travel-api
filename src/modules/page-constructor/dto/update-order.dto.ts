@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, ValidateNested, IsNumber } from 'class-validator'
+
 import { Type } from 'class-transformer'
+import { IsArray, ValidateNested, IsNumber } from 'class-validator'
 
 class OrderItemDto {
   @ApiProperty({ example: 1 })

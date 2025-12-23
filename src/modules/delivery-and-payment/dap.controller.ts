@@ -1,25 +1,15 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  Put,
-  UseGuards,
-  Req
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Param, Delete, Query, ParseIntPipe, Put, UseGuards, Req } from '@nestjs/common'
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { DAPService } from './dap.service'
 import { CreateDAPDto } from './dto/create-dap.dto'
-import { UpdateDAPDto } from './dto/update-dap.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 import { DAPCreateTranslateDto } from './dto/dap-create-translate.dto'
 import { DAPUpdateTranslateDto } from './dto/dap-update-translate.dto'
-import { Request } from 'express'
+import { UpdateDAPDto } from './dto/update-dap.dto'
 
 @ApiTags('Доставка та оплата')
 @Controller('delivery-and-payment')
@@ -29,7 +19,7 @@ export class DAPController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутності успішно отримано'
+    description: 'SUCCESS - Сутності успішно отримано',
   })
   @ApiOperation({ summary: 'Отримати всі записи' })
   findAll(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
@@ -39,11 +29,11 @@ export class DAPController {
   @Get(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Отримати запис' })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
@@ -55,11 +45,11 @@ export class DAPController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'CREATED - Сутність успішно створено'
+    description: 'CREATED - Сутність успішно створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Cутність не cтворено'
+    description: 'NOT_CREATED - Cутність не cтворено',
   })
   create(@Body() dto: CreateDAPDto) {
     return this.DAPService.create(dto)
@@ -68,11 +58,11 @@ export class DAPController {
   @Put(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити запис' })
   @UseGuards(AuthAdminGuard)
@@ -83,11 +73,11 @@ export class DAPController {
   @Delete(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Видалити запис' })
   @UseGuards(AuthAdminGuard)
@@ -99,14 +89,14 @@ export class DAPController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутності успішно створено'
+    description: 'SUCCESS - Сутності успішно створено',
   })
   @ApiOperation({ summary: 'Отримати всі переклади' })
   @ApiBody({
     description: 'Масив перекладів',
     type: DAPCreateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   createTranslates(@Body() dto: DAPCreateTranslateDto[]) {
     return this.DAPService.createTranslates(dto)
@@ -116,17 +106,17 @@ export class DAPController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутності успішно оновлено'
+    description: 'SUCCESS - Сутності успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiBody({
     description: 'Масив перекладів',
     type: DAPUpdateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   @ApiOperation({ summary: 'Оновити переклади' })
   updateTranslates(@Body() dto: DAPUpdateTranslateDto[]) {
@@ -137,11 +127,11 @@ export class DAPController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Cутність не знайдено'
+    description: 'NOT_FOUND - Cутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити переклади' })
   deleteTranslate(@Param('id', ParseIntPipe) id: number) {

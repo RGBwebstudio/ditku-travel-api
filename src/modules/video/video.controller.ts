@@ -1,17 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  ParseIntPipe,
-  Put,
-  Delete
-} from '@nestjs/common'
-import { VideoService } from './video.service'
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Put, Delete } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
+
 import { CreateVideoDto } from './dto/create-video.dto'
 import { UpdateVideoDto } from './dto/update-video.dto'
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { VideoService } from './video.service'
 
 @ApiTags('Відео')
 @Controller('video')

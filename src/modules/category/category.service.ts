@@ -1,25 +1,23 @@
-import * as sharp from 'sharp'
 import * as path from 'path'
-import * as fs from 'fs-extra'
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger
-} from '@nestjs/common'
+
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, TreeRepository, IsNull } from 'typeorm'
-import { Category } from 'src/modules/category/entities/category.entity'
-import { CategoryCreateDto } from './dto/category-create.dto'
-import { CategoryUpdateDto } from './dto/category-update.dto'
-import { CategoryTranslate } from './entities/category-translate.entity'
-import { CategoryCreateTranslateDto } from './dto/category-create-translate.dto'
-import { CategoryUpdateTranslateDto } from './dto/category-update-translate.dto'
-import { CategoryCreateImageDto } from './dto/category-create-image.dto'
-import { CategoryImage } from './entities/category-image.entity'
+
+import * as fs from 'fs-extra'
+import * as sharp from 'sharp'
 import { LANG } from 'src/common/enums/translation.enum'
-import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { FineOneWhereType } from 'src/common/types/category.types'
+import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { Category } from 'src/modules/category/entities/category.entity'
+import { Repository, TreeRepository, IsNull } from 'typeorm'
+
+import { CategoryCreateImageDto } from './dto/category-create-image.dto'
+import { CategoryCreateTranslateDto } from './dto/category-create-translate.dto'
+import { CategoryCreateDto } from './dto/category-create.dto'
+import { CategoryUpdateTranslateDto } from './dto/category-update-translate.dto'
+import { CategoryUpdateDto } from './dto/category-update.dto'
+import { CategoryImage } from './entities/category-image.entity'
+import { CategoryTranslate } from './entities/category-translate.entity'
 
 @Injectable()
 export class CategoryService {
@@ -39,17 +37,17 @@ export class CategoryService {
 
     if (typeof value === 'number') {
       where = {
-        id: value
+        id: value,
       }
     } else {
       where = {
-        url: value
+        url: value,
       }
     }
 
     const entity = await this.categoryRepo.findOne({
       where,
-      relations: ['parent', 'parent.translates', 'images', 'translates']
+      relations: ['parent', 'parent.translates', 'images', 'translates'],
     })
 
     if (!entity) throw new NotFoundException('category is NOT_FOUND')
@@ -65,20 +63,12 @@ export class CategoryService {
 
       if (mappedEntity[0]) mappedEntity[0].products_count = productsCount
     } catch (err) {
-      this.logger.warn(
-        'Failed to count products for category ' +
-          entity.id +
-          ': ' +
-          String(err)
-      )
+      this.logger.warn('Failed to count products for category ' + entity.id + ': ' + String(err))
       if (mappedEntity[0]) mappedEntity[0].products_count = 0
     }
 
     if (mappedEntity[0]?.parent) {
-      const [translatedParent] = applyTranslations(
-        [mappedEntity[0].parent],
-        lang
-      )
+      const [translatedParent] = applyTranslations([mappedEntity[0].parent], lang)
       mappedEntity[0].parent = translatedParent
     }
 
@@ -109,7 +99,7 @@ export class CategoryService {
     const data = this.categoryRepo.create({
       ...dto,
       parent,
-      ...(url ? { url } : {})
+      ...(url ? { url } : {}),
     })
 
     try {
@@ -130,21 +120,16 @@ export class CategoryService {
         'children.images',
         'children.translates',
         'images',
-        'translates'
-      ]
+        'translates',
+      ],
     })
 
-    const applyTranslationsRecursively = (
-      categories: Category[]
-    ): Category[] => {
+    const applyTranslationsRecursively = (categories: Category[]): Category[] => {
       const translatedCategories = applyTranslations(categories, lang)
 
       for (const category of translatedCategories) {
         if (category.parent) {
-          const [translatedParentCategory] = applyTranslations(
-            [category.parent],
-            lang
-          )
+          const [translatedParentCategory] = applyTranslations([category.parent], lang)
           category.parent = translatedParentCategory
         }
 
@@ -161,10 +146,7 @@ export class CategoryService {
     return { entities: mappedEntities }
   }
 
-  async searchByTitle(
-    query: string,
-    lang: LANG
-  ): Promise<{ entities: Category[] }> {
+  async searchByTitle(query: string, lang: LANG): Promise<{ entities: Category[] }> {
     if (!query || query.trim().length === 0) return { entities: [] }
 
     let qb = this.categoryRepo
@@ -172,7 +154,7 @@ export class CategoryService {
       .leftJoinAndSelect('category.translates', 'translates')
       .leftJoinAndSelect('category.images', 'images')
       .where('LOWER(category.title) LIKE :title', {
-        title: `%${query.toLowerCase()}%`
+        title: `%${query.toLowerCase()}%`,
       })
       .orderBy('category.created_at', 'DESC')
       .take(20)
@@ -185,7 +167,7 @@ export class CategoryService {
         .leftJoinAndSelect('category.translates', 'translates')
         .leftJoinAndSelect('category.images', 'images')
         .where('LOWER(translates.value) LIKE :title', {
-          title: `%${query.toLowerCase()}%`
+          title: `%${query.toLowerCase()}%`,
         })
         .andWhere('translates.field = :field', { field: 'title' })
         .orderBy('category.created_at', 'DESC')
@@ -204,17 +186,14 @@ export class CategoryService {
       .createQueryBuilder('category')
       .leftJoinAndSelect('category.images', 'images')
       .leftJoinAndSelect('category.translates', 'translates')
-      .leftJoinAndSelect(
-        'category.products',
-        'products',
-        'products.show_on_main_page = :showOnMainPage',
-        { showOnMainPage: true }
-      )
+      .leftJoinAndSelect('category.products', 'products', 'products.show_on_main_page = :showOnMainPage', {
+        showOnMainPage: true,
+      })
       .leftJoinAndSelect('products.images', 'product_images')
       .leftJoinAndSelect('products.stock', 'product_stock')
       .leftJoinAndSelect('products.translates', 'product_translates')
       .where('category.show_on_main_page = :categoryShowOnMainPage', {
-        categoryShowOnMainPage: true
+        categoryShowOnMainPage: true,
       })
       .orderBy('category.created_at', 'DESC')
       .addOrderBy('products.created_at', 'DESC')
@@ -243,10 +222,7 @@ export class CategoryService {
 
       const ratingMap = new Map<number, number>()
       ratings.forEach((rating) => {
-        ratingMap.set(
-          rating.productId,
-          Math.round(parseFloat(rating.averageRating) * 10) / 10 || 0
-        )
+        ratingMap.set(rating.productId, Math.round(parseFloat(rating.averageRating) * 10) / 10 || 0)
       })
 
       entities.forEach((category) => {
@@ -269,17 +245,13 @@ export class CategoryService {
     return { entities: mappedEntities }
   }
 
-  async findAll(
-    take: number,
-    skip: number,
-    lang: LANG
-  ): Promise<{ entities: Category[]; count: number }> {
+  async findAll(take: number, skip: number, lang: LANG): Promise<{ entities: Category[]; count: number }> {
     const rootCategories = await this.categoryRepo.find({
       where: { parent: IsNull() },
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: ['translates', 'images']
+      relations: ['translates', 'images'],
     })
 
     const entities: Category[] = []
@@ -293,23 +265,18 @@ export class CategoryService {
           'children.images',
           'children.translates',
           'translates',
-          'images'
-        ]
+          'images',
+        ],
       })
       entities.push(tree)
     }
 
-    const applyTranslationsRecursively = (
-      categories: Category[]
-    ): Category[] => {
+    const applyTranslationsRecursively = (categories: Category[]): Category[] => {
       const translatedCategories = applyTranslations(categories, lang)
 
       for (const category of translatedCategories) {
         if (category.parent) {
-          const [translatedParentCategory] = applyTranslations(
-            [category.parent],
-            lang
-          )
+          const [translatedParentCategory] = applyTranslations([category.parent], lang)
           category.parent = translatedParentCategory
         }
 
@@ -328,16 +295,8 @@ export class CategoryService {
     return { entities: mappedEntities, count }
   }
 
-  async findAllSubtree(
-    depth: number,
-    lang: LANG
-  ): Promise<{ entities: Category[] }> {
-    const rootRelations = [
-      'parent',
-      'parent.translates',
-      'translates',
-      'images'
-    ]
+  async findAllSubtree(depth: number, lang: LANG): Promise<{ entities: Category[] }> {
+    const rootRelations = ['parent', 'parent.translates', 'translates', 'images']
 
     const relationsSet = new Set<string>(rootRelations)
 
@@ -353,7 +312,7 @@ export class CategoryService {
     const roots = await this.categoryRepo.find({
       where: { parent: IsNull() },
       relations,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
 
     if (!roots?.length) return { entities: [] }
@@ -362,17 +321,12 @@ export class CategoryService {
       const [translated] = applyTranslations([category], lang)
 
       if (translated.parent) {
-        const [translatedParentCategory] = applyTranslations(
-          [translated.parent],
-          lang
-        )
+        const [translatedParentCategory] = applyTranslations([translated.parent], lang)
         translated.parent = translatedParentCategory
       }
 
       if (translated.children?.length) {
-        translated.children = translated.children.map((c) =>
-          applyTranslationsRecursively(c)
-        )
+        translated.children = translated.children.map((c) => applyTranslationsRecursively(c))
       }
 
       return translated
@@ -381,19 +335,12 @@ export class CategoryService {
     const mappedEntities = roots.map((r) => applyTranslationsRecursively(r))
 
     const fillProductsCount = async (node: Category) => {
-      const count = await this.categoryRepo.manager
-        .getRepository('Product')
-        .count({ where: { category_id: node.id } })
+      const count = await this.categoryRepo.manager.getRepository('Product').count({ where: { category_id: node.id } })
 
       node.products_count = count
 
       this.logger.debug(
-        'fillProductsCount: node.id=' +
-          node.id +
-          ' title=' +
-          node.title +
-          ' products_count=' +
-          node.products_count
+        'fillProductsCount: node.id=' + node.id + ' title=' + node.title + ' products_count=' + node.products_count
       )
 
       if (node.children?.length) {
@@ -410,26 +357,18 @@ export class CategoryService {
     return { entities: mappedEntities }
   }
 
-  async update(
-    id: number,
-    lang: LANG,
-    dto: CategoryUpdateDto
-  ): Promise<Category | null> {
+  async update(id: number, lang: LANG, dto: CategoryUpdateDto): Promise<Category | null> {
     const categoryExist = await this.categoryRepo.findOne({ where: { id } })
 
     if (!categoryExist) throw new NotFoundException('category is NOT_FOUND')
 
     try {
       const newTitle = dto.title ? String(dto.title).trim() : undefined
-      if (
-        newTitle &&
-        newTitle.toLowerCase() !==
-          String(categoryExist.title || '').toLowerCase()
-      ) {
+      if (newTitle && newTitle.toLowerCase() !== String(categoryExist.title || '').toLowerCase()) {
         const exists = await this.categoryRepo
           .createQueryBuilder('category')
           .where('LOWER(category.title) = :title', {
-            title: newTitle.toLowerCase()
+            title: newTitle.toLowerCase(),
           })
           .andWhere('category.id != :id', { id })
           .getOne()
@@ -474,9 +413,7 @@ export class CategoryService {
     return { message: 'SUCCESS' }
   }
 
-  async createTranslates(
-    dto: CategoryCreateTranslateDto[]
-  ): Promise<CategoryTranslate[] | null> {
+  async createTranslates(dto: CategoryCreateTranslateDto[]): Promise<CategoryTranslate[] | null> {
     if (dto?.length) {
       const results: CategoryTranslate[] = []
 
@@ -491,21 +428,18 @@ export class CategoryService {
     return null
   }
 
-  async updateTranslates(
-    dto: CategoryUpdateTranslateDto[]
-  ): Promise<CategoryTranslate[] | null> {
+  async updateTranslates(dto: CategoryUpdateTranslateDto[]): Promise<CategoryTranslate[] | null> {
     const results: CategoryTranslate[] = []
 
     for (const translate of dto) {
       const result = await this.entityTranslateRepo.update(translate.id, {
-        ...translate
+        ...translate,
       })
 
-      if (result.affected === 0)
-        throw new NotFoundException('category translate is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('category translate is NOT_FOUND')
 
       const updatedEntityTranslate = await this.entityTranslateRepo.findOne({
-        where: { id: translate.id }
+        where: { id: translate.id },
       })
 
       if (updatedEntityTranslate) results.push(updatedEntityTranslate)
@@ -514,9 +448,7 @@ export class CategoryService {
     return results
   }
 
-  async deleteTranslate(
-    id: number
-  ): Promise<{ message: string } | NotFoundException> {
+  async deleteTranslate(id: number): Promise<{ message: string } | NotFoundException> {
     const result = await this.entityTranslateRepo.delete(id)
 
     if (result.affected === 0) {
@@ -527,12 +459,11 @@ export class CategoryService {
   }
 
   async createImage(dto: CategoryCreateImageDto): Promise<CategoryImage> {
-    const entity_id =
-      typeof dto.entity_id === 'number' ? { id: dto.entity_id } : dto.entity_id
+    const entity_id = typeof dto.entity_id === 'number' ? { id: dto.entity_id } : dto.entity_id
 
     const newImage = this.entityImageRepo.create({
       ...dto,
-      entity_id
+      entity_id,
     })
     try {
       return await this.entityImageRepo.save(newImage)
@@ -542,14 +473,11 @@ export class CategoryService {
     }
   }
 
-  async uploadImages(
-    files: Express.Multer.File[],
-    entity_id: number
-  ): Promise<{ message: string }> {
+  async uploadImages(files: Express.Multer.File[], entity_id: number): Promise<{ message: string }> {
     const fileName = `${Date.now()}.webp`
 
     const isCategoryExist = await this.categoryRepo.findOne({
-      where: { id: entity_id }
+      where: { id: entity_id },
     })
 
     if (!isCategoryExist) new NotFoundException('category is NOT_FOUND')
@@ -566,15 +494,13 @@ export class CategoryService {
         const body: CategoryCreateImageDto = {
           name: fileName,
           path: `/uploads/category/${fileName}`,
-          entity_id: entity_id
+          entity_id: entity_id,
         }
 
         try {
           await this.createImage(body)
         } catch (err) {
-          this.logger.warn(
-            `Error to create image for entity_id: ${entity_id}: ${err}`
-          )
+          this.logger.warn(`Error to create image for entity_id: ${entity_id}: ${err}`)
           throw new BadRequestException('category image is NOT_CREATED')
         }
       } catch (err) {
@@ -584,7 +510,7 @@ export class CategoryService {
     }
 
     return {
-      message: 'Images saved'
+      message: 'Images saved',
     }
   }
 
@@ -608,13 +534,11 @@ export class CategoryService {
 
   async deleteImages(entity_id: number): Promise<{ message: string } | void> {
     const deleteCandidates = await this.entityImageRepo.find({
-      where: { entity_id: { id: entity_id } }
+      where: { entity_id: { id: entity_id } },
     })
 
     if (deleteCandidates?.length) {
-      const filePathList = deleteCandidates.map(
-        (field: CategoryImage) => field.path
-      )
+      const filePathList = deleteCandidates.map((field: CategoryImage) => field.path)
 
       for (const filePath of filePathList) {
         try {
@@ -630,10 +554,7 @@ export class CategoryService {
     }
   }
 
-  async findSubtree(
-    value: FineOneWhereType,
-    depth: number
-  ): Promise<Category | null> {
+  async findSubtree(value: FineOneWhereType, depth: number): Promise<Category | null> {
     let where: any
 
     if (typeof value === 'number') {
@@ -641,12 +562,7 @@ export class CategoryService {
     } else {
       where = { url: value }
     }
-    const rootRelations = [
-      'parent',
-      'parent.translates',
-      'translates',
-      'images'
-    ]
+    const rootRelations = ['parent', 'parent.translates', 'translates', 'images']
 
     const relationsSet = new Set<string>(rootRelations)
 
@@ -707,17 +623,13 @@ export class CategoryService {
     return tree as Category | null
   }
 
-  async getAdditionalFilters(
-    categoryId: number
-  ): Promise<{ start_points: any[]; end_points: any[] }> {
+  async getAdditionalFilters(categoryId: number): Promise<{ start_points: any[]; end_points: any[] }> {
     if (typeof categoryId !== 'number' || Number.isNaN(categoryId)) {
-      throw new BadRequestException(
-        'category id is required and must be a number'
-      )
+      throw new BadRequestException('category id is required and must be a number')
     }
 
     const category = await this.categoryRepo.findOne({
-      where: { id: categoryId }
+      where: { id: categoryId },
     })
     if (!category) throw new NotFoundException('category is NOT_FOUND')
 
@@ -741,12 +653,7 @@ export class CategoryService {
       .getRawMany()
 
     const start_points = rawRows
-      .filter(
-        (row) =>
-          row.start_point === true ||
-          row.start_point === 'true' ||
-          row.start_point === 1
-      )
+      .filter((row) => row.start_point === true || row.start_point === 'true' || row.start_point === 1)
       .map((row) => ({
         roadmap_id: Number(row.roadmapId),
         product_id: Number(row.productId),
@@ -756,16 +663,11 @@ export class CategoryService {
         city_title: row.cityTitle || null,
         time: row.time,
         description: row.description,
-        order: row.order
+        order: row.order,
       }))
 
     const end_points = rawRows
-      .filter(
-        (row) =>
-          row.end_point === true ||
-          row.end_point === 'true' ||
-          row.end_point === 1
-      )
+      .filter((row) => row.end_point === true || row.end_point === 'true' || row.end_point === 1)
       .map((row) => ({
         roadmap_id: Number(row.roadmapId),
         product_id: Number(row.productId),
@@ -775,7 +677,7 @@ export class CategoryService {
         city_title: row.cityTitle || null,
         time: row.time,
         description: row.description,
-        order: row.order
+        order: row.order,
       }))
 
     return { start_points, end_points }

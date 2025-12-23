@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
 import { IsInt, IsOptional, IsString, Min } from 'class-validator'
 
 export class ProductFilterDto {
@@ -48,16 +49,14 @@ export class ProductFilterDto {
 
   @ApiPropertyOptional({
     example: 1,
-    description:
-      'Id міста для фільтрації по start_point (roadmap.city_id) - обране лише одне'
+    description: 'Id міста для фільтрації по start_point (roadmap.city_id) - обране лише одне',
   })
   @IsOptional()
   start_point: number
 
   @ApiPropertyOptional({
     example: 2,
-    description:
-      'Id міста для фільтрації по end_point (roadmap.city_id) - обране лише одне'
+    description: 'Id міста для фільтрації по end_point (roadmap.city_id) - обране лише одне',
   })
   @IsOptional()
   end_point: number

@@ -5,15 +5,17 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  Logger
+  Logger,
 } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { MailSenderService } from 'src/modules/mail-sender/mail-sender.service'
 import { In, Repository } from 'typeorm'
-import { User } from './entities/user.entity'
+
 import { UserCreateDto } from './dto/user-create.dto'
 import { UserUpdateDto } from './dto/user-update.dto'
-import { JwtService } from '@nestjs/jwt'
-import { MailSenderService } from 'src/modules/mail-sender/mail-sender.service'
+import { User } from './entities/user.entity'
 
 @Injectable()
 export class UserService {
@@ -37,15 +39,12 @@ export class UserService {
     return { entities, count }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: User[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: User[]; count: number }> {
     const entities = await this.userRepo.find({
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: ['address_list']
+      relations: ['address_list'],
     })
     const count = await this.userRepo.count()
 
@@ -55,7 +54,7 @@ export class UserService {
   async findOne(id: number): Promise<User> {
     const user = await this.userRepo.findOne({
       where: { id },
-      relations: ['address_list']
+      relations: ['address_list'],
     })
 
     if (!user) throw new NotFoundException('user is NOT_FOUND')
@@ -70,8 +69,8 @@ export class UserService {
   async findByEmails(emails: string[]): Promise<User[]> {
     const users = await this.userRepo.find({
       where: {
-        email: In(emails)
-      }
+        email: In(emails),
+      },
     })
 
     return users
@@ -80,14 +79,14 @@ export class UserService {
   async findByToken(token: string): Promise<User> {
     try {
       const payload = await this.jwtService.verifyAsync<{ id: number }>(token, {
-        secret: process.env.JWT_SECRET
+        secret: process.env.JWT_SECRET,
       })
 
       const userId = payload.id
 
       const result = await this.userRepo.findOne({
         where: { id: userId },
-        relations: ['address_list']
+        relations: ['address_list'],
       })
 
       if (!result) {
@@ -105,7 +104,7 @@ export class UserService {
 
   async create(dto: UserCreateDto): Promise<User> {
     const isUserExist = await this.userRepo.find({
-      where: { email: dto.email }
+      where: { email: dto.email },
     })
 
     if (isUserExist) throw new BadRequestException('user is ALREADY_EXIST')
@@ -126,7 +125,7 @@ export class UserService {
 
     if (dto.phone && dto.phone !== existingUser.phone) {
       const userWithSamePhone = await this.userRepo.findOne({
-        where: { phone: dto.phone }
+        where: { phone: dto.phone },
       })
       if (userWithSamePhone && userWithSamePhone.id !== id) {
         throw new BadRequestException('Phone number already in use')
@@ -139,7 +138,7 @@ export class UserService {
 
     const user = await this.userRepo.findOne({
       where: { id },
-      relations: ['address_list']
+      relations: ['address_list'],
     })
 
     if (!user) throw new NotFoundException('user is NOT_FOUND')
@@ -160,7 +159,7 @@ export class UserService {
   async findByPhone(phone: string): Promise<User | null> {
     return this.userRepo.findOne({
       where: { phone },
-      relations: ['address_list']
+      relations: ['address_list'],
     })
   }
 

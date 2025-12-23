@@ -1,5 +1,6 @@
 import { LANG } from 'src/common/enums/translation.enum'
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+
 import { DAP } from './dap.entity'
 
 @Entity()
@@ -16,7 +17,7 @@ export class DAPTranslates {
   lang: LANG
 
   @ManyToOne(() => DAP, (entity) => entity.translates, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   entity_id: DAP
 }

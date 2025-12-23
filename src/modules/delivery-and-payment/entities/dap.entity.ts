@@ -1,11 +1,5 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from 'typeorm'
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+
 import { DAPTranslates } from './dap-translate.entity'
 
 @Entity()

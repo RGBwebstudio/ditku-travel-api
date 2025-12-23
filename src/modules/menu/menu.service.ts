@@ -1,16 +1,13 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException
-} from '@nestjs/common'
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, DeepPartial } from 'typeorm'
-import { Menu } from './entities/menu.entity'
-import { MenuCreateDto } from './dto/menu-create.dto'
-import { MenuUpdateDto } from './dto/menu-update.dto'
+
 import { Category } from 'src/modules/category/entities/category.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
+import { Repository, DeepPartial } from 'typeorm'
+
+import { MenuCreateDto } from './dto/menu-create.dto'
+import { MenuUpdateDto } from './dto/menu-update.dto'
+import { Menu } from './entities/menu.entity'
 
 @Injectable()
 export class MenuService {
@@ -26,7 +23,7 @@ export class MenuService {
       take,
       skip,
       order: { order_in_list: 'ASC', created_at: 'DESC' },
-      relations: ['category_id', 'seo_filters']
+      relations: ['category_id', 'seo_filters'],
     })
     return { entities, count }
   }
@@ -34,7 +31,7 @@ export class MenuService {
   async findAllEntities() {
     const entities = await this.repo.find({
       order: { order_in_list: 'ASC' },
-      relations: ['category_id', 'seo_filters']
+      relations: ['category_id', 'seo_filters'],
     })
     return { entities }
   }
@@ -42,7 +39,7 @@ export class MenuService {
   async findOne(id: number): Promise<Menu | null> {
     const entity = await this.repo.findOne({
       where: { id },
-      relations: ['category_id', 'seo_filters']
+      relations: ['category_id', 'seo_filters'],
     })
     if (!entity) throw new NotFoundException('menu is NOT_FOUND')
     return entity
@@ -50,7 +47,7 @@ export class MenuService {
 
   async create(dto: MenuCreateDto): Promise<Menu> {
     const data: DeepPartial<Menu> = {
-      order_in_list: dto.order_in_list || 0
+      order_in_list: dto.order_in_list || 0,
     }
 
     if (dto.category_id) data.category_id = { id: dto.category_id }
@@ -72,14 +69,12 @@ export class MenuService {
 
     const entity = await this.repo.findOne({
       where: { id },
-      relations: ['seo_filters', 'category_id']
+      relations: ['seo_filters', 'category_id'],
     })
     if (!entity) throw new NotFoundException('menu is NOT_FOUND')
 
     if (dto.category_id !== undefined) {
-      entity.category_id = dto.category_id
-        ? ({ id: dto.category_id } as Category)
-        : null
+      entity.category_id = dto.category_id ? ({ id: dto.category_id } as Category) : null
     }
 
     if (dto.seo_filter_ids !== undefined) {
@@ -101,15 +96,14 @@ export class MenuService {
 
     return (await this.repo.findOne({
       where: { id },
-      relations: ['category_id', 'seo_filters']
+      relations: ['category_id', 'seo_filters'],
     })) as Menu
   }
 
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('menu is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('menu is NOT_FOUND')
     } catch (err) {
       this.logger.error(`Error while deleting menu: ${err}`)
       throw err
@@ -118,16 +112,12 @@ export class MenuService {
     return { message: 'SUCCESS' }
   }
 
-  async reorder(
-    orders: { id: number; order_in_list: number }[]
-  ): Promise<{ message: string }> {
-    if (!Array.isArray(orders))
-      throw new BadRequestException('orders is required')
+  async reorder(orders: { id: number; order_in_list: number }[]): Promise<{ message: string }> {
+    if (!Array.isArray(orders)) throw new BadRequestException('orders is required')
 
     const ids = orders.map((o) => o.id)
     const exists = await this.repo.findByIds(ids)
-    if (exists.length !== ids.length)
-      throw new BadRequestException('some ids are invalid')
+    if (exists.length !== ids.length) throw new BadRequestException('some ids are invalid')
 
     for (const o of orders) {
       await this.repo.update(o.id, { order_in_list: o.order_in_list })

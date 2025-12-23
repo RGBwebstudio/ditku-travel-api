@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
 import { IsInt, IsString, IsOptional, IsArray, Validate } from 'class-validator'
 import { IsExistIdInArray } from 'src/common/validators/isExistIdInArray.validator'
 
@@ -16,7 +17,7 @@ export class ParameterCategoryCreateDto {
 
   @ApiPropertyOptional({
     example: [1, 2],
-    description: 'Array of existing parameter IDs to attach'
+    description: 'Array of existing parameter IDs to attach',
   })
   @IsArray()
   @IsOptional()

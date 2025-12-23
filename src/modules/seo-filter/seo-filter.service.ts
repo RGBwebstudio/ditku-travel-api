@@ -1,23 +1,17 @@
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  NotFoundException
-} from '@nestjs/common'
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In } from 'typeorm'
-import { SeoFilter } from './entities/seo-filter.entity'
-import { SeoFilterCreateDto } from './dto/seo-filter-create.dto'
-import { SeoFilterUpdateDto } from './dto/seo-filter-update.dto'
+
 import { Category } from 'src/modules/category/entities/category.entity'
 import { City } from 'src/modules/city/entities/city.entity'
 import { Country } from 'src/modules/country/entities/country.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
+import { Repository, In } from 'typeorm'
 
-type SeoFilterRel = Omit<
-  SeoFilter,
-  'category_id' | 'city_id' | 'country_id' | 'parent'
-> & {
+import { SeoFilterCreateDto } from './dto/seo-filter-create.dto'
+import { SeoFilterUpdateDto } from './dto/seo-filter-update.dto'
+import { SeoFilter } from './entities/seo-filter.entity'
+
+type SeoFilterRel = Omit<SeoFilter, 'category_id' | 'city_id' | 'country_id' | 'parent'> & {
   category_id?: Category | null
   city_id?: City | null
   country_id?: Country | null
@@ -36,23 +30,20 @@ export class SeoFilterService {
   ) {}
 
   async find(): Promise<{ entities: SeoFilter[]; count: number }> {
-    const treeRepository =
-      this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
+    const treeRepository = this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
     const treeRoots = await treeRepository.findTrees()
     const totalCount = await this.seoFilterRepository.count()
     return { entities: treeRoots, count: totalCount }
   }
 
   async findOne(id: number): Promise<SeoFilter | null> {
-    const treeRepository =
-      this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
+    const treeRepository = this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
     const seoFilterEntity = await this.seoFilterRepository.findOne({
-      where: { id }
+      where: { id },
     })
     if (!seoFilterEntity) throw new NotFoundException('seo_filter is NOT_FOUND')
 
-    const descendantTree =
-      await treeRepository.findDescendantsTree(seoFilterEntity)
+    const descendantTree = await treeRepository.findDescendantsTree(seoFilterEntity)
 
     const collectedIds: number[] = []
     const collectNodes = (nodeList: SeoFilter[]) => {
@@ -61,20 +52,16 @@ export class SeoFilterService {
         if (node.children && node.children.length) collectNodes(node.children)
       }
     }
-    collectNodes(
-      Array.isArray(descendantTree) ? descendantTree : [descendantTree]
-    )
+    collectNodes(Array.isArray(descendantTree) ? descendantTree : [descendantTree])
 
     const enrichedEntities = collectedIds.length
       ? await this.seoFilterRepository.find({
           where: { id: In(collectedIds) },
-          relations: ['sections', 'category_id', 'city_id', 'country_id']
+          relations: ['sections', 'category_id', 'city_id', 'country_id'],
         })
       : []
 
-    const enrichedMap = new Map<number, SeoFilter>(
-      enrichedEntities.map((entity) => [entity.id, entity])
-    )
+    const enrichedMap = new Map<number, SeoFilter>(enrichedEntities.map((entity) => [entity.id, entity]))
 
     const enrichNode = (node: SeoFilter): SeoFilter => {
       const enrichedNode = enrichedMap.get(node.id) as SeoFilter
@@ -87,22 +74,18 @@ export class SeoFilterService {
       return enrichedNode
     }
 
-    const rootNode = Array.isArray(descendantTree)
-      ? descendantTree[0]
-      : descendantTree
+    const rootNode = Array.isArray(descendantTree) ? descendantTree[0] : descendantTree
     return enrichNode(rootNode)
   }
 
   async findOneByUrl(url: string): Promise<SeoFilter | null> {
-    const treeRepository =
-      this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
+    const treeRepository = this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
     const seoFilterEntity = await this.seoFilterRepository.findOne({
-      where: { url }
+      where: { url },
     })
     if (!seoFilterEntity) throw new NotFoundException('seo_filter is NOT_FOUND')
 
-    const descendantTree =
-      await treeRepository.findDescendantsTree(seoFilterEntity)
+    const descendantTree = await treeRepository.findDescendantsTree(seoFilterEntity)
 
     const collectedIds: number[] = []
     const collectNodes = (nodeList: SeoFilter[]) => {
@@ -111,20 +94,16 @@ export class SeoFilterService {
         if (node.children && node.children.length) collectNodes(node.children)
       }
     }
-    collectNodes(
-      Array.isArray(descendantTree) ? descendantTree : [descendantTree]
-    )
+    collectNodes(Array.isArray(descendantTree) ? descendantTree : [descendantTree])
 
     const enrichedEntities = collectedIds.length
       ? await this.seoFilterRepository.find({
           where: { id: In(collectedIds) },
-          relations: ['sections', 'category_id', 'city_id', 'country_id']
+          relations: ['sections', 'category_id', 'city_id', 'country_id'],
         })
       : []
 
-    const enrichedMap = new Map<number, SeoFilter>(
-      enrichedEntities.map((entity) => [entity.id, entity])
-    )
+    const enrichedMap = new Map<number, SeoFilter>(enrichedEntities.map((entity) => [entity.id, entity]))
 
     const enrichNode = (node: SeoFilter): SeoFilter => {
       const enrichedNode = enrichedMap.get(node.id) as SeoFilter
@@ -137,9 +116,7 @@ export class SeoFilterService {
       return enrichedNode
     }
 
-    const rootNode = Array.isArray(descendantTree)
-      ? descendantTree[0]
-      : descendantTree
+    const rootNode = Array.isArray(descendantTree) ? descendantTree[0] : descendantTree
     return enrichNode(rootNode)
   }
 
@@ -163,32 +140,32 @@ export class SeoFilterService {
 
     if (createDto.category_id) {
       seoFilterData.category_id = {
-        id: createDto.category_id
+        id: createDto.category_id,
       } as Category
     }
     if (createDto.city_id) {
       seoFilterData.city_id = {
-        id: createDto.city_id
+        id: createDto.city_id,
       } as City
     }
     if (createDto.country_id) {
       seoFilterData.country_id = {
-        id: createDto.country_id
+        id: createDto.country_id,
       } as Country
     }
 
     if (createDto.sections?.length) {
       const sectionEntities = await this.sectionRepository.find({
         where: {
-          id: In(createDto.sections)
-        }
+          id: In(createDto.sections),
+        },
       })
       seoFilterData.sections = sectionEntities
     }
 
     if (createDto.parent_id) {
       seoFilterData.parent = {
-        id: createDto.parent_id
+        id: createDto.parent_id,
       } as SeoFilter
     }
 
@@ -204,8 +181,8 @@ export class SeoFilterService {
   async update(id: number, updateDto: SeoFilterUpdateDto): Promise<SeoFilter> {
     const existingEntity = await this.seoFilterRepository.findOne({
       where: {
-        id
-      }
+        id,
+      },
     })
     if (!existingEntity) throw new NotFoundException('seo_filter is NOT_FOUND')
 
@@ -231,7 +208,7 @@ export class SeoFilterService {
         relEntity.category_id = null
       } else {
         relEntity.category_id = {
-          id: updateDto.category_id
+          id: updateDto.category_id,
         } as Category
       }
     }
@@ -240,7 +217,7 @@ export class SeoFilterService {
         relEntity.city_id = null
       } else {
         relEntity.city_id = {
-          id: updateDto.city_id
+          id: updateDto.city_id,
         } as City
       }
     }
@@ -249,7 +226,7 @@ export class SeoFilterService {
         relEntity.country_id = null
       } else {
         relEntity.country_id = {
-          id: updateDto.country_id
+          id: updateDto.country_id,
         } as Country
       }
     }
@@ -257,8 +234,8 @@ export class SeoFilterService {
     if (updateDto.sections !== undefined) {
       const sectionEntities = await this.sectionRepository.find({
         where: {
-          id: In(updateDto.sections)
-        }
+          id: In(updateDto.sections),
+        },
       })
       relEntity.sections = sectionEntities
     }
@@ -268,7 +245,7 @@ export class SeoFilterService {
         relEntity.parent = null
       } else {
         relEntity.parent = {
-          id: updateDto.parent_id
+          id: updateDto.parent_id,
         } as SeoFilter
       }
     }
@@ -298,12 +275,11 @@ export class SeoFilterService {
   }
 
   async findByCategory(id: number): Promise<SeoFilter[]> {
-    const treeRepository =
-      this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
+    const treeRepository = this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
 
     // find filters directly attached to category
     const roots = await this.seoFilterRepository.find({
-      where: { category_id: { id } }
+      where: { category_id: { id } },
     })
 
     if (!roots || roots.length === 0) return []
@@ -311,7 +287,7 @@ export class SeoFilterService {
     const resultTrees: SeoFilter[] = []
     for (const root of roots) {
       const tree = await treeRepository.findDescendantsTree(root)
-      resultTrees.push(tree as SeoFilter)
+      resultTrees.push(tree)
     }
 
     return resultTrees

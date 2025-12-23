@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator'
 import { BannerType } from 'src/common/types/banner-group.types'
 

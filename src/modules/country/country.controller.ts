@@ -11,17 +11,19 @@ import {
   ParseIntPipe,
   Req,
   Put,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common'
-import { CountryService } from './country.service'
-import { CreateCountryDto } from './dto/create-country.dto'
-import { UpdateCountryDto } from './dto/update-country.dto'
-import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { Request } from 'express'
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
+import { CountryService } from './country.service'
 import { CountryCreateTranslateDto } from './dto/country-create-translate.dto'
 import { CountryUpdateTranslateDto } from './dto/country-update-translate.dto'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { CreateCountryDto } from './dto/create-country.dto'
+import { UpdateCountryDto } from './dto/update-country.dto'
 
 @ApiTags('Країна')
 @Controller('country')
@@ -31,7 +33,7 @@ export class CountryController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано частину сутностей'
+    description: 'SUCCESS - Успішно отримано частину сутностей',
   })
   @ApiOperation({ summary: 'Отримати всі країни' })
   findAll(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
@@ -41,7 +43,7 @@ export class CountryController {
   @Get('all')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано всі сутності'
+    description: 'SUCCESS - Успішно отримано всі сутності',
   })
   @ApiOperation({ summary: 'Отримати список всіх країн' })
   getAllList(@Req() req: Request) {
@@ -58,11 +60,11 @@ export class CountryController {
   @Get(':id')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно отримано'
+    description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Отримати країну' })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
@@ -73,11 +75,11 @@ export class CountryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутність успішно створено'
+    description: 'SUCCESS - Сутність успішно створено',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Cутність не створено'
+    description: 'NOT_CREATED - Cутність не створено',
   })
   @ApiOperation({ summary: 'Створення країни' })
   create(@Body() createCountryDto: CreateCountryDto) {
@@ -88,17 +90,14 @@ export class CountryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно оновлено'
+    description: 'SUCCESS - Сутність успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити країну' })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateCountryDto: UpdateCountryDto
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateCountryDto: UpdateCountryDto) {
     return this.countryService.update(id, updateCountryDto)
   }
 
@@ -106,15 +105,15 @@ export class CountryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiResponse({
     status: 400,
-    description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена'
+    description: 'HAS_CHILDS - Сутність має нащадки, не може бути видалена',
   })
   @ApiOperation({ summary: 'Видалити країну' })
   delete(@Param('id', ParseIntPipe) id: number) {
@@ -125,14 +124,14 @@ export class CountryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 201,
-    description: 'SUCCESS - Сутності успішно створено'
+    description: 'SUCCESS - Сутності успішно створено',
   })
   @ApiOperation({ summary: 'Створити переклади для країни' })
   @ApiBody({
     description: 'Масив перекладів',
     type: CountryCreateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   createTranslates(@Body() dto: CountryCreateTranslateDto[]) {
     return this.countryService.createTranslates(dto)
@@ -142,18 +141,18 @@ export class CountryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутності успішно оновлено'
+    description: 'SUCCESS - Сутності успішно оновлено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Оновити переклади країни' })
   @ApiBody({
     description: 'Масив перекладів',
     type: CountryUpdateTranslateDto,
     isArray: true,
-    required: true
+    required: true,
   })
   updateTranslates(@Body() dto: CountryUpdateTranslateDto[]) {
     return this.countryService.updateTranslates(dto)
@@ -163,11 +162,11 @@ export class CountryController {
   @UseGuards(AuthAdminGuard)
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Сутність успішно видалено'
+    description: 'SUCCESS - Сутність успішно видалено',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Сутність не знайдено'
+    description: 'NOT_FOUND - Сутність не знайдено',
   })
   @ApiOperation({ summary: 'Видалити переклад країни' })
   deleteTranslate(@Param('id', ParseIntPipe) id: number) {

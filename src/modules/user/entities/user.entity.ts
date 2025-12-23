@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcrypt'
+import { Genders, Roles } from 'src/common/enums/user.enum'
 import {
   PrimaryGeneratedColumn,
   Column,
@@ -6,9 +7,8 @@ import {
   UpdateDateColumn,
   Entity,
   BeforeInsert,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'typeorm'
-import { Genders, Roles } from 'src/common/enums/user.enum'
 
 @Entity()
 export class User {
@@ -30,7 +30,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: Genders,
-    default: Genders.MALE
+    default: Genders.MALE,
   })
   gender: Genders
 
@@ -43,7 +43,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: Roles,
-    default: Roles.USER
+    default: Roles.USER,
   })
   role: Roles
 

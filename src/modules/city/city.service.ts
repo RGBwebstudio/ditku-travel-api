@@ -1,14 +1,12 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException
-} from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { Country } from 'src/modules/country/entities/country.entity'
 import { Repository } from 'typeorm'
-import { City } from './entities/city.entity'
+
 import { CreateCityDto } from './dto/create-city.dto'
 import { UpdateCityDto } from './dto/update-city.dto'
-import { Country } from 'src/modules/country/entities/country.entity'
+import { City } from './entities/city.entity'
 
 @Injectable()
 export class CityService {
@@ -24,7 +22,7 @@ export class CityService {
       url: dto.url,
       seo_title: dto.seo_title,
       seo_description: dto.seo_description,
-      order: dto.order
+      order: dto.order,
     }
 
     if (typeof dto.country_id !== 'undefined') {
@@ -46,7 +44,7 @@ export class CityService {
       take,
       skip,
       order: { order: 'ASC' },
-      relations: ['country_id']
+      relations: ['country_id'],
     })
 
     return { entities, count }
@@ -56,7 +54,7 @@ export class CityService {
     const entities = await this.repo.find({
       where: { country_id: { id: countryId } as Country },
       order: { order: 'ASC' },
-      relations: ['country_id']
+      relations: ['country_id'],
     })
 
     return entities
@@ -65,7 +63,7 @@ export class CityService {
   async getAllList() {
     const entities = await this.repo.find({
       order: { order: 'ASC' },
-      relations: ['country_id']
+      relations: ['country_id'],
     })
 
     return { entities }
@@ -74,7 +72,7 @@ export class CityService {
   async findOne(id: number): Promise<City> {
     const entity = await this.repo.findOne({
       where: { id },
-      relations: ['country_id']
+      relations: ['country_id'],
     })
     if (!entity) throw new NotFoundException('city is NOT_FOUND')
     return entity
@@ -88,9 +86,7 @@ export class CityService {
       const payload = {
         ...entity,
         ...dto,
-        country_id: dto.country_id
-          ? ({ id: dto.country_id } as Country)
-          : entity.country_id
+        country_id: dto.country_id ? ({ id: dto.country_id } as Country) : entity.country_id,
       }
       const saved = await this.repo.save(payload)
       return saved as City

@@ -1,3 +1,5 @@
+import { City } from 'src/modules/city/entities/city.entity'
+import { Product } from 'src/modules/product/entities/product.entity'
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -5,10 +7,8 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
-  JoinColumn
+  JoinColumn,
 } from 'typeorm'
-import { Product } from 'src/modules/product/entities/product.entity'
-import { City } from 'src/modules/city/entities/city.entity'
 
 @Entity()
 export class Roadmap {
@@ -26,7 +26,7 @@ export class Roadmap {
 
   @ManyToOne(() => City, (city) => city.roadmaps, {
     nullable: true,
-    onDelete: 'SET NULL'
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'city_id' })
   city_id: City | null

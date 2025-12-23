@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import {
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-  ValidationArguments
-} from 'class-validator'
+
+import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator'
 import { EntityManager } from 'typeorm'
 
 @ValidatorConstraint({ name: 'IsUniqueConstraint', async: true })

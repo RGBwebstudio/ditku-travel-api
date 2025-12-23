@@ -1,30 +1,14 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  Body,
-  ParseIntPipe,
-  Delete,
-  Put,
-  UseGuards,
-  Req
-} from '@nestjs/common'
-import { PostCategoryService } from './post-category.service'
-import { PostCategoryCreateDto } from './dto/post-category-create.dto'
-import { PostCategoryUpdateDto } from './dto/post-category-update.dto'
-import { PostCategoryCreateTranslateDto } from './dto/post-category-create-translate.dto'
-import { PostCategoryUpdateTranslateDto } from './dto/post-category-update-translate.dto'
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBody,
-  ApiParam
-} from '@nestjs/swagger'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put, UseGuards, Req } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger'
+
 import { Request } from 'express'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
+import { PostCategoryCreateTranslateDto } from './dto/post-category-create-translate.dto'
+import { PostCategoryCreateDto } from './dto/post-category-create.dto'
+import { PostCategoryUpdateTranslateDto } from './dto/post-category-update-translate.dto'
+import { PostCategoryUpdateDto } from './dto/post-category-update.dto'
+import { PostCategoryService } from './post-category.service'
 
 @ApiTags('Категорії постів')
 @Controller('post-category')
@@ -35,13 +19,9 @@ export class PostCategoryController {
   @ApiOperation({ summary: 'Отримати список категорій постів' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Список категорій отримано'
+    description: 'SUCCESS - Список категорій отримано',
   })
-  findAll(
-    @Query('take') take: string,
-    @Query('skip') skip: string,
-    @Req() req: Request
-  ) {
+  findAll(@Query('take') take: string, @Query('skip') skip: string, @Req() req: Request) {
     const takeNumber = take ? Number(take) : undefined
     const skipNumber = skip ? Number(skip) : undefined
     return this.postCategoryService.findAll(takeNumber, skipNumber, req.lang)
@@ -50,7 +30,7 @@ export class PostCategoryController {
   @Get('all')
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Успішно отримано всі сутності'
+    description: 'SUCCESS - Успішно отримано всі сутності',
   })
   @ApiOperation({ summary: 'Отримати всі категорії постів' })
   findAllList(@Req() req: Request) {
@@ -61,17 +41,17 @@ export class PostCategoryController {
   @ApiOperation({ summary: 'Отримати категорію посту за ID' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Категорія успішно отримана'
+    description: 'SUCCESS - Категорія успішно отримана',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Категорія не знайдена'
+    description: 'NOT_FOUND - Категорія не знайдена',
   })
   @ApiParam({
     name: 'id',
     required: true,
     type: Number,
-    description: 'ID категорії посту'
+    description: 'ID категорії посту',
   })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.postCategoryService.findOne(id, req.lang)
@@ -91,17 +71,14 @@ export class PostCategoryController {
   @ApiOperation({ summary: 'Оновити категорію посту' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Категорія успішно оновлена'
+    description: 'SUCCESS - Категорія успішно оновлена',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Категорія не знайдена'
+    description: 'NOT_FOUND - Категорія не знайдена',
   })
   @ApiResponse({ status: 400, description: 'NOT_UPDATED - Некоректні дані' })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: PostCategoryUpdateDto
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: PostCategoryUpdateDto) {
     return this.postCategoryService.update(id, updateDto)
   }
 
@@ -110,15 +87,15 @@ export class PostCategoryController {
   @ApiOperation({ summary: 'Видалити категорію посту' })
   @ApiResponse({
     status: 200,
-    description: 'SUCCESS - Категорія успішно видалена'
+    description: 'SUCCESS - Категорія успішно видалена',
   })
   @ApiResponse({
     status: 404,
-    description: 'NOT_FOUND - Категорія не знайдена'
+    description: 'NOT_FOUND - Категорія не знайдена',
   })
   @ApiResponse({
     status: 400,
-    description: 'HAS_CHILDREN - Не вдалося видалити'
+    description: 'HAS_CHILDREN - Не вдалося видалити',
   })
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.postCategoryService.delete(id)
@@ -129,9 +106,7 @@ export class PostCategoryController {
   @ApiBody({ type: PostCategoryCreateTranslateDto, isArray: true })
   @ApiOperation({ summary: 'Створити переклади для категорій постів' })
   @ApiResponse({ status: 201, description: 'CREATED - Переклади створено' })
-  createTranslates(
-    @Body() createTranslatesDto: PostCategoryCreateTranslateDto[]
-  ) {
+  createTranslates(@Body() createTranslatesDto: PostCategoryCreateTranslateDto[]) {
     return this.postCategoryService.createTranslates(createTranslatesDto)
   }
 
@@ -140,9 +115,7 @@ export class PostCategoryController {
   @ApiBody({ type: PostCategoryUpdateTranslateDto, isArray: true })
   @ApiOperation({ summary: 'Оновити переклади категорій постів' })
   @ApiResponse({ status: 200, description: 'SUCCESS - Переклади оновлено' })
-  updateTranslates(
-    @Body() updateTranslatesDto: PostCategoryUpdateTranslateDto[]
-  ) {
+  updateTranslates(@Body() updateTranslatesDto: PostCategoryUpdateTranslateDto[]) {
     return this.postCategoryService.updateTranslates(updateTranslatesDto)
   }
 

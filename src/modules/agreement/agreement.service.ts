@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { LANG } from 'src/common/enums/translation.enum'
 import { Repository } from 'typeorm'
-import { Agreement } from './entities/agreement.entity'
+
 import { CreateAgreementDto } from './dto/create-agreement.dto'
 import { UpdateAgreementDto } from './dto/update-agreement.dto'
-import { LANG } from 'src/common/enums/translation.enum'
+import { Agreement } from './entities/agreement.entity'
 
 @Injectable()
 export class AgreementService {
@@ -30,14 +27,11 @@ export class AgreementService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: Agreement[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: Agreement[]; count: number }> {
     const entities = await this.repo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
     const count = await this.repo.count()
     return { entities, count }
@@ -65,8 +59,7 @@ export class AgreementService {
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('entity of agreement NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('entity of agreement NOT_FOUND')
     } catch (err) {
       if (err.code === '23503') {
         throw new BadRequestException('entity of agreement HAS_CHILDS')

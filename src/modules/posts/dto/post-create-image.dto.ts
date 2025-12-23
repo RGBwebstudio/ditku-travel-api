@@ -1,5 +1,6 @@
-import { IsString, IsOptional, IsInt, Min } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsString, IsOptional, IsInt, Min } from 'class-validator'
 
 export class PostCreateImageDto {
   @ApiProperty({ example: 'post-image.jpg' })

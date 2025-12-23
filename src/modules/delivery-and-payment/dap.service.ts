@@ -1,18 +1,16 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException
-} from '@nestjs/common'
-import { CreateDAPDto } from './dto/create-dap.dto'
-import { UpdateDAPDto } from './dto/update-dap.dto'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { DAP } from './entities/dap.entity'
-import { Repository } from 'typeorm'
-import { DAPCreateTranslateDto } from './dto/dap-create-translate.dto'
-import { DAPTranslates } from './entities/dap-translate.entity'
-import { DAPUpdateTranslateDto } from './dto/dap-update-translate.dto'
-import { applyTranslations } from 'src/common/utils/apply-translates.util'
+
 import { LANG } from 'src/common/enums/translation.enum'
+import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { Repository } from 'typeorm'
+
+import { CreateDAPDto } from './dto/create-dap.dto'
+import { DAPCreateTranslateDto } from './dto/dap-create-translate.dto'
+import { DAPUpdateTranslateDto } from './dto/dap-update-translate.dto'
+import { UpdateDAPDto } from './dto/update-dap.dto'
+import { DAPTranslates } from './entities/dap-translate.entity'
+import { DAP } from './entities/dap.entity'
 
 @Injectable()
 export class DAPService {
@@ -27,7 +25,7 @@ export class DAPService {
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: ['translates']
+      relations: ['translates'],
     })
 
     const mappedEntities = applyTranslations(entities, lang)
@@ -39,10 +37,9 @@ export class DAPService {
   async findOne(id: number, lang: LANG) {
     const result = await this.dpaRepo.findOne({
       where: { id },
-      relations: ['translates']
+      relations: ['translates'],
     })
-    if (!result)
-      throw new NotFoundException('delivery and payment entity is NOT_FOUND')
+    if (!result) throw new NotFoundException('delivery and payment entity is NOT_FOUND')
 
     const mappedEntities = applyTranslations([result], lang)
     return mappedEntities[0]
@@ -63,8 +60,7 @@ export class DAPService {
     await this.dpaRepo.update({ id }, dto)
 
     const page = await this.dpaRepo.findOne({ where: { id } })
-    if (!page)
-      throw new NotFoundException('delivery and payment entity is NOT_FOUND')
+    if (!page) throw new NotFoundException('delivery and payment entity is NOT_FOUND')
 
     return page
   }
@@ -79,9 +75,7 @@ export class DAPService {
     return { message: 'SUCCESS' }
   }
 
-  async createTranslates(
-    dto: DAPCreateTranslateDto[]
-  ): Promise<DAPTranslates[] | null> {
+  async createTranslates(dto: DAPCreateTranslateDto[]): Promise<DAPTranslates[] | null> {
     if (dto?.length) {
       const results: DAPTranslates[] = []
 
@@ -96,23 +90,18 @@ export class DAPService {
     return null
   }
 
-  async updateTranslates(
-    dto: DAPUpdateTranslateDto[]
-  ): Promise<DAPTranslates[] | null> {
+  async updateTranslates(dto: DAPUpdateTranslateDto[]): Promise<DAPTranslates[] | null> {
     const results: DAPTranslates[] = []
 
     for (const translate of dto) {
       const result = await this.entityTranslateRepo.update(translate.id, {
-        ...translate
+        ...translate,
       })
 
-      if (result.affected === 0)
-        throw new NotFoundException(
-          'delivery and payment entity translate is NOT_FOUND'
-        )
+      if (result.affected === 0) throw new NotFoundException('delivery and payment entity translate is NOT_FOUND')
 
       const updatedEntityTranslate = await this.entityTranslateRepo.findOne({
-        where: { id: translate.id }
+        where: { id: translate.id },
       })
 
       if (updatedEntityTranslate) results.push(updatedEntityTranslate)
@@ -121,15 +110,11 @@ export class DAPService {
     return results
   }
 
-  async deleteTranslate(
-    id: number
-  ): Promise<{ message: string } | NotFoundException> {
+  async deleteTranslate(id: number): Promise<{ message: string } | NotFoundException> {
     const result = await this.entityTranslateRepo.delete(id)
 
     if (result.affected === 0) {
-      throw new NotFoundException(
-        'delivery and payment entity translate is NOT_FOUND'
-      )
+      throw new NotFoundException('delivery and payment entity translate is NOT_FOUND')
     }
 
     return { message: 'OK' }

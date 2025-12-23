@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, ArrayNotEmpty, IsInt } from 'class-validator'
+
 import { Type } from 'class-transformer'
+import { IsArray, ArrayNotEmpty, IsInt } from 'class-validator'
 
 export class ProductDeleteImagesDto {
   @ApiProperty({ type: [Number], description: 'Array of image ids to delete' })

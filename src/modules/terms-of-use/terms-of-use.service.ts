@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { LANG } from 'src/common/enums/translation.enum'
 import { Repository } from 'typeorm'
-import { TermsOfUse } from './entities/terms-of-use.entity'
+
 import { CreateTermsOfUseDto } from './dto/create-terms-of-use.dto'
 import { UpdateTermsOfUseDto } from './dto/update-terms-of-use.dto'
-import { LANG } from 'src/common/enums/translation.enum'
+import { TermsOfUse } from './entities/terms-of-use.entity'
 
 @Injectable()
 export class TermsOfUseService {
@@ -30,14 +27,11 @@ export class TermsOfUseService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: TermsOfUse[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: TermsOfUse[]; count: number }> {
     const entities = await this.repo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
     const count = await this.repo.count()
     return { entities, count }
@@ -66,8 +60,7 @@ export class TermsOfUseService {
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('entity of terms-of-use NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('entity of terms-of-use NOT_FOUND')
     } catch (err) {
       if (err.code === '23503') {
         throw new BadRequestException('entity of terms-of-use HAS_CHILDS')

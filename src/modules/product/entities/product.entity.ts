@@ -1,3 +1,9 @@
+import { Category } from 'src/modules/category/entities/category.entity'
+import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
+import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
+import { Rating } from 'src/modules/product-rating/entities/rating.entity'
+import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
+import { Section } from 'src/modules/section/entities/section.entity'
 import {
   Entity,
   Column,
@@ -9,16 +15,11 @@ import {
   JoinTable,
   CreateDateColumn,
   UpdateDateColumn,
-  Index
+  Index,
 } from 'typeorm'
-import { Category } from 'src/modules/category/entities/category.entity'
-import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
-import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
-import { ProductTranslate } from './product-translate.entity'
+
 import { ProductImage } from './product-image.entity'
-import { Rating } from 'src/modules/product-rating/entities/rating.entity'
-import { Section } from 'src/modules/section/entities/section.entity'
-import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
+import { ProductTranslate } from './product-translate.entity'
 
 @Entity()
 @Index(['category_id', 'show_on_main_page', 'created_at'])
@@ -74,66 +75,59 @@ export class Product {
   is_popular: boolean
 
   @ManyToOne(() => Product, (product: Product) => product.parent_id, {
-    onDelete: 'SET NULL'
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'parent_id' })
   parent_id: Product
 
   @ManyToOne(() => Category, (category: Category) => category.products, {
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category
 
   @ManyToMany(() => Parameter, (parameter: Parameter) => parameter.products, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @JoinTable({
     name: 'product_parameters',
     joinColumn: { name: 'product_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'parameter_id', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'parameter_id', referencedColumnName: 'id' },
   })
   parameters: Parameter[]
 
-  @ManyToMany(
-    () => FormatGroup,
-    (formatGroup: FormatGroup) => formatGroup.products,
-    {
-      onDelete: 'CASCADE'
-    }
-  )
+  @ManyToMany(() => FormatGroup, (formatGroup: FormatGroup) => formatGroup.products, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable({
     name: 'product_format_group',
     joinColumn: { name: 'product_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'group_format_id', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'group_format_id', referencedColumnName: 'id' },
   })
   format_groups: FormatGroup[]
 
   @ManyToMany(() => Section, (section: Section) => section.products, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   sections: Section[]
 
   @ManyToMany(() => Product, (product: Product) => product.recommendedBy, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @JoinTable({
     name: 'product_recommendations',
     joinColumn: { name: 'product_id', referencedColumnName: 'id' },
     inverseJoinColumn: {
       name: 'recommended_product_id',
-      referencedColumnName: 'id'
-    }
+      referencedColumnName: 'id',
+    },
   })
   recommendedProducts: Product[]
 
   @ManyToMany(() => Product, (product: Product) => product.recommendedProducts)
   recommendedBy: Product[]
 
-  @OneToMany(
-    () => ProductTranslate,
-    (translate: ProductTranslate) => translate.entity_id
-  )
+  @OneToMany(() => ProductTranslate, (translate: ProductTranslate) => translate.entity_id)
   translates: ProductTranslate[]
 
   @OneToMany(() => ProductImage, (image: ProductImage) => image.entity_id)

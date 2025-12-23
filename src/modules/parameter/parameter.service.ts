@@ -1,21 +1,18 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-  BadRequestException
-} from '@nestjs/common'
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Repository } from 'typeorm'
-import { Parameter } from './entities/parameter.entity'
-import { ParameterDto } from './dto/parameter.dto'
+
+import { LANG } from 'src/common/enums/translation.enum'
+import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { Category } from 'src/modules/category/entities/category.entity'
 import { ParameterCategory } from 'src/modules/parameter-category/entities/parameter-category.entity'
-import { ParameterTranslate } from './entities/category-translate.entity'
+import { Product } from 'src/modules/product/entities/product.entity'
+import { In, Repository } from 'typeorm'
+
 import { ParameterCreateTranslateDto } from './dto/parameter-create-translate.dto'
 import { ParameterUpdateTranslateDto } from './dto/parameter-update-translate.dto'
-import { applyTranslations } from 'src/common/utils/apply-translates.util'
-import { LANG } from 'src/common/enums/translation.enum'
-import { Category } from 'src/modules/category/entities/category.entity'
-import { Product } from 'src/modules/product/entities/product.entity'
+import { ParameterDto } from './dto/parameter.dto'
+import { ParameterTranslate } from './entities/category-translate.entity'
+import { Parameter } from './entities/parameter.entity'
 
 @Injectable()
 export class ParameterService {
@@ -34,16 +31,12 @@ export class ParameterService {
     private readonly entityTranslateRepo: Repository<ParameterTranslate>
   ) {}
 
-  async findAll(
-    take: number,
-    skip: number,
-    lang: LANG
-  ): Promise<{ entities: Parameter[]; count: number }> {
+  async findAll(take: number, skip: number, lang: LANG): Promise<{ entities: Parameter[]; count: number }> {
     const entities = await this.parameterRepo.find({
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: ['category_ids', 'translates']
+      relations: ['category_ids', 'translates'],
     })
 
     const count = await this.parameterRepo.count()
@@ -56,7 +49,7 @@ export class ParameterService {
   async getAllList(lang: LANG): Promise<{ entities: Parameter[] }> {
     const entities = await this.parameterRepo.find({
       order: { created_at: 'DESC' },
-      relations: ['category_ids', 'translates']
+      relations: ['category_ids', 'translates'],
     })
 
     const mappedEntities = applyTranslations(entities, lang)
@@ -64,10 +57,7 @@ export class ParameterService {
     return { entities: mappedEntities }
   }
 
-  async searchByTitle(
-    query: string,
-    lang: LANG
-  ): Promise<{ entities: Parameter[] }> {
+  async searchByTitle(query: string, lang: LANG): Promise<{ entities: Parameter[] }> {
     if (!query || query.trim().length === 0) return { entities: [] }
 
     let qb = this.parameterRepo
@@ -75,7 +65,7 @@ export class ParameterService {
       .leftJoinAndSelect('parameter.translates', 'translates')
       .leftJoinAndSelect('parameter.category_ids', 'category_ids')
       .where('LOWER(parameter.title) LIKE :title', {
-        title: `%${query.toLowerCase()}%`
+        title: `%${query.toLowerCase()}%`,
       })
       .orderBy('parameter.created_at', 'DESC')
       .take(20)
@@ -88,7 +78,7 @@ export class ParameterService {
         .leftJoinAndSelect('parameter.translates', 'translates')
         .leftJoinAndSelect('parameter.category_ids', 'category_ids')
         .where('LOWER(translates.value) LIKE :title', {
-          title: `%${query.toLowerCase()}%`
+          title: `%${query.toLowerCase()}%`,
         })
         .andWhere('translates.field = :field', { field: 'title' })
         .orderBy('parameter.created_at', 'DESC')
@@ -105,7 +95,7 @@ export class ParameterService {
   async findOne(id: number, lang: LANG): Promise<Parameter> {
     const entity = await this.parameterRepo.findOne({
       where: { id },
-      relations: ['category_ids', 'translates']
+      relations: ['category_ids', 'translates'],
     })
     if (!entity) throw new NotFoundException('parameter is NOT_FOUND')
 
@@ -120,7 +110,7 @@ export class ParameterService {
 
     if (category_ids?.length) {
       const categories = await this.parameterCategoryRepo.find({
-        where: { id: In(category_ids) }
+        where: { id: In(category_ids) },
       })
       parameter.category_ids = categories
     }
@@ -128,7 +118,7 @@ export class ParameterService {
     const exists = await this.parameterRepo
       .createQueryBuilder('parameter')
       .where('LOWER(parameter.title) = :title', {
-        title: (dto.title || '').toLowerCase()
+        title: (dto.title || '').toLowerCase(),
       })
       .getOne()
 
@@ -147,7 +137,7 @@ export class ParameterService {
   async update(id: number, dto: ParameterDto): Promise<Parameter> {
     const parameter = await this.parameterRepo.findOne({
       where: { id },
-      relations: ['category_ids', 'translates']
+      relations: ['category_ids', 'translates'],
     })
     if (!parameter) throw new NotFoundException('parameter is NOT_FOUND')
 
@@ -155,7 +145,7 @@ export class ParameterService {
       const exists = await this.parameterRepo
         .createQueryBuilder('parameter')
         .where('LOWER(parameter.title) = :title', {
-          title: dto.title.toLowerCase()
+          title: dto.title.toLowerCase(),
         })
         .andWhere('parameter.id != :id', { id })
         .getOne()
@@ -169,7 +159,7 @@ export class ParameterService {
 
     if (dto.category_ids) {
       const categories = await this.parameterCategoryRepo.find({
-        where: { id: In(dto.category_ids) }
+        where: { id: In(dto.category_ids) },
       })
       parameter.category_ids = categories
     }
@@ -188,9 +178,7 @@ export class ParameterService {
     return { message: 'SUCCESS' }
   }
 
-  async createTranslates(
-    dto: ParameterCreateTranslateDto[]
-  ): Promise<ParameterTranslate[] | null> {
+  async createTranslates(dto: ParameterCreateTranslateDto[]): Promise<ParameterTranslate[] | null> {
     if (dto?.length) {
       const results: ParameterTranslate[] = []
 
@@ -205,21 +193,18 @@ export class ParameterService {
     return null
   }
 
-  async updateTranslates(
-    dto: ParameterUpdateTranslateDto[]
-  ): Promise<ParameterTranslate[] | null> {
+  async updateTranslates(dto: ParameterUpdateTranslateDto[]): Promise<ParameterTranslate[] | null> {
     const results: ParameterTranslate[] = []
 
     for (const translate of dto) {
       const result = await this.entityTranslateRepo.update(translate.id, {
-        ...translate
+        ...translate,
       })
 
-      if (result.affected === 0)
-        throw new NotFoundException('parameter translate is NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('parameter translate is NOT_FOUND')
 
       const updatedEntityTranslate = await this.entityTranslateRepo.findOne({
-        where: { id: translate.id }
+        where: { id: translate.id },
       })
 
       if (updatedEntityTranslate) results.push(updatedEntityTranslate)
@@ -228,9 +213,7 @@ export class ParameterService {
     return results
   }
 
-  async deleteTranslate(
-    id: number
-  ): Promise<{ message: string } | NotFoundException> {
+  async deleteTranslate(id: number): Promise<{ message: string } | NotFoundException> {
     const result = await this.entityTranslateRepo.delete(id)
 
     if (result.affected === 0) {
@@ -251,7 +234,7 @@ export class ParameterService {
 
     const treeRepo = this.categoryRepo.manager.getTreeRepository(Category)
     const rootCategory = await this.categoryRepo.findOne({
-      where: { url: categoryUrl }
+      where: { url: categoryUrl },
     })
     if (!rootCategory) return { entities: [] }
 
@@ -278,8 +261,7 @@ export class ParameterService {
     for (const parameter of parametersInCategory) {
       if (parameter.category_ids?.length) {
         for (const parameterCategory of parameter.category_ids) {
-          if (parameterCategory?.id)
-            parameterCategoryIds.add(parameterCategory.id)
+          if (parameterCategory?.id) parameterCategoryIds.add(parameterCategory.id)
         }
       }
     }
@@ -291,20 +273,17 @@ export class ParameterService {
     const parameterCategories = await this.parameterCategoryRepo.find({
       where: { id: In(parameterCategoryIdsArray) },
       relations: ['translates'],
-      order: { order_in_list: 'ASC' }
+      order: { order_in_list: 'ASC' },
     })
 
     const translatedParameters = applyTranslations(parametersInCategory, lang)
     const translatedCategories = applyTranslations(parameterCategories, lang)
 
-    const categoryMap = new Map<
-      number,
-      ParameterCategory & { parameters: Parameter[] }
-    >()
+    const categoryMap = new Map<number, ParameterCategory & { parameters: Parameter[] }>()
     for (const category of translatedCategories) {
       categoryMap.set(category.id, {
         ...category,
-        parameters: []
+        parameters: [],
       })
     }
 
@@ -321,9 +300,7 @@ export class ParameterService {
 
     const result = Array.from(categoryMap.values()).map((categoryItem) => {
       if (categoryItem.parameters?.length) {
-        categoryItem.parameters.sort(
-          (a, b) => (a.order_in_list || 0) - (b.order_in_list || 0)
-        )
+        categoryItem.parameters.sort((a, b) => (a.order_in_list || 0) - (b.order_in_list || 0))
       }
       return categoryItem
     })
@@ -340,10 +317,7 @@ export class ParameterService {
       const min = priceRaw?.min ?? null
       const max = priceRaw?.max ?? null
 
-      const minMaxPrice =
-        min !== null && max !== null
-          ? { min: String(min), max: String(max) }
-          : undefined
+      const minMaxPrice = min !== null && max !== null ? { min: String(min), max: String(max) } : undefined
 
       return { entities: result, minMaxPrice }
     } catch {

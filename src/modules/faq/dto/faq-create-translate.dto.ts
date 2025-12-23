@@ -1,12 +1,8 @@
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsString
-} from 'class-validator'
-import { LANG } from 'src/common/enums/translation.enum'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
+import { LANG } from 'src/common/enums/translation.enum'
+
 import { Faq } from '../entities/faq.entity'
 
 export class FaqCreateTranslateDto {

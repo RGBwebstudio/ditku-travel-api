@@ -1,20 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-  UseGuards,
-  Patch
-} from '@nestjs/common'
-import { MenuService } from './menu.service'
+import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, UseGuards, Patch } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger'
+
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { MenuCreateDto } from './dto/menu-create.dto'
 import { MenuUpdateDto } from './dto/menu-update.dto'
-import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger'
+import { MenuService } from './menu.service'
 
 @ApiTags('Меню')
 @Controller('menu')
@@ -49,10 +40,7 @@ export class MenuController {
   @Put(':id')
   @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Оновити запис меню' })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: MenuUpdateDto
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: MenuUpdateDto) {
     return this.menuService.update(id, dto)
   }
 
@@ -69,7 +57,7 @@ export class MenuController {
   @ApiBody({
     description: 'Array of { id, order_in_list }',
     type: Object,
-    isArray: true
+    isArray: true,
   })
   async reorder(@Body() orders: { id: number; order_in_list: number }[]) {
     return this.menuService.reorder(orders)

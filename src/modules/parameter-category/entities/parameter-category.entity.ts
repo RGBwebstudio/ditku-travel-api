@@ -1,3 +1,4 @@
+import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -5,9 +6,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
-  OneToMany
+  OneToMany,
 } from 'typeorm'
-import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
+
 import { ParameterCategoryTranslate } from './category-translate.entity'
 
 @Entity()
@@ -18,14 +19,11 @@ export class ParameterCategory {
   title: string
 
   @ManyToMany(() => Parameter, (parameter) => parameter.category_ids, {
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   parameters: Parameter[]
 
-  @OneToMany(
-    () => ParameterCategoryTranslate,
-    (translate) => translate.entity_id
-  )
+  @OneToMany(() => ParameterCategoryTranslate, (translate) => translate.entity_id)
   translates: ParameterCategoryTranslate[]
 
   @Column({ default: 0 })

@@ -1,13 +1,9 @@
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsString
-} from 'class-validator'
-import { LANG } from 'src/common/enums/translation.enum'
-import { Category } from '../entities/category.entity'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
+import { LANG } from 'src/common/enums/translation.enum'
+
+import { Category } from '../entities/category.entity'
 
 export class CategoryCreateTranslateDto {
   @ApiProperty({ example: 'title' })

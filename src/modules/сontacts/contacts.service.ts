@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+
+import { LANG } from 'src/common/enums/translation.enum'
+import { Repository } from 'typeorm'
+
 import { CreateContactsDto } from './dto/create-contacts.dto'
 import { UpdateContactsDto } from './dto/update-contacts.dto'
-import { InjectRepository } from '@nestjs/typeorm'
 import { Contacts } from './entities/contacts.entity'
-import { Repository } from 'typeorm'
-import { LANG } from 'src/common/enums/translation.enum'
 
 @Injectable()
 export class ContactsService {
@@ -31,14 +28,11 @@ export class ContactsService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: Contacts[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: Contacts[]; count: number }> {
     const entities = await this.contactsRepo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
 
     const count = await this.contactsRepo.count()
@@ -48,7 +42,7 @@ export class ContactsService {
 
   async findOne(lang: LANG): Promise<Contacts> {
     const entity = await this.contactsRepo.findOne({
-      where: { lang }
+      where: { lang },
     })
 
     if (!entity) throw new NotFoundException('user is NOT_FOUND')

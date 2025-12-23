@@ -1,3 +1,5 @@
+import { Menu } from 'src/modules/menu/entities/menu.entity'
+import { Product } from 'src/modules/product/entities/product.entity'
 import {
   Column,
   Entity,
@@ -8,16 +10,15 @@ import {
   Tree,
   TreeChildren,
   TreeParent,
-  Index
+  Index,
 } from 'typeorm'
-import { Product } from 'src/modules/product/entities/product.entity'
-import { CategoryTranslate } from './category-translate.entity'
+
 import { CategoryImage } from './category-image.entity'
-import { Menu } from 'src/modules/menu/entities/menu.entity'
+import { CategoryTranslate } from './category-translate.entity'
 
 @Entity()
 @Tree('closure-table', {
-  closureTableName: 'category'
+  closureTableName: 'category',
 })
 @Index(['url'])
 @Index(['show_on_main_page', 'created_at'])

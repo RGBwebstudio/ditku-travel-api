@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
+import { LANG } from 'src/common/enums/translation.enum'
 import { Repository } from 'typeorm'
-import { Content } from './entities/content.entity'
+
 import { CreateContentDto } from './dto/create-content.dto'
 import { UpdateContentDto } from './dto/update-content.dto'
-import { LANG } from 'src/common/enums/translation.enum'
+import { Content } from './entities/content.entity'
 
 @Injectable()
 export class ContentService {
@@ -30,14 +27,11 @@ export class ContentService {
     }
   }
 
-  async findAll(
-    take: number,
-    skip: number
-  ): Promise<{ entities: Content[]; count: number }> {
+  async findAll(take: number, skip: number): Promise<{ entities: Content[]; count: number }> {
     const entities = await this.repo.find({
       take,
       skip,
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     })
     const count = await this.repo.count()
     return { entities, count }
@@ -65,8 +59,7 @@ export class ContentService {
   async delete(id: number): Promise<{ message: string }> {
     try {
       const result = await this.repo.delete(id)
-      if (result.affected === 0)
-        throw new NotFoundException('entity of content NOT_FOUND')
+      if (result.affected === 0) throw new NotFoundException('entity of content NOT_FOUND')
     } catch (err) {
       if (err.code === '23503') {
         throw new BadRequestException('entity of content HAS_CHILDS')

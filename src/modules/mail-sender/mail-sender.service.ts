@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { SendEmailDto } from './dto/send-email.dto'
-import { MailLayoutService } from 'src/modules/mail-layout/mail-layout.service'
+
 import { MailerService } from '@nestjs-modules/mailer'
 import { SentMessageInfo } from 'nodemailer'
+import { MailLayoutService } from 'src/modules/mail-layout/mail-layout.service'
+
+import { SendEmailDto } from './dto/send-email.dto'
 
 @Injectable()
 export class MailSenderService {
@@ -19,20 +21,16 @@ export class MailSenderService {
         to,
         subject,
         template,
-        context
+        context,
       })
 
       return result
     } catch (err) {
       if (err instanceof Error) {
-        console.error(
-          `Error to send mail to user with e-mail ${to} \n ${err.message}`
-        )
+        console.error(`Error to send mail to user with e-mail ${to} \n ${err.message}`)
         return err
       } else {
-        console.error(
-          `Error to send mail to user with e-mail ${to} \n ${JSON.stringify(err)}`
-        )
+        console.error(`Error to send mail to user with e-mail ${to} \n ${JSON.stringify(err)}`)
         return new Error('Unknown error occurred')
       }
     }
