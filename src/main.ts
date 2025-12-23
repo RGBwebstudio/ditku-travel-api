@@ -8,7 +8,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import * as bodyParser from 'body-parser'
 import { useContainer } from 'class-validator'
-import * as pgSession from 'connect-pg-simple'
+import pgSession from 'connect-pg-simple'
 import session from 'express-session'
 
 import { LanguageInterceptor } from './common/interceptors/language.interceptor'

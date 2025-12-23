@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 
 import { Request } from 'express'
 import * as fs from 'fs-extra'
-import * as sharp from 'sharp'
+import sharp from 'sharp'
 import { LANG } from 'src/common/enums/translation.enum'
 import { ProductWithoutRatings } from 'src/common/utils/apply-rating'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'

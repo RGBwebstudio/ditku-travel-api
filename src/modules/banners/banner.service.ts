@@ -4,7 +4,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { InjectRepository } from '@nestjs/typeorm'
 
 import * as fs from 'fs-extra'
-import * as sharp from 'sharp'
+import sharp from 'sharp'
 import { BannerType } from 'src/common/types/banner-group.types'
 import { Repository } from 'typeorm'
 

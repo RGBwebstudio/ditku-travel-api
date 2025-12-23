@@ -4,7 +4,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { InjectRepository } from '@nestjs/typeorm'
 
 import * as fs from 'fs-extra'
-import * as sharp from 'sharp'
+import sharp from 'sharp'
 import { LANG } from 'src/common/enums/translation.enum'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
