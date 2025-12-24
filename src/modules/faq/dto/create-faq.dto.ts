@@ -1,8 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger'
 
-import { IsString } from 'class-validator'
+import { IsBoolean, IsOptional, IsString } from 'class-validator'
 
 export class CreateFaqDto {
+  @ApiProperty({ example: true, required: false })
+  @IsBoolean()
+  @IsOptional()
+  show_in_product?: boolean
   @ApiProperty({
     example: 'Чому я не сокіл, чому не літаю, Чому мені, боже, ти криллів не дав?',
   })

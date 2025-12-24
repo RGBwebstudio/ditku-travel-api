@@ -7,7 +7,7 @@ export class Faq {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
+  @Column({ default: false })
   show_in_product: boolean
 
   @Column()
