@@ -31,7 +31,9 @@ export class Section {
   })
   products: Product[]
 
-  @ManyToMany(() => SeoFilter, (seoFilter) => seoFilter.sections)
+  @ManyToMany(() => SeoFilter, (seoFilter) => seoFilter.sections, {
+    onDelete: 'CASCADE',
+  })
   seo_filters: SeoFilter[]
 
   @OneToMany(() => SectionTranslate, (translate) => translate.entity_id)
