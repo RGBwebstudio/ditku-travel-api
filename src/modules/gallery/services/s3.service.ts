@@ -10,10 +10,10 @@ export class S3Service {
   private readonly uploadDir: string
 
   constructor(private configService: ConfigService) {
-    const region = this.configService.get<string>('S3_REGION') || 'us-east-1'
+    const region = this.configService.get<string>('S3_REGION')
     const accessKeyId = this.configService.get<string>('S3_ACCESS_KEY_ID')
     const secretAccessKey = this.configService.get<string>('S3_SECRET_ACCESS_KEY')
-    const awsEndpointUrl = this.configService.get<string>('S3_ENDPOINT_URL')
+    const awsEndpointUrl = this.configService.get<string>('S3_ENDPOINT_URL') || 'https://fsn1.your-objectstorage.com'
     this.bucketName = this.configService.get<string>('S3_BUCKET_NAME') || ''
     this.uploadDir = process.env.S3_UPLOAD_DIR || 'images'
 

@@ -10,7 +10,7 @@ export default () => ({
     database: process.env.DB_NAME,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     synchronize: true,
-    logging: false
+    logging: false,
   } as TypeOrmModuleOptions,
   mail: {
     host: process.env.MAIL_HOST,
@@ -18,14 +18,13 @@ export default () => ({
     password: process.env.MAIL_PASSWORD,
     port: process.env.MAIL_PORT,
     secure: process.env.MAIL_SECURE,
-    from: process.env.MAIL_FROM
+    from: process.env.MAIL_FROM,
   },
   s3: {
-    endpoint: process.env.S3_ENDPOINT,
+    endpoint: process.env.S3_ENDPOINT_URL,
     region: process.env.S3_REGION,
-    bucket: process.env.S3_BUCKET,
+    bucket: process.env.S3_BUCKET_NAME,
     accessKeyId: process.env.S3_ACCESS_KEY_ID,
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-    forcePathStyle: process.env.S3_FORCE_PATH_STYLE
-  }
+  },
 })
