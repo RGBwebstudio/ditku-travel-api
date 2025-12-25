@@ -21,6 +21,8 @@
     "seed:all": "ts-node -r tsconfig-paths/register src/database/seeds/run-seeders.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.958.0",
+    "@aws-sdk/lib-storage": "^3.500.0",
     "@bull-board/api": "^6.9.6",
     "@bull-board/express": "^6.9.6",
     "@bull-board/nestjs": "^6.9.6",
@@ -41,7 +43,9 @@
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.0.21",
     "@types/fs-extra": "^11.0.4",
+    "@types/sharp": "^0.31.1",
     "@types/slug": "^5.0.9",
+    "@types/uuid": "^10.0.0",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "bcrypt-ts": "^7.0.0",
@@ -54,16 +58,15 @@
     "express-sessions": "^1.0.6",
     "fs-extra": "^11.3.0",
     "handlebars": "^4.7.8",
+    "multer": "1.4.5-lts.1",
     "pg": "^8.16.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "sharp": "^0.34.1",
+    "sharp": "^0.34.5",
     "slug": "^11.0.0",
     "typeorm": "^0.3.23",
-    "xml2js": "^0.6.2",
-    "@aws-sdk/client-s3": "^3.500.0",
-    "@aws-sdk/lib-storage": "^3.500.0",
-    "multer": "^2.0.2"
+    "uuid": "^13.0.0",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

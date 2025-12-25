@@ -15,6 +15,7 @@ import { CountryModule } from '../modules/country/country.module'
 import { DAPModule } from '../modules/delivery-and-payment/faq.module'
 import { FaqModule } from '../modules/faq/faq.module'
 import { FormatGroupModule } from '../modules/format-group/format-group.module'
+import { GalleryModule } from '../modules/gallery/gallery.module'
 import { MailLayoutModule } from '../modules/mail-layout/mail-layout.module'
 import { MailSenderModule } from '../modules/mail-sender/mail-sernder.module'
 import { MainPageModule } from '../modules/main-page/main-page.module'
@@ -32,6 +33,7 @@ import { RoadmapModule } from '../modules/roadmap/roadmap.module'
 import { SectionModule } from '../modules/section/section.module'
 import { SeoBlocksModule } from '../modules/seo-blocks/seo-blocks.module'
 import { SeoFilterModule } from '../modules/seo-filter/seo-filter.module'
+import { SessionModule } from '../modules/session/session.module'
 import { TermsOfUseModule } from '../modules/terms-of-use/terms-of-use.module'
 import { UserModule } from '../modules/user/user.module'
 import { VideoModule } from '../modules/video/video.module'
@@ -78,6 +80,8 @@ const config = configuration()
     AdminModule,
     PageConstructorModule,
     VideoModule,
+    SessionModule,
+    GalleryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

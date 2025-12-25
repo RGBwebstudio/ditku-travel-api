@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, Logger, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { Repository } from 'typeorm'
@@ -31,6 +31,9 @@ export class VideoCategoryService {
       return await this.repo.save(data)
     } catch (e) {
       this.logger.error('video category create error', e)
+      if (e.code === '23505') {
+        throw new ConflictException('Video category with this title already exists')
+      }
       throw new BadRequestException('video category is NOT_CREATED')
     }
   }
@@ -39,8 +42,16 @@ export class VideoCategoryService {
     const updatePayload: Partial<VideoCategory> = {}
     if (typeof dto.title !== 'undefined') updatePayload.title = dto.title
 
-    const result = await this.repo.update(id, updatePayload)
-    if (result.affected === 0) throw new NotFoundException('video category is NOT_FOUND')
+    try {
+      const result = await this.repo.update(id, updatePayload)
+      if (result.affected === 0) throw new NotFoundException('video category is NOT_FOUND')
+    } catch (e) {
+      this.logger.error('video category update error', e)
+      if (e.code === '23505') {
+        throw new ConflictException('Video category with this title already exists')
+      }
+      throw e
+    }
     return (await this.repo.findOne({ where: { id } })) as VideoCategory
   }
 
