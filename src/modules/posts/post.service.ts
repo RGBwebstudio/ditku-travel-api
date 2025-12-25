@@ -3,13 +3,12 @@ import * as path from 'path'
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
-import * as fs from 'fs-extra'
-import sharp from 'sharp'
 import { LANG } from 'src/common/enums/translation.enum'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
-import { Repository } from 'typeorm'
+import { Repository, In } from 'typeorm'
 
+import { AddPostImageDto } from './dto/add-post-image.dto'
 import { PostCreateImageDto } from './dto/post-create-image.dto'
 import { PostCreateTranslateDto } from './dto/post-create-translate.dto'
 import { PostCreateDto } from './dto/post-create.dto'
@@ -187,21 +186,6 @@ export class PostService {
       where: { entity_id: post },
     })
 
-    for (const image of images) {
-      const filePath = path.isAbsolute(image.path)
-        ? image.path
-        : path.join(process.cwd(), image.path.replace(/^\/+/, ''))
-      try {
-        if (await fs.pathExists(filePath)) {
-          await fs.remove(filePath)
-        } else {
-          this.logger.warn(`File at path ${filePath} does not exist`)
-        }
-      } catch (error) {
-        this.logger.warn(`Failed to delete file ${filePath}: ${error.message}`)
-      }
-    }
-
     if (images.length > 0) {
       await this.postImageRepo.remove(images)
     }
@@ -245,59 +229,20 @@ export class PostService {
     await this.postTranslateRepo.remove(translate)
   }
 
-  async uploadImage(postId: number, file: Express.Multer.File): Promise<PostImage> {
+  async addImage(postId: number, dto: AddPostImageDto): Promise<PostImage> {
     const post = await this.findOne(postId)
 
-    const uploadsDir = path.join(process.cwd(), 'uploads', 'posts')
-    await fs.ensureDir(uploadsDir)
-
-    const filename = `${Date.now()}-${file.originalname}`
-    const filePath = path.join(uploadsDir, filename)
-
-    await sharp(file.buffer)
-      .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 85 })
-      .toFile(filePath)
+    // Check if image already exists? Maybe not needed for simple add.
+    // If we want to prevent duplicates, we can check here.
 
     const image = this.postImageRepo.create({
-      name: filename,
-      path: `/uploads/posts/${filename}`,
+      path: dto.path,
       entity_id: post,
+      name: dto.path.split('/').pop() || 'image',
       order: 0,
     })
 
     return await this.postImageRepo.save(image)
-  }
-
-  async uploadImages(files: Express.Multer.File[], postId: number): Promise<PostImage[]> {
-    const post = await this.findOne(postId)
-
-    const uploadsDir = path.join(process.cwd(), 'uploads', 'posts')
-    await fs.ensureDir(uploadsDir)
-
-    const savedImages: PostImage[] = []
-
-    for (const file of files) {
-      const filename = `${Date.now()}-${file.originalname}`
-      const filePath = path.join(uploadsDir, filename)
-
-      await sharp(file.buffer)
-        .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: 85 })
-        .toFile(filePath)
-
-      const image = this.postImageRepo.create({
-        name: filename,
-        path: `/uploads/posts/${filename}`,
-        entity_id: post,
-        order: 0,
-      })
-
-      const saved = await this.postImageRepo.save(image)
-      savedImages.push(saved)
-    }
-
-    return savedImages
   }
 
   async createImage(postId: number, createImageDto: PostCreateImageDto): Promise<PostImage> {
@@ -329,27 +274,14 @@ export class PostService {
 
     const images = await this.postImageRepo.find({
       where: {
-        id: deleteImagesDto.imageIds[0],
-        entity_id: post,
+        id: In(deleteImagesDto.imageIds), // Assuming array of IDs logic needs to be verified
+        entity_id: { id: post.id },
       },
     })
 
-    for (const image of images) {
-      const filePath = path.isAbsolute(image.path)
-        ? image.path
-        : path.join(process.cwd(), image.path.replace(/^\/+/, ''))
-      try {
-        if (await fs.pathExists(filePath)) {
-          await fs.remove(filePath)
-        } else {
-          this.logger.warn(`File at path ${filePath} does not exist`)
-        }
-      } catch (error) {
-        this.logger.warn(`Failed to delete file ${filePath}: ${error.message}`)
-      }
+    if (images.length > 0) {
+      await this.postImageRepo.remove(images)
     }
-
-    await this.postImageRepo.remove(images)
   }
 
   async removeImage(imageId: number): Promise<void> {
@@ -359,17 +291,6 @@ export class PostService {
 
     if (!image) {
       throw new NotFoundException(`Image with ID ${imageId} NOT_FOUND`)
-    }
-
-    const filePath = path.isAbsolute(image.path) ? image.path : path.join(process.cwd(), image.path.replace(/^\/+/, ''))
-    try {
-      if (await fs.pathExists(filePath)) {
-        await fs.remove(filePath)
-      } else {
-        this.logger.warn(`File at path ${filePath} does not exist`)
-      }
-    } catch (error) {
-      this.logger.warn(`Failed to delete file ${filePath}: ${error.message}`)
     }
 
     await this.postImageRepo.remove(image)

@@ -1,26 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  Body,
-  ParseIntPipe,
-  Delete,
-  Put,
-  UseGuards,
-  UseInterceptors,
-  UploadedFiles,
-  Patch,
-} from '@nestjs/common'
-import { FilesInterceptor } from '@nestjs/platform-express'
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put, UseGuards, Patch } from '@nestjs/common'
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 import { BannerService } from './banner.service'
+import { AddBannerImageDto } from './dto/add-banner-image.dto'
 import { BannerCreateDto } from './dto/banner-create.dto'
 import { BannerUpdateDto } from './dto/banner-update.dto'
 
@@ -122,51 +107,25 @@ export class BannerController {
     return this.bannerService.delete(id)
   }
 
-  @Post('upload/:id')
-  @UseInterceptors(FilesInterceptor('files'))
-  @ApiOperation({ summary: 'Завантажити фото банеру' })
+  @Post('add-image/:id')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Add image to banner group (from Gallery)' })
   @ApiResponse({
     status: 201,
-    description: "SUCCESS - Сутність успішно завантажено і прикріплено до об'єкту",
+    description: 'SUCCESS - Image added to banner group',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Сутність не створено',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'NOT_UPLOADED - Сутність не завантажено',
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'Завантаження фото банеру',
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-        link: { type: 'string' },
-      },
-      required: ['link'],
-    },
+    description: 'BAD_REQUEST',
   })
   @ApiParam({
     name: 'id',
     required: true,
     type: Number,
-    description: 'Id банеру',
+    description: 'Banner Group ID',
   })
-  uploadFile(
-    @UploadedFiles(new FilesSizeValidationPipe()) files: Express.Multer.File[],
-    @Param('id', ParseIntPipe) entity_id: number,
-    @Body('link') link: string
-  ) {
-    return this.bannerService.uploadImages(files, entity_id, link)
+  async addImage(@Param('id', ParseIntPipe) id: number, @Body() dto: AddBannerImageDto) {
+    return this.bannerService.addImage(id, dto)
   }
 
   @Delete('/image/:id')

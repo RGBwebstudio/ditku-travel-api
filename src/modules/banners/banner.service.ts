@@ -1,16 +1,13 @@
-import * as path from 'path'
-
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
-import * as fs from 'fs-extra'
-import sharp from 'sharp'
 import { BannerType } from 'src/common/types/banner-group.types'
 import { Repository } from 'typeorm'
 
 import { BannerCreateImageDto } from './dto/banner-create-image.dto'
 import { BannerCreateDto } from './dto/banner-create.dto'
 import { BannerUpdateDto } from './dto/banner-update.dto'
+import { AddBannerImageDto } from './dto/add-banner-image.dto'
 import { BannerImage } from './entities/banner-image.entity'
 import { BannerGroup } from './entities/banners.entity'
 
@@ -146,45 +143,26 @@ export class BannerService {
     return await this.entityImageRepo.save(newImage)
   }
 
-  async uploadImages(files: Express.Multer.File[], entity_id: number, link: string): Promise<{ message: string }> {
-    const isBrandExist = await this.bannerRepo.findOne({
-      where: { id: entity_id },
+  async addImage(groupId: number, dto: AddBannerImageDto): Promise<{ message: string }> {
+    const banner = await this.bannerRepo.findOne({
+      where: { id: groupId },
     })
 
-    if (!isBrandExist) throw new NotFoundException('entity of brand is NOT_FOUND')
+    if (!banner) throw new NotFoundException('entity of banner group is NOT_FOUND')
 
-    for (const file of files) {
-      const fileName = `${Date.now()}.webp`
+    const newImage = this.entityImageRepo.create({
+      entity_id: banner,
+      path: dto.path,
+      link: dto.link || '',
+      name: dto.path.split('/').pop() || 'image',
+    })
 
-      const uploadDir = path.join(process.cwd(), 'uploads', 'banner')
-      await fs.ensureDir(uploadDir)
-
-      const outputFilePath = path.join(uploadDir, fileName)
-
-      try {
-        await sharp(file.buffer).avif().toFile(outputFilePath)
-
-        const body: BannerCreateImageDto = {
-          name: fileName,
-          path: `/uploads/banner/${fileName}`,
-          entity_id: entity_id,
-          link: link || '',
-        }
-
-        try {
-          await this.createImage(body)
-        } catch (err) {
-          this.logger.warn(`Error to create image for entity_id: ${entity_id}: ${err}`)
-          throw new BadRequestException('entity of brand image is NOT_CREATED')
-        }
-      } catch (err) {
-        this.logger.warn(`Error to upload file ${fileName}: ${err}`)
-        throw new BadRequestException('image of brand is NOT_UPLOADED')
-      }
-    }
-
-    return {
-      message: 'Images saved',
+    try {
+      await this.entityImageRepo.save(newImage)
+      return { message: 'Image added successfully' }
+    } catch (err) {
+      this.logger.error(`Error adding image to banner: ${err}`)
+      throw new BadRequestException('Image not added')
     }
   }
 
@@ -192,18 +170,6 @@ export class BannerService {
     const image = await this.entityImageRepo.findOne({ where: { id } })
 
     if (!image) throw new NotFoundException('entity of brand is NOT_FOUND')
-
-    try {
-      const filePath = path.join(process.cwd(), image.path.replace(/^\//, ''))
-
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
-      } else {
-        this.logger.warn(`File at path ${filePath} does not exist`)
-      }
-    } catch (err) {
-      this.logger.error(`Failed to delete file at path ${image.path}: ${err}`)
-    }
 
     await this.entityImageRepo.delete(id)
   }
@@ -231,20 +197,6 @@ export class BannerService {
     })
 
     if (deleteCandidates?.length) {
-      const filePathList = deleteCandidates.map((field) => path.join(process.cwd(), field.path.replace(/^\//, '')))
-
-      for (const filePath of filePathList) {
-        try {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath)
-          } else {
-            this.logger.warn(`File at path ${filePath} does not exist`)
-          }
-        } catch (err) {
-          this.logger.error(`Failed to delete file at path ${filePath}: ${err}`)
-        }
-      }
-
       const ids = deleteCandidates.map((c) => c.id)
       try {
         if (ids.length) await this.entityImageRepo.delete(ids)

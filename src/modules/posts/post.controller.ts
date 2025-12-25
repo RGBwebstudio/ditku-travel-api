@@ -7,21 +7,18 @@ import {
   Body,
   Param,
   Query,
-  Req,
   UseGuards,
   ParseIntPipe,
-  UseInterceptors,
-  UploadedFiles,
   HttpCode,
+  Req,
 } from '@nestjs/common'
-import { FilesInterceptor } from '@nestjs/platform-express'
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger'
 
 import { Request } from 'express'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
+import { AddPostImageDto } from './dto/add-post-image.dto'
 import { PostCreateImageDto } from './dto/post-create-image.dto'
 import { PostCreateTranslateDto } from './dto/post-create-translate.dto'
 import { PostCreateDto } from './dto/post-create.dto'
@@ -30,7 +27,6 @@ import { PostFilterDto } from './dto/post-filter.dto'
 import { PostUpdateImageDto } from './dto/post-update-image.dto'
 import { PostUpdateTranslateDto } from './dto/post-update-translate.dto'
 import { PostUpdateDto } from './dto/post-update.dto'
-import { PostUploadImageDto } from './dto/post-upload-image.dto'
 import { PostService } from './post.service'
 
 @ApiTags('Пости')
@@ -138,30 +134,13 @@ export class PostController {
     return this.postService.removeTranslate(translateId)
   }
 
-  @Post(':id/images/upload')
+  @Post(':id/add-image')
   @UseGuards(AuthAdminGuard)
   @ApiBearerAuth()
-  @UseInterceptors(FilesInterceptor('files'))
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Завантажити зображення для посту' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'array',
-          items: { type: 'string', format: 'binary' },
-        },
-      },
-    },
-  })
-  @ApiResponse({ status: 201, description: 'Зображення успішно завантажено' })
-  async uploadImage(
-    @Param('id', ParseIntPipe) postId: number,
-    @UploadedFiles(new FilesSizeValidationPipe()) files: Express.Multer.File[],
-    @Body() uploadImageDto: PostUploadImageDto
-  ) {
-    return this.postService.uploadImages(files, postId)
+  @ApiOperation({ summary: 'Add image to post (from Gallery)' })
+  @ApiResponse({ status: 201, description: 'Image added successfully' })
+  async addImage(@Param('id', ParseIntPipe) postId: number, @Body() dto: AddPostImageDto) {
+    return this.postService.addImage(postId, dto)
   }
 
   @Post(':id/images')

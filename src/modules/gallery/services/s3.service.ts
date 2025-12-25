@@ -8,12 +8,14 @@ export class S3Service {
   private readonly s3Client: S3Client
   private readonly bucketName: string
   private readonly uploadDir: string
+  private readonly endpoint: string
 
   constructor(private configService: ConfigService) {
     const region = this.configService.get<string>('S3_REGION')
     const accessKeyId = this.configService.get<string>('S3_ACCESS_KEY_ID')
     const secretAccessKey = this.configService.get<string>('S3_SECRET_ACCESS_KEY')
     const awsEndpointUrl = this.configService.get<string>('S3_ENDPOINT_URL') || 'https://fsn1.your-objectstorage.com'
+    this.endpoint = awsEndpointUrl
     this.bucketName = this.configService.get<string>('S3_BUCKET_NAME') || ''
     this.uploadDir = process.env.S3_UPLOAD_DIR || 'images'
 
@@ -40,6 +42,17 @@ export class S3Service {
           : undefined,
       forcePathStyle: true,
     })
+  }
+
+  getPublicUrl(key: string): string {
+    // Assuming path-style access for Hetzner/generic S3 compability when forcePathStyle is true
+    // URL: https://endpoint/bucket/key
+    // Remove trailing slash from endpoint if present
+    const cleanEndpoint = this.endpoint.replace(/\/$/, '')
+    // Ensure key doesn't have leading slash to avoid double slash
+    const cleanKey = key.replace(/^\//, '')
+
+    return `${cleanEndpoint}/${this.bucketName}/${cleanKey}`
   }
 
   async uploadFile(key: string, buffer: Buffer, contentType: string): Promise<string> {

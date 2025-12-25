@@ -3,14 +3,13 @@ import * as path from 'path'
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
-import * as fs from 'fs-extra'
-import sharp from 'sharp'
 import { LANG } from 'src/common/enums/translation.enum'
 import { FineOneWhereType } from 'src/common/types/category.types'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { Repository, TreeRepository, IsNull } from 'typeorm'
 
+import { AddCategoryImageDto } from './dto/add-category-image.dto'
 import { CategoryCreateImageDto } from './dto/category-create-image.dto'
 import { CategoryCreateTranslateDto } from './dto/category-create-translate.dto'
 import { CategoryCreateDto } from './dto/category-create.dto'
@@ -473,44 +472,24 @@ export class CategoryService {
     }
   }
 
-  async uploadImages(files: Express.Multer.File[], entity_id: number): Promise<{ message: string }> {
-    const fileName = `${Date.now()}.webp`
-
-    const isCategoryExist = await this.categoryRepo.findOne({
-      where: { id: entity_id },
+  async addImage(categoryId: number, dto: AddCategoryImageDto): Promise<CategoryImage> {
+    const category = await this.categoryRepo.findOne({
+      where: { id: categoryId },
     })
 
-    if (!isCategoryExist) new NotFoundException('category is NOT_FOUND')
+    if (!category) throw new NotFoundException('category is NOT_FOUND')
 
-    for (const file of files) {
-      const uploadDir = path.join(process.cwd(), 'uploads', 'category')
-      await fs.ensureDir(uploadDir)
+    const image = this.entityImageRepo.create({
+      path: dto.path,
+      entity_id: category,
+      name: dto.path.split('/').pop() || 'image',
+    })
 
-      const outputFilePath = path.join(uploadDir, fileName)
-
-      try {
-        await sharp(file.buffer).avif().toFile(outputFilePath)
-
-        const body: CategoryCreateImageDto = {
-          name: fileName,
-          path: `/uploads/category/${fileName}`,
-          entity_id: entity_id,
-        }
-
-        try {
-          await this.createImage(body)
-        } catch (err) {
-          this.logger.warn(`Error to create image for entity_id: ${entity_id}: ${err}`)
-          throw new BadRequestException('category image is NOT_CREATED')
-        }
-      } catch (err) {
-        this.logger.warn(`Error to upload file ${fileName}: ${err}`)
-        throw new BadRequestException('category image is NOT_UPLOADED')
-      }
-    }
-
-    return {
-      message: 'Images saved',
+    try {
+      return await this.entityImageRepo.save(image)
+    } catch (err) {
+      this.logger.error(`Error while saving category image: ${err}`)
+      throw new BadRequestException('category image is NOT_CREATED')
     }
   }
 
@@ -519,38 +498,17 @@ export class CategoryService {
 
     if (!image) throw new NotFoundException('category image is NOT_FOUND')
 
-    try {
-      if (fs.existsSync(image.path)) {
-        fs.unlinkSync(image.path)
-      } else {
-        this.logger.warn(`File at path ${image.path} does not exist`)
-      }
-    } catch (err) {
-      this.logger.error(`Failed to delete file at path ${image.path}: ${err}`)
-    }
-
     await this.entityImageRepo.delete(id)
   }
 
-  async deleteImages(entity_id: number): Promise<{ message: string } | void> {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  async deleteImages(entity_id: number): Promise<void> {
     const deleteCandidates = await this.entityImageRepo.find({
       where: { entity_id: { id: entity_id } },
     })
 
     if (deleteCandidates?.length) {
-      const filePathList = deleteCandidates.map((field: CategoryImage) => field.path)
-
-      for (const filePath of filePathList) {
-        try {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath)
-          } else {
-            this.logger.warn(`File at path ${filePath} does not exist`)
-          }
-        } catch (err) {
-          this.logger.error(`Failed to delete file at path ${filePath}: ${err}`)
-        }
-      }
+      await this.entityImageRepo.remove(deleteCandidates)
     }
   }
 

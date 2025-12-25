@@ -12,17 +12,14 @@ import {
   Headers,
   Req,
   UseGuards,
-  UploadedFiles,
-  UseInterceptors,
 } from '@nestjs/common'
-import { FilesInterceptor } from '@nestjs/platform-express'
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { Request } from 'express'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
+import { AddProductImageDto } from './dto/add-product-image.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
 import { ProductCreateDto } from './dto/product-create.dto'
 import { ProductDeleteImagesDto } from './dto/product-delete-images.dto'
@@ -31,7 +28,6 @@ import { ProductParametersDto } from './dto/product-parameters.dto'
 import { ProductRecommendedDto } from './dto/product-recommended.dto'
 import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
 import { ProductUpdateDto } from './dto/product-update.dto'
-import { ProductUploadImageDto } from './dto/product-upload-image.dto'
 import { Product } from './entities/product.entity'
 import { ProductService } from './product.service'
 
@@ -304,53 +300,25 @@ export class ProductController {
     return this.productService.deleteTranslate(id)
   }
 
-  @Post('upload/:id')
+  @Post('add-image/:id')
   @UseGuards(AuthAdminGuard)
-  @UseInterceptors(FilesInterceptor('files'))
+  @ApiOperation({ summary: 'Add image to product (from Gallery)' })
   @ApiResponse({
     status: 201,
-    description: "SUCCESS - Сутність успішно завантажено і прикріплено до об'єкту",
+    description: 'SUCCESS - Image added to product',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Сутність не створено',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'NOT_UPLOADED - Сутність не завантажено',
-  })
-  @ApiOperation({ summary: 'Завантажити зображення товару' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'Завантаження фото товару',
-    type: ProductUploadImageDto,
-  })
-  @ApiBody({
-    description: 'Завантаження фото товару',
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
+    description: 'BAD_REQUEST',
   })
   @ApiParam({
     name: 'id',
     required: true,
     type: Number,
-    description: 'Id категорії',
+    description: 'Product ID',
   })
-  uploadFile(
-    @UploadedFiles(new FilesSizeValidationPipe()) files: Express.Multer.File[],
-    @Param('id', ParseIntPipe) entity_id: number
-  ) {
-    return this.productService.uploadImages(files, entity_id)
+  async addImage(@Param('id', ParseIntPipe) id: number, @Body() dto: AddProductImageDto) {
+    return this.productService.addImage(id, dto)
   }
 
   @Delete('/image/:id')

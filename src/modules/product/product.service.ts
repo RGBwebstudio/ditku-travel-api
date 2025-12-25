@@ -1,11 +1,7 @@
-import * as path from 'path'
-
 import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { Request } from 'express'
-import * as fs from 'fs-extra'
-import sharp from 'sharp'
 import { LANG } from 'src/common/enums/translation.enum'
 import { ProductWithoutRatings } from 'src/common/utils/apply-rating'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
@@ -18,6 +14,7 @@ import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
 import { In, Repository, DeepPartial } from 'typeorm'
 
+import { AddProductImageDto } from './dto/add-product-image.dto'
 import { ProductCreateImageDto } from './dto/product-create-image.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
 import { ProductParametersDto } from './dto/product-parameters.dto'
@@ -936,81 +933,47 @@ export class ProductService {
     }
   }
 
-  async uploadImages(files: Express.Multer.File[], entity_id: number): Promise<{ message: string }> {
-    for (const file of files) {
-      const fileName = `${Date.now()}.webp`
+  async addImage(productId: number, dto: AddProductImageDto): Promise<{ message: string }> {
+    const product = await this.productRepo.findOne({
+      where: { id: productId },
+    })
 
-      const uploadDir = path.join(process.cwd(), 'uploads', 'product')
-      await fs.ensureDir(uploadDir)
+    if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-      const outputFilePath = path.join(uploadDir, fileName)
+    const newImage = this.entityImageRepo.create({
+      entity_id: product,
+      path: dto.path,
+      name: dto.path.split('/').pop() || 'image',
+    })
 
-      try {
-        await sharp(file.buffer).avif().toFile(outputFilePath)
-
-        const body: ProductCreateImageDto = {
-          name: fileName,
-          path: `/uploads/product/${fileName}`,
-          entity_id: entity_id,
-        }
-
-        try {
-          await this.createImage(body)
-        } catch (err) {
-          this.logger.warn(`Error to create image for entity_id: ${entity_id}: ${err}`)
-          throw new BadRequestException('product image is NOT_CREATED')
-        }
-      } catch (err) {
-        this.logger.warn(`Error to upload file ${fileName}: ${err}`)
-        throw new BadRequestException('product image is NOT_UPLOADED')
-      }
-    }
-
-    return {
-      message: 'Images saved',
+    try {
+      await this.entityImageRepo.save(newImage)
+      return { message: 'Image added successfully' }
+    } catch (err) {
+      this.logger.error(`Error adding image to product: ${err}`)
+      throw new BadRequestException('Image not added')
     }
   }
 
   async deleteImage(id: number): Promise<void> {
     const image = await this.entityImageRepo.findOne({ where: { id } })
 
-    if (!image) throw new NotFoundException('product is NOT_FOUND')
-
-    try {
-      if (fs.existsSync(image.path)) {
-        fs.unlinkSync(image.path)
-      } else {
-        this.logger.warn(`File at path ${image.path} does not exist`)
-      }
-    } catch (err) {
-      this.logger.error(`Failed to delete file at path ${image.path}: ${err}`)
-    }
+    if (!image) throw new NotFoundException('product image is NOT_FOUND')
 
     await this.entityImageRepo.delete(id)
   }
 
-  async deleteImages(entity_id: number): Promise<{ message: string } | void> {
-    const deleteCandidates = await this.entityImageRepo.find({
-      where: { entity_id: { id: entity_id } },
+  async deleteImages(productId: number): Promise<void> {
+    const images = await this.entityImageRepo.find({
+      where: { entity_id: { id: productId } },
     })
 
-    if (deleteCandidates?.length) {
-      const filePathList = deleteCandidates.map((field: ProductImage) => field.path)
-
-      for (const filePath of filePathList) {
-        try {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath)
-          } else {
-            this.logger.warn(`File at path ${filePath} does not exist`)
-          }
-        } catch (err) {
-          this.logger.error(`Failed to delete file at path ${filePath}: ${err}`)
-        }
-      }
+    if (images.length > 0) {
+      await this.entityImageRepo.remove(images)
     }
   }
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   async deleteImagesByIds(ids: number[]): Promise<{ message: string }> {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new BadRequestException('ids is required')
@@ -1022,26 +985,15 @@ export class ProductService {
       return { message: 'No images found for given ids' }
     }
 
-    for (const image of images) {
-      try {
-        if (fs.existsSync(image.path)) {
-          fs.unlinkSync(image.path)
-        } else {
-          this.logger.warn(`File at path ${image.path} does not exist`)
-        }
-      } catch (err) {
-        this.logger.error(`Failed to delete file at path ${image.path}: ${err}`)
-      }
-    }
-
     try {
+      // Delete database records
       await this.entityImageRepo.delete(ids)
     } catch (err) {
       this.logger.error(`Failed to delete image records: ${err}`)
       throw new BadRequestException('Failed to delete images')
     }
 
-    return { message: 'Images deleted' }
+    return { message: 'Images deleted successfully' }
   }
 
   async searchShort(q: string) {

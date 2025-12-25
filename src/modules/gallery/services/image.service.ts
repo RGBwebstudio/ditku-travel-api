@@ -115,7 +115,7 @@ export class ImageService {
         categoryId: categoryId || null,
       })
 
-      return await this.imageRepo.save(image)
+      return this.mapToPublicUrl(await this.imageRepo.save(image))
     } catch (error) {
       this.logger.error(`Failed to upload image: ${(error as Error).message}`, (error as Error).stack)
       if (error instanceof BadRequestException) {
@@ -160,7 +160,7 @@ export class ImageService {
       .getMany()
 
     return {
-      data,
+      data: data.map((img) => this.mapToPublicUrl(img)),
       total,
       page,
       limit,
@@ -176,7 +176,7 @@ export class ImageService {
     if (!image) {
       throw new NotFoundException('NOT_FOUND')
     }
-    return image
+    return this.mapToPublicUrl(image)
   }
 
   async update(id: number, dto: UpdateImageDto): Promise<Image> {
@@ -190,7 +190,7 @@ export class ImageService {
       image.categoryId = dto.categoryId || null
     }
 
-    return await this.imageRepo.save(image)
+    return this.mapToPublicUrl(await this.imageRepo.save(image))
   }
 
   async delete(id: number): Promise<{ success: boolean }> {
@@ -214,5 +214,18 @@ export class ImageService {
     // Delete from database
     await this.imageRepo.delete(id)
     return { success: true }
+  }
+
+  private mapToPublicUrl(image: Image): Image {
+    if (image.path_lg) {
+      image.path_lg = this.s3Service.getPublicUrl(image.path_lg)
+    }
+    if (image.path_md) {
+      image.path_md = this.s3Service.getPublicUrl(image.path_md)
+    }
+    if (image.path_sm) {
+      image.path_sm = this.s3Service.getPublicUrl(image.path_sm)
+    }
+    return image
   }
 }

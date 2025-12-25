@@ -1,34 +1,18 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  Body,
-  ParseIntPipe,
-  Delete,
-  Put,
-  UseInterceptors,
-  Req,
-  UploadedFiles,
-  UseGuards,
-} from '@nestjs/common'
-import { FilesInterceptor } from '@nestjs/platform-express'
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put, Req, UseGuards } from '@nestjs/common'
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { Request } from 'express'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { FilesSizeValidationPipe } from 'src/common/pipes/files-upload.pipe'
 import { IdOrUrlValidationPipe } from 'src/common/pipes/id-or-url.pipe'
 import { FineOneWhereType } from 'src/common/types/category.types'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 import { CategoryService } from './category.service'
+import { AddCategoryImageDto } from './dto/add-category-image.dto'
 import { CategoryCreateTranslateDto } from './dto/category-create-translate.dto'
 import { CategoryCreateDto } from './dto/category-create.dto'
 import { CategoryUpdateTranslateDto } from './dto/category-update-translate.dto'
 import { CategoryUpdateDto } from './dto/category-update.dto'
-import { CategoryUploadImageDto } from './dto/category-upload-image.dto'
 
 @ApiTags('Категорії')
 @Controller('category')
@@ -251,53 +235,25 @@ export class CategoryController {
     return this.categoryService.deleteTranslate(id)
   }
 
-  @Post('upload/:id')
+  @Post('add-image/:id')
   @UseGuards(AuthAdminGuard)
-  @UseInterceptors(FilesInterceptor('files'))
   @ApiResponse({
     status: 201,
-    description: "SUCCESS - Сутність успішно завантажено і прикріплено до об'єкту",
+    description: 'SUCCESS - Image added to category',
   })
   @ApiResponse({
     status: 400,
-    description: 'NOT_CREATED - Сутність не створено',
+    description: 'BAD_REQUEST',
   })
-  @ApiResponse({
-    status: 400,
-    description: 'NOT_UPLOADED - Сутність не завантажено',
-  })
-  @ApiOperation({ summary: 'Завантажити зображення категорії' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'Завантаження фото категорії',
-    type: CategoryUploadImageDto,
-  })
-  @ApiBody({
-    description: 'Завантаження фото категорії',
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
-  })
+  @ApiOperation({ summary: 'Add image to category (from Gallery)' })
   @ApiParam({
     name: 'id',
     required: true,
     type: Number,
-    description: 'Id категорії',
+    description: 'Category ID',
   })
-  uploadFile(
-    @UploadedFiles(new FilesSizeValidationPipe()) files: Express.Multer.File[],
-    @Param('id', ParseIntPipe) id: number
-  ) {
-    return this.categoryService.uploadImages(files, id)
+  addImage(@Param('id', ParseIntPipe) id: number, @Body() dto: AddCategoryImageDto) {
+    return this.categoryService.addImage(id, dto)
   }
 
   @Delete('/image/:id')
