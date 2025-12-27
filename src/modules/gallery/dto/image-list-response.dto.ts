@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+
 import { ImageResponseDto } from './image-response.dto'
 
 export class ImageListResponseDto {

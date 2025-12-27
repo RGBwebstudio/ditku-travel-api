@@ -16,6 +16,9 @@ export class Video {
   @Column()
   youtube_link: string
 
+  @Column({ nullable: true })
+  thumbnail: string
+
   @Column({ default: 0 })
   order: number
 

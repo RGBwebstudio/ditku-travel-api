@@ -16,6 +16,7 @@ import { DAPModule } from '../modules/delivery-and-payment/faq.module'
 import { FaqModule } from '../modules/faq/faq.module'
 import { FormatGroupModule } from '../modules/format-group/format-group.module'
 import { GalleryModule } from '../modules/gallery/gallery.module'
+import { GlobalSettingsModule } from '../modules/global-settings/global-settings.module'
 import { MailLayoutModule } from '../modules/mail-layout/mail-layout.module'
 import { MailSenderModule } from '../modules/mail-sender/mail-sernder.module'
 import { MainPageModule } from '../modules/main-page/main-page.module'
@@ -82,6 +83,7 @@ const config = configuration()
     VideoModule,
     SessionModule,
     GalleryModule,
+    GlobalSettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

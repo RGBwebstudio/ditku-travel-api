@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
+
 import { Image } from './image.entity'
 
 @Entity('image_categories')

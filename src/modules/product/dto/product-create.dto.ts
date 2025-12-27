@@ -116,6 +116,39 @@ export class ProductCreateDto {
   @IsArray()
   sections?: number[]
 
+  @ApiPropertyOptional({ example: '6-17 років' })
+  @IsOptional()
+  @IsString()
+  age?: string
+
+  @ApiPropertyOptional({
+    description: 'Structure for What we learn',
+  })
+  @IsOptional()
+  learning?: any
+
+  @ApiPropertyOptional({
+    description: 'Detailed itinerary array',
+  })
+  @IsOptional()
+  program?: any
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  inclusive?: string[]
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  notIncludes?: string[]
+
+  @ApiPropertyOptional({
+    description: 'Advantages array',
+  })
+  @IsOptional()
+  advantages?: any
+
   @ApiPropertyOptional({ example: '2023-12-01T00:00:00Z' })
   @IsOptional()
   start_at: Date

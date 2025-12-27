@@ -16,6 +16,7 @@ import { PostCategoryModule } from 'src/modules/post-category/post-category.modu
 import { PostModule } from 'src/modules/posts/post.module'
 import { PrivacyPolicyModule } from 'src/modules/privacy-policy/privacy-policy.module'
 import { ProductModule } from 'src/modules/product/product.module'
+import { RatingModule } from 'src/modules/product-rating/rating.module'
 import { SectionModule } from 'src/modules/section/section.module'
 import { SeoBlocksModule } from 'src/modules/seo-blocks/seo-blocks.module'
 import { SeoFilterModule } from 'src/modules/seo-filter/seo-filter.module'
@@ -71,6 +72,7 @@ import { AdminVideoController } from './video.controller'
     PrivacyPolicyModule,
     MainPageModule,
     VideoModule,
+    RatingModule,
   ],
   controllers: [
     AdminBannerController,

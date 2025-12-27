@@ -18,6 +18,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/s
 import { Request } from 'express'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { RatingService } from 'src/modules/product-rating/rating.service'
 
 import { AddProductImageDto } from './dto/add-product-image.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
@@ -34,7 +35,30 @@ import { ProductService } from './product.service'
 @ApiTags('Товари')
 @Controller('product')
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private ratingService: RatingService
+  ) {}
+
+  @Get(':id/reviews')
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Успішно отримано рейтинги товару',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NOT_FOUND - Товар не знайдено',
+  })
+  @ApiOperation({ summary: 'Отримати всі рейтинги товару' })
+  async getProductReviews(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.ratingService.getRatingsByProduct(id)
+
+    return {
+      rating: result.averageRating,
+      rating_count: result.totalRatings,
+      ratings: result.ratings,
+    }
+  }
 
   @Get('search')
   @ApiResponse({

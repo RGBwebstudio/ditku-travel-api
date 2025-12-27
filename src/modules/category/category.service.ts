@@ -393,6 +393,18 @@ export class CategoryService {
 
   async delete(id: number): Promise<{ message: string }> {
     try {
+      // Find children and set their parent to null (move to root) BEFORE deleting
+      const children = await this.categoryRepo.find({
+        where: { parent: { id } },
+      })
+
+      if (children.length > 0) {
+        for (const child of children) {
+          child.parent = null
+          await this.categoryRepo.save(child)
+        }
+      }
+
       const result = await this.categoryRepo.delete(id)
       if (result.affected === 0) {
         throw new NotFoundException('category is NOT_FOUND')
@@ -401,11 +413,7 @@ export class CategoryService {
       }
     } catch (err) {
       this.logger.error(`Error while deleting category \n ${err}`)
-
-      if (err.code === '23503') {
-        throw new BadRequestException('category HAS_CHILDS')
-      }
-
+      // Removed the 23503 check because now we handle children and products are set to null
       throw err
     }
 
@@ -501,7 +509,6 @@ export class CategoryService {
     await this.entityImageRepo.delete(id)
   }
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   async deleteImages(entity_id: number): Promise<void> {
     const deleteCandidates = await this.entityImageRepo.find({
       where: { entity_id: { id: entity_id } },

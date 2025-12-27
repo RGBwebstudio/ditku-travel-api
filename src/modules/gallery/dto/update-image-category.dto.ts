@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger'
-import { IsInt, IsOptional, IsString, MinLength } from 'class-validator'
+
 import { Type } from 'class-transformer'
+import { IsInt, IsOptional, IsString, MinLength } from 'class-validator'
 
 export class UpdateImageCategoryDto {
   @ApiPropertyOptional({

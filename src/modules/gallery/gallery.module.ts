@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { MulterModule } from '@nestjs/platform-express'
-import { memoryStorage } from 'multer'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { Image } from './entities/image.entity'
-import { ImageCategory } from './entities/image-category.entity'
+
+import { memoryStorage } from 'multer'
+
 import { ImageAdminController } from './controllers/image-admin.controller'
 import { ImageCategoryAdminController } from './controllers/image-category-admin.controller'
-import { ImageService } from './services/image.service'
+import { ImageCategory } from './entities/image-category.entity'
+import { Image } from './entities/image.entity'
 import { ImageCategoryService } from './services/image-category.service'
+import { ImageService } from './services/image.service'
 import { S3Service } from './services/s3.service'
-import { ConfigModule } from '@nestjs/config'
 
 @Module({
   imports: [

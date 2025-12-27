@@ -13,11 +13,13 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { ImageCategoryService } from '../services/image-category.service'
-import { CreateImageCategoryDto } from '../dto/create-image-category.dto'
-import { UpdateImageCategoryDto } from '../dto/update-image-category.dto'
-import { ImageCategoryQueryDto } from '../dto/image-category-query.dto'
+
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
+import { CreateImageCategoryDto } from '../dto/create-image-category.dto'
+import { ImageCategoryQueryDto } from '../dto/image-category-query.dto'
+import { UpdateImageCategoryDto } from '../dto/update-image-category.dto'
+import { ImageCategoryService } from '../services/image-category.service'
 
 @ApiTags('Gallery')
 @ApiBearerAuth()

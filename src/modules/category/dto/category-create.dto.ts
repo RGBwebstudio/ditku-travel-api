@@ -10,6 +10,11 @@ export class CategoryCreateDto {
   @IsBoolean()
   show_on_main_page: boolean
 
+  @ApiProperty({ example: false })
+  @IsBoolean()
+  @IsOptional()
+  show_in_main_tabs?: boolean
+
   @ApiProperty({ example: null })
   @IsNumber()
   @IsOptional()

@@ -59,6 +59,24 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   skills: string
 
+  @Column({ type: 'varchar', nullable: true })
+  age: string
+
+  @Column({ type: 'jsonb', nullable: true })
+  learning: any
+
+  @Column({ type: 'jsonb', nullable: true })
+  program: any
+
+  @Column({ type: 'jsonb', nullable: true })
+  inclusive: string[]
+
+  @Column({ type: 'jsonb', nullable: true })
+  notIncludes: string[]
+
+  @Column({ type: 'jsonb', nullable: true })
+  advantages: any
+
   @Column({ type: 'jsonb', nullable: true })
   structure: any
 
@@ -81,7 +99,7 @@ export class Product {
   parent_id: Product
 
   @ManyToOne(() => Category, (category: Category) => category.products, {
-    onDelete: 'RESTRICT',
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category

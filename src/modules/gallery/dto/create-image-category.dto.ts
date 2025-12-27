@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsInt, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator'
+
 import { Type } from 'class-transformer'
+import { IsInt, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator'
 
 export class CreateImageCategoryDto {
   @ApiProperty({

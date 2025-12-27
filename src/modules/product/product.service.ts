@@ -973,7 +973,6 @@ export class ProductService {
     }
   }
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   async deleteImagesByIds(ids: number[]): Promise<{ message: string }> {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new BadRequestException('ids is required')

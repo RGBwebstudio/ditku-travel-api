@@ -4,10 +4,10 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { BannerType } from 'src/common/types/banner-group.types'
 import { Repository } from 'typeorm'
 
+import { AddBannerImageDto } from './dto/add-banner-image.dto'
 import { BannerCreateImageDto } from './dto/banner-create-image.dto'
 import { BannerCreateDto } from './dto/banner-create.dto'
 import { BannerUpdateDto } from './dto/banner-update.dto'
-import { AddBannerImageDto } from './dto/add-banner-image.dto'
 import { BannerImage } from './entities/banner-image.entity'
 import { BannerGroup } from './entities/banners.entity'
 

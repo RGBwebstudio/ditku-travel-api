@@ -1,8 +1,9 @@
+import * as dotenv from 'dotenv'
 import { DataSource } from 'typeorm'
+
+import configuration from '../../../../config/configuration'
 import { User } from '../../../modules/user/entities/user.entity'
 import { Roles, Genders } from '../../enums/user.enum'
-import configuration from '../../../../config/configuration'
-import * as dotenv from 'dotenv'
 
 dotenv.config()
 
