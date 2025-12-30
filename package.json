@@ -45,7 +45,7 @@
     "@types/fs-extra": "^11.0.4",
     "@types/sharp": "^0.31.1",
     "@types/slug": "^5.0.9",
-    "@types/uuid": "^10.0.0",
+    "@types/uuid": "^9.0.8",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "bcrypt-ts": "^7.0.0",
@@ -65,7 +65,7 @@
     "sharp": "^0.34.5",
     "slug": "^11.0.0",
     "typeorm": "^0.3.23",
-    "uuid": "^13.0.0",
+    "uuid": "9.0.1",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
