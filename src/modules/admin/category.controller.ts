@@ -1,0 +1,30 @@
+import { Controller, UseGuards, Get, Query, Req } from '@nestjs/common'
+
+import { Request } from 'express'
+import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { CategoryController } from 'src/modules/category/category.controller'
+import { CategoryService } from 'src/modules/category/category.service'
+
+@UseGuards(AuthAdminGuard)
+@Controller('admin/category')
+export class AdminCategoryController extends CategoryController {
+  constructor(readonly categoryService: CategoryService) {
+    super(categoryService)
+  }
+
+  @Get()
+  find(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
+    return this.categoryService.findAll(take, skip, req.lang)
+  }
+
+  @Get('all')
+  findAllList(@Req() req: Request) {
+    return this.categoryService.findAllList(req.lang)
+  }
+
+  @Get('search')
+  search(@Query('q') q: string, @Req() req: Request) {
+    return this.categoryService.searchByTitle(q, req.lang)
+  }
+}

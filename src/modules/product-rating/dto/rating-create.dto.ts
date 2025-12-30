@@ -1,0 +1,25 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
+import { IsInt, IsOptional, IsString, Validate, IsNumber } from 'class-validator'
+import { IsExist } from 'src/common/validators/isExist.validator'
+import { Product } from 'src/modules/product/entities/product.entity'
+
+export class RatingCreateDto {
+  @ApiProperty({ example: "Ім'я користувача" })
+  @IsString()
+  name: string
+
+  @ApiPropertyOptional({ example: 'Чудовий тур, сподобався!' })
+  @IsString()
+  @IsOptional()
+  review: string
+
+  @ApiProperty({ example: 5 })
+  @IsNumber()
+  rating: number
+
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  @Validate(IsExist, ['product', 'id'])
+  product_id: Product
+}
