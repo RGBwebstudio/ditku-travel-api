@@ -1,6 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsArray, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator'
+import { ApiPropertyOptional } from '@nestjs/swagger'
+
 import { Type } from 'class-transformer'
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator'
 
 export class ClosestTours {
   @ApiPropertyOptional()
@@ -267,43 +268,6 @@ export class PopularTours {
   @ValidateNested({ each: true })
   @Type(() => PopularTourCard)
   cards?: PopularTourCard[]
-}
-
-export class CtaSection {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  title?: string
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  text?: string
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  button_text?: string
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  link_url?: string
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  photo?: string
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  seo_title?: string
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  seo_text?: string
 }
 
 export class SliderItem {
@@ -580,12 +544,33 @@ export class OurDocumentsSection {
   docs?: DocumentItem[]
 }
 
+export class SeoSection {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_text?: string
+}
+
 export class MainPageStructureDto {
   @ApiPropertyOptional({ type: () => ClosestTours })
   @IsOptional()
   @ValidateNested()
   @Type(() => ClosestTours)
   closest_tours?: ClosestTours
+
+  @ApiPropertyOptional({ type: () => SeoSection })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SeoSection)
+  seo_section?: SeoSection
+
+  @IsOptional()
+  cta_section?: any
 
   @ApiPropertyOptional({ type: () => ChooseTourSection })
   @IsOptional()
@@ -622,12 +607,6 @@ export class MainPageStructureDto {
   @ValidateNested()
   @Type(() => PopularTours)
   popular_tours?: PopularTours
-
-  @ApiPropertyOptional({ type: () => CtaSection })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => CtaSection)
-  cta_section?: CtaSection
 
   @ApiPropertyOptional({ type: [SliderItem] })
   @IsOptional()

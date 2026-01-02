@@ -110,7 +110,7 @@ export class ProductController {
   })
   @ApiOperation({ summary: 'Отримати список фільтрованих товарів' })
   filter(@Query() query: ProductFilterDto, @Req() req: Request) {
-    const { categories, parameters, sections, take, skip, start_point, end_point, startAt, endAt } = query
+    const { categories, parameters, sections, take, skip, start_point, end_point, startAt, endAt, seo_filter } = query
 
     return this.productService.filter(
       categories,
@@ -122,7 +122,8 @@ export class ProductController {
       start_point,
       end_point,
       startAt,
-      endAt
+      endAt,
+      seo_filter
     )
   }
 

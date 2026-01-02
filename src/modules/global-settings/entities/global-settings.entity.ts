@@ -9,6 +9,24 @@ export class GlobalSettings {
   @Column({ type: 'jsonb', default: '{}' })
   structure: string
 
+  @Column({ default: '' })
+  cta_title: string
+
+  @Column({ default: '' })
+  cta_subtitle: string
+
+  @Column({ default: '' })
+  cta_text: string
+
+  @Column({ default: 'Learn More' })
+  cta_button_text: string
+
+  @Column({ default: '' })
+  cta_link: string
+
+  @Column({ nullable: true })
+  cta_image: string
+
   @Column({ enum: LANG, default: LANG.UA })
   lang: LANG
 

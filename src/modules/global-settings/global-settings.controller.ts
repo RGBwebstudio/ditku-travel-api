@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { Request } from 'express'
@@ -28,11 +28,24 @@ export class GlobalSettingsController {
     return this.service.create(dto)
   }
 
-  @Put(':id')
+  @Patch()
   @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Update global settings' })
   @ApiResponse({ status: 200, description: 'UPDATED' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateGlobalSettingsDto) {
-    return this.service.update(id, dto)
+  async update(@Body() dto: UpdateGlobalSettingsDto) {
+    // Assuming we update based on language in DTO or default to UA if singleton
+    // But existing service requires ID. Let's look at service options.
+    // Service has `findOne(lang)`.
+    const settings = await this.service.findOne(dto.lang)
+    if (settings && settings.id) {
+      return this.service.update(settings.id, dto)
+    }
+    // If not found, create it? Or throw?
+    // If generic settings, maybe just create if empty.
+    // However, for now, let's just use the first one or create.
+    if (!settings || !settings.id) {
+      // If it returns {}, it has no ID.
+      return this.service.create(dto as CreateGlobalSettingsDto)
+    }
   }
 }

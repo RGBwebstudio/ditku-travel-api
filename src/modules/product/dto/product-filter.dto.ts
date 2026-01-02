@@ -60,4 +60,11 @@ export class ProductFilterDto {
   })
   @IsOptional()
   end_point: number
+
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'SEO Filter ID to filter products by seo_filter relation',
+  })
+  @IsOptional()
+  seo_filter?: number
 }

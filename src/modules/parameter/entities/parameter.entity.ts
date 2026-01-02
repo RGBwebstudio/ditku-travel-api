@@ -37,14 +37,6 @@ export class Parameter {
   @ManyToMany(() => Product, (product) => product.parameters, {
     onDelete: 'CASCADE',
   })
-  @JoinTable({
-    name: 'product_and_parameter',
-    joinColumn: { name: 'parameter_id', referencedColumnName: 'id' },
-    inverseJoinColumn: {
-      name: 'product_id',
-      referencedColumnName: 'id',
-    },
-  })
   products: Product[]
 
   @OneToMany(() => ParameterTranslate, (translate) => translate.entity_id)

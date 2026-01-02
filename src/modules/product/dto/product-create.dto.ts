@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsBoolean, IsString, IsInt, Min, IsOptional, IsPositive, IsArray } from 'class-validator'
+import { Type } from 'class-transformer'
+import { IsBoolean, IsString, IsInt, Min, IsOptional, IsPositive, IsArray, ValidateNested } from 'class-validator'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 
@@ -151,9 +152,49 @@ export class ProductCreateDto {
 
   @ApiPropertyOptional({ example: '2023-12-01T00:00:00Z' })
   @IsOptional()
+  @Type(() => Date)
   start_at: Date
 
   @ApiPropertyOptional({ example: '2023-12-31T23:59:59Z' })
   @IsOptional()
+  @Type(() => Date)
   end_at: Date
+
+  @ApiPropertyOptional({ example: '2023-12-01T00:00:00Z' })
+  @IsOptional()
+  @Type(() => Date)
+  start_date?: Date
+
+  @ApiPropertyOptional({ example: '2023-12-31T23:59:59Z' })
+  @IsOptional()
+  @Type(() => Date)
+  end_date?: Date
+
+  @ApiPropertyOptional({ type: [Number], description: 'Array of Seo Filter IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  seo_filters?: number[]
+
+  @ApiPropertyOptional({ description: 'Array of blog objects' })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductBlogDto)
+  blogs?: ProductBlogDto[]
+}
+
+export class ProductBlogDto {
+  @IsOptional()
+  id?: string | number
+
+  @IsString()
+  title: string
+
+  @IsString()
+  content: string
+
+  @IsArray()
+  @IsString({ each: true })
+  images: string[]
 }

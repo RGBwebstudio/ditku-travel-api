@@ -13,6 +13,11 @@ export class UpdateVideoDto {
   @IsString()
   youtube_link?: string
 
+  @ApiPropertyOptional({ example: 'https://img.com/url.jpg' })
+  @IsOptional()
+  @IsString()
+  thumbnail?: string
+
   @ApiPropertyOptional({ example: 0 })
   @IsOptional()
   @IsInt()

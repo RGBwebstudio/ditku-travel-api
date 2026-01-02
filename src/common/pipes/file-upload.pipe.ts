@@ -4,7 +4,7 @@ import { UploadedFile } from '../types/uploaded-file.types'
 
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
-  private readonly limit = 5 * 1024 * 1024
+  private readonly limit = 15 * 1024 * 1024
   private readonly acceptableFormats = ['image/webp', 'image/jpeg', 'image/png']
 
   transform(value: UploadedFile) {
@@ -13,7 +13,7 @@ export class FileSizeValidationPipe implements PipeTransform {
     }
 
     if (value.size > this.limit) {
-      throw new BadRequestException('File size exceeds the limit of 5MB LIMIT_OF_SIZE')
+      throw new BadRequestException('File size exceeds the limit of 15MB LIMIT_OF_SIZE')
     }
 
     if (!this.acceptableFormats.includes(value.mimetype)) {

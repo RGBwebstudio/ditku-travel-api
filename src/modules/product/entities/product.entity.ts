@@ -4,6 +4,7 @@ import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
+import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import {
   Entity,
   Column,
@@ -80,6 +81,19 @@ export class Product {
   @Column({ type: 'jsonb', nullable: true })
   structure: any
 
+  @ManyToMany(() => SeoFilter, (seoFilter: SeoFilter) => seoFilter.products, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable({
+    name: 'product_seo_filters',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
+  })
+  seo_filters: SeoFilter[]
+
+  @Column({ type: 'jsonb', nullable: true, default: [] })
+  blogs: any[]
+
   @Column({ default: 0 })
   order_in_list: number
 
@@ -108,7 +122,7 @@ export class Product {
     onDelete: 'CASCADE',
   })
   @JoinTable({
-    name: 'product_parameters',
+    name: 'product_and_parameter',
     joinColumn: { name: 'product_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'parameter_id', referencedColumnName: 'id' },
   })
@@ -157,10 +171,10 @@ export class Product {
   @OneToMany(() => Roadmap, (roadmap: Roadmap) => roadmap.product_id)
   roadmaps: Roadmap[]
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true })
   start_at: Date
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true })
   end_at: Date
 
   @CreateDateColumn({ type: 'timestamptz' })
@@ -168,6 +182,5 @@ export class Product {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
-
   rating?: number
 }

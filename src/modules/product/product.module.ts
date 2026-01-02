@@ -8,6 +8,7 @@ import { FormatGroup } from 'src/modules/format-group/entities/format-group.enti
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import { RatingModule } from 'src/modules/product-rating/rating.module'
 import { Section } from 'src/modules/section/entities/section.entity'
+import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 
 import { ProductImage } from './entities/product-image.entity'
 import { ProductTranslate } from './entities/product-translate.entity'
@@ -17,7 +18,16 @@ import { ProductService } from './product.service'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product, Parameter, FormatGroup, ProductImage, ProductTranslate, Category, Section]),
+    TypeOrmModule.forFeature([
+      Product,
+      Parameter,
+      FormatGroup,
+      ProductImage,
+      ProductTranslate,
+      Category,
+      Section,
+      SeoFilter,
+    ]),
     HttpModule,
     RatingModule,
   ],
