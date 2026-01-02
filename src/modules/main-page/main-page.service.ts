@@ -52,6 +52,11 @@ export class MainPageService {
 
   async update(dto: UpdateMainPageDto): Promise<MainPage | null> {
     const { lang } = dto
+
+    if (dto.structure && (dto.structure as any).cta_section) {
+      delete (dto.structure as any).cta_section
+    }
+
     const result = await this.countryRepo.update({ lang }, dto)
 
     if (result.affected === 0) {

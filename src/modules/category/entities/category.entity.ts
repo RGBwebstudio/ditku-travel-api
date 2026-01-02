@@ -1,5 +1,6 @@
 import { Menu } from 'src/modules/menu/entities/menu.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
+import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import {
   Column,
   Entity,
@@ -57,6 +58,9 @@ export class Category {
 
   @OneToMany(() => Menu, (menu) => menu.category_id)
   menus: Menu[]
+
+  @OneToMany(() => SeoFilter, (filter) => filter.category_id)
+  seo_filters: SeoFilter[]
 
   @Column({ default: 0 })
   order_in_list: number

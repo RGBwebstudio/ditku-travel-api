@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
-import { IsExistIdInArray } from 'src/common/validators/isExistIdInArray.validator'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { ParameterCategory } from 'src/modules/parameter-category/entities/parameter-category.entity'
 import { ParameterCategoryModule } from 'src/modules/parameter-category/parameter-category.module'
@@ -11,6 +10,7 @@ import { ParameterTranslate } from './entities/category-translate.entity'
 import { Parameter } from './entities/parameter.entity'
 import { ParameterController } from './parameter.controller'
 import { ParameterService } from './parameter.service'
+import { IsExistIdInArray } from '../../common/validators/isExistIdInArray.validator'
 
 @Module({
   imports: [

@@ -11,7 +11,7 @@ import { useContainer } from 'class-validator'
 import pgSession from 'connect-pg-simple'
 import session from 'express-session'
 
-import { LanguageInterceptor } from './common/interceptors/language.interceptor'
+// import { LanguageInterceptor } from './common/interceptors/language.interceptor'
 import { AppModule } from './core/app.module'
 
 async function bootstrap() {
@@ -21,7 +21,7 @@ async function bootstrap() {
 
   app.use(bodyParser.json({ limit: '100mb' }))
   app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }))
-  app.useGlobalInterceptors(new LanguageInterceptor())
+  // app.useGlobalInterceptors(new LanguageInterceptor())
 
   const configService = app.get(ConfigService)
 

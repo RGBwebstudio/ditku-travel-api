@@ -1,5 +1,3 @@
-import * as path from 'path'
-
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
@@ -118,8 +116,10 @@ export class CategoryService {
         'children',
         'children.images',
         'children.translates',
+        'children.seo_filters',
         'images',
         'translates',
+        'seo_filters',
       ],
     })
 
@@ -295,7 +295,7 @@ export class CategoryService {
   }
 
   async findAllSubtree(depth: number, lang: LANG): Promise<{ entities: Category[] }> {
-    const rootRelations = ['parent', 'parent.translates', 'translates', 'images']
+    const rootRelations = ['parent', 'parent.translates', 'translates', 'images', 'seo_filters']
 
     const relationsSet = new Set<string>(rootRelations)
 
@@ -304,6 +304,7 @@ export class CategoryService {
       relationsSet.add(chain)
       relationsSet.add(`${chain}.images`)
       relationsSet.add(`${chain}.translates`)
+      relationsSet.add(`${chain}.seo_filters`)
     }
 
     const relations = Array.from(relationsSet)

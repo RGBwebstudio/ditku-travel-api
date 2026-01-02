@@ -36,6 +36,7 @@ export class VideoService {
     const payload: DeepPartial<Video> = {
       youtube_link: dto.youtube_link,
       order: dto.order ?? 0,
+      thumbnail: dto.thumbnail,
     }
 
     if (typeof dto.category_id !== 'undefined' && dto.category_id !== null) {
@@ -67,6 +68,7 @@ export class VideoService {
     }
 
     if (typeof dto.youtube_link !== 'undefined') updatePayload.youtube_link = dto.youtube_link
+    if (typeof dto.thumbnail !== 'undefined') updatePayload.thumbnail = dto.thumbnail
     if (typeof dto.order !== 'undefined') updatePayload.order = dto.order
 
     const result = await this.repo.update(id, updatePayload)

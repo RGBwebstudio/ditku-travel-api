@@ -36,6 +36,7 @@ import { SeoBlocksModule } from '../modules/seo-blocks/seo-blocks.module'
 import { SeoFilterModule } from '../modules/seo-filter/seo-filter.module'
 import { SessionModule } from '../modules/session/session.module'
 import { TermsOfUseModule } from '../modules/terms-of-use/terms-of-use.module'
+import { ToursPageModule } from '../modules/tours-page/tours-page.module'
 import { UserModule } from '../modules/user/user.module'
 import { VideoModule } from '../modules/video/video.module'
 import { ContactsModule } from '../modules/сontacts/contacts.module'
@@ -84,6 +85,7 @@ const config = configuration()
     SessionModule,
     GalleryModule,
     GlobalSettingsModule,
+    ToursPageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

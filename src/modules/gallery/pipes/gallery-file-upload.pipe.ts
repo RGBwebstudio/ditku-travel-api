@@ -4,7 +4,7 @@ import { UploadedFile } from 'src/common/types/uploaded-file.types'
 
 @Injectable()
 export class GalleryFileUploadPipe implements PipeTransform {
-  private readonly limit = 5 * 1024 * 1024 // 5MB
+  private readonly limit = 15 * 1024 * 1024 // 15MB
   private readonly acceptableFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
 
   transform(value: UploadedFile | UploadedFile[]) {
@@ -19,7 +19,7 @@ export class GalleryFileUploadPipe implements PipeTransform {
     }
 
     if (file.size > this.limit) {
-      throw new BadRequestException('File size exceeds the limit of 5MB LIMIT_OF_SIZE')
+      throw new BadRequestException('File size exceeds the limit of 15MB LIMIT_OF_SIZE')
     }
 
     if (!this.acceptableFormats.includes(file.mimetype)) {

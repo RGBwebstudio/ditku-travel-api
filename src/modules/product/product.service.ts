@@ -12,6 +12,7 @@ import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
 import { ProductUpdateDto } from 'src/modules/product/dto/product-update.dto'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
+import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import { In, Repository, DeepPartial } from 'typeorm'
 
 import { AddProductImageDto } from './dto/add-product-image.dto'
@@ -47,7 +48,9 @@ export class ProductService {
     @InjectRepository(ProductTranslate)
     private entityTranslateRepo: Repository<ProductTranslate>,
     @InjectRepository(ProductImage)
-    private entityImageRepo: Repository<ProductImage>
+    private entityImageRepo: Repository<ProductImage>,
+    @InjectRepository(SeoFilter)
+    private seoFilterRepo: Repository<SeoFilter>
   ) {}
 
   async searchByTitle(
@@ -60,6 +63,7 @@ export class ProductService {
     let queryBuilder = this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.translates', 'translates')
+      .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
@@ -80,6 +84,7 @@ export class ProductService {
       queryBuilder = this.productRepo
         .createQueryBuilder('product')
         .leftJoinAndSelect('product.translates', 'translates')
+        .leftJoinAndSelect('product.seo_filters', 'seo_filters')
         .leftJoinAndSelect('product.category_id', 'category_id')
         .leftJoinAndSelect('product.format_groups', 'format_groups')
         .leftJoinAndSelect('product.images', 'images')
@@ -150,6 +155,7 @@ export class ProductService {
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
+      .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('product.parameters', 'parameters')
       .leftJoinAndSelect('parameters.translates', 'parameter_translates')
       .addSelect(
@@ -196,6 +202,7 @@ export class ProductService {
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
+      .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -277,6 +284,7 @@ export class ProductService {
       .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
+      .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .addSelect(
         (subQuery) =>
@@ -325,7 +333,8 @@ export class ProductService {
     start_point?: number,
     end_point?: number,
     startAt?: string,
-    endAt?: string
+    endAt?: string,
+    seoFilterId?: number
   ) {
     const mappedCategories = categories?.trim().length ? categories.split(',').map((item) => String(item)) : []
 
@@ -345,7 +354,21 @@ export class ProductService {
       .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
+      .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .where('product.is_hidden = :isHidden', { isHidden: false })
+
+    // SEO Filter support
+    if (seoFilterId && typeof seoFilterId === 'number') {
+      queryBuilder.andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('psf.product_id')
+          .from('product_seo_filters', 'psf')
+          .where('psf.seo_filter_id = :seoFilterId', { seoFilterId })
+          .getQuery()
+        return 'product.id IN ' + subQuery
+      })
+    }
 
     if (allCategoryUrls.length > 0) {
       queryBuilder.andWhere('category_id.url IN (:...categories)', {
@@ -454,6 +477,7 @@ export class ProductService {
         'ratings',
         'roadmaps',
         'roadmaps.city_id',
+        'seo_filters',
       ],
     })
 
@@ -516,6 +540,7 @@ export class ProductService {
         'ratings',
         'roadmaps',
         'roadmaps.city_id',
+        'seo_filters',
       ],
     })
 
@@ -593,6 +618,7 @@ export class ProductService {
         'ratings',
         'roadmaps',
         'roadmaps.city_id',
+        'seo_filters',
       ],
     })
 
@@ -700,6 +726,7 @@ export class ProductService {
       .leftJoinAndSelect('product.format_groups', 'format_groups')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
+      .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .addSelect(
         (subQuery) =>
@@ -735,12 +762,24 @@ export class ProductService {
       ...dto,
     }
 
+    if (dto.start_date) {
+      productPayload.start_at = dto.start_date
+      delete productPayload.start_date
+    }
+    if (dto.end_date) {
+      productPayload.end_at = dto.end_date
+      delete productPayload.end_date
+    }
+
     const sectionsIds = Array.isArray(dto.sections) ? dto.sections : undefined
     if (sectionsIds) delete productPayload.sections
 
     const formatGroupIds: number[] | undefined =
       Array.isArray(dto.format_group) && dto.format_group.length ? dto.format_group : undefined
     if (formatGroupIds) delete productPayload.format_group
+
+    const seoFiltersIds = Array.isArray(dto.seo_filters) ? dto.seo_filters : undefined
+    if (seoFiltersIds) delete productPayload.seo_filters
 
     const product = this.productRepo.create(productPayload as DeepPartial<Product>)
 
@@ -755,6 +794,17 @@ export class ProductService {
           throw new BadRequestException('format_group is NOT_FOUND')
         }
         saved.format_groups = formatGroups
+        await this.productRepo.save(saved)
+      }
+
+      if (seoFiltersIds && seoFiltersIds.length) {
+        const seoFilters = await this.seoFilterRepo.findBy({
+          id: In(seoFiltersIds),
+        })
+        if (seoFilters.length !== seoFiltersIds.length) {
+          throw new BadRequestException('seo_filters is NOT_FOUND')
+        }
+        saved.seo_filters = seoFilters
         await this.productRepo.save(saved)
       }
 
@@ -774,54 +824,81 @@ export class ProductService {
   }
 
   async update(id: number, dto: ProductUpdateDto): Promise<Product | null> {
-    const product = await this.productRepo.findOne({ where: { id } })
+    const product = await this.productRepo.findOne({
+      where: { id },
+      relations: ['sections', 'seo_filters', 'parameters', 'format_groups'],
+    })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
     try {
-      const sectionsIds = dto.sections !== undefined ? dto.sections : undefined
-      const formatGroupIds: number[] | undefined =
-        dto.format_group !== undefined && Array.isArray(dto.format_group) ? dto.format_group : undefined
-
       /* eslint-disable @typescript-eslint/no-unused-vars */
-      const { sections, format_group, ...rawUpdatePayload } = dto as Partial<ProductUpdateDto>
+      const {
+        sections,
+        format_group,
+        seo_filters,
+        parameters: rawParams,
+        start_date,
+        end_date,
+        ...rawUpdatePayload
+      } = dto as Partial<ProductCreateDto> & Partial<ProductUpdateDto>
 
-      const updatePayload = rawUpdatePayload as Omit<Partial<ProductUpdateDto>, 'sections' | 'format_group'>
+      const updatePayload = rawUpdatePayload as any
 
-      await this.productRepo.update({ id }, updatePayload as DeepPartial<Product>)
-
-      if (sectionsIds !== undefined) {
-        const sectionEntities = sectionsIds?.length ? await this.sectionRepo.findBy({ id: In(sectionsIds) }) : []
-
-        const existing = await this.productRepo.findOne({
-          where: { id },
-        })
-
-        if (!existing) throw new BadRequestException('NOT_UPDATED')
-
-        existing.sections = sectionEntities.length ? sectionEntities : []
-
-        await this.productRepo.save(existing)
+      if (start_date !== undefined) {
+        updatePayload.start_at = start_date
+      }
+      if (end_date !== undefined) {
+        updatePayload.end_at = end_date
       }
 
+      // Apply scalar updates
+      Object.assign(product, updatePayload)
+
+      // Handle Relations
+      const sectionsIds = dto.sections !== undefined ? dto.sections : undefined
+      if (sectionsIds !== undefined) {
+        const sectionEntities = sectionsIds?.length ? await this.sectionRepo.findBy({ id: In(sectionsIds) }) : []
+        product.sections = sectionEntities
+      }
+
+      const seoFiltersIds: number[] | undefined =
+        dto.seo_filters !== undefined && Array.isArray(dto.seo_filters) ? dto.seo_filters : undefined
+      if (seoFiltersIds !== undefined) {
+        const seoFilterEntities = seoFiltersIds?.length
+          ? await this.seoFilterRepo.findBy({ id: In(seoFiltersIds) })
+          : []
+        product.seo_filters = seoFilterEntities
+      }
+
+      const parameters = dto.parameters !== undefined ? dto.parameters : undefined
+      if (parameters !== undefined) {
+        const ids = Array.isArray(parameters) ? parameters.map((p) => (typeof p === 'number' ? p : p.id)) : []
+        const paramEntities = ids.length ? await this.parameterRepo.findBy({ id: In(ids) }) : []
+        product.parameters = paramEntities
+      }
+
+      const formatGroupIds: number[] | undefined =
+        dto.format_group !== undefined && Array.isArray(dto.format_group) ? dto.format_group : undefined
       if (formatGroupIds !== undefined) {
-        const existing = await this.productRepo.findOne({ where: { id } })
-        if (!existing) throw new BadRequestException('NOT_UPDATED')
-
         const formatGroups = formatGroupIds.length ? await this.formatGroupRepo.findBy({ id: In(formatGroupIds) }) : []
-
         if (formatGroups.length !== (formatGroupIds || []).length) {
           throw new BadRequestException('format_group is NOT_FOUND')
         }
-
-        existing.format_groups = formatGroups.length ? formatGroups : []
-        await this.productRepo.save(existing)
+        product.format_groups = formatGroups
       }
 
-      return (await this.productRepo.findOne({ where: { id } })) as Product
+      this.logger.log(
+        `[SAVE DEBUG] Product before save - start_at: ${String(product.start_at)}, end_at: ${String(product.end_at)}`
+      )
+      const saved = await this.productRepo.save(product)
+      this.logger.log(
+        `[SAVE DEBUG] Product after save - start_at: ${String(saved.start_at)}, end_at: ${String(saved.end_at)}`
+      )
+      return saved
     } catch (err) {
       this.logger.error(`Error while updating product \n ${err}`)
-      throw new BadRequestException(`product is NOT_UPDATED`)
+      throw new BadRequestException('product is NOT_UPDATED')
     }
   }
 

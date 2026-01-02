@@ -2,6 +2,7 @@ import { Category } from 'src/modules/category/entities/category.entity'
 import { City } from 'src/modules/city/entities/city.entity'
 import { Country } from 'src/modules/country/entities/country.entity'
 import { Menu } from 'src/modules/menu/entities/menu.entity'
+import { Product } from 'src/modules/product/entities/product.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
 import {
   Entity,
@@ -72,6 +73,9 @@ export class SeoFilter {
 
   @ManyToMany(() => Menu, (menu) => menu.seo_filters)
   menus: Menu[]
+
+  @ManyToMany(() => Product, (product) => product.seo_filters)
+  products: Product[]
 
   @TreeParent()
   parent?: SeoFilter
