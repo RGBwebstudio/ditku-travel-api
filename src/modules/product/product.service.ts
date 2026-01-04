@@ -194,6 +194,53 @@ export class ProductService {
     return mappedEntities
   }
 
+  async findClosestTours(lang: LANG): Promise<ProductWithoutRatings[]> {
+    const result = await this.productRepo
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('category_id.translates', 'category_translates')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.translates', 'translates')
+      .leftJoinAndSelect('product.seo_filters', 'seo_filters')
+      .leftJoinAndSelect('product.parameters', 'parameters')
+      .leftJoinAndSelect('parameters.translates', 'parameter_translates')
+      .addSelect(
+        (subQuery) =>
+          subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
+        'average_rating'
+      )
+      .where('product.start_at >= NOW()')
+      .andWhere('product.is_hidden = :isHidden', { isHidden: false })
+      .orderBy('product.start_at', 'ASC')
+      .take(3)
+      .getRawAndEntities()
+
+    const products = result.entities.map((entity, index) => {
+      const raw = result.raw[index]
+      if (raw.average_rating !== undefined) {
+        entity.rating = parseFloat(raw.average_rating) || 0
+      }
+      return entity
+    })
+
+    const mappedEntities = applyTranslations(products, lang)
+
+    for (const product of mappedEntities) {
+      if (product.category_id && product.category_id.translates) {
+        product.category_id = applyTranslations([product.category_id], lang)[0]
+      }
+
+      if (product.parameters && Array.isArray(product.parameters)) {
+        product.parameters = product.parameters.map((param: Parameter) =>
+          param && param.translates ? applyTranslations([param], lang)[0] : param
+        )
+      }
+    }
+
+    return mappedEntities
+  }
+
   async find(take: number, skip: number, lang: LANG): Promise<{ entities: ProductWithoutRatings[]; count: number }> {
     const result = await this.productRepo
       .createQueryBuilder('product')
@@ -806,6 +853,35 @@ export class ProductService {
         }
         saved.seo_filters = seoFilters
         await this.productRepo.save(saved)
+      }
+
+      // Handle flattened translations
+      const translations: ProductCreateTranslateDto[] = []
+      const langFields = ['title', 'subtitle', 'seo_title', 'seo_description']
+
+      const payload: any = dto
+
+      for (const field of langFields) {
+        if (payload[`${field}_ua`]) {
+          translations.push({
+            entity_id: saved,
+            lang: LANG.UA,
+            field: field,
+            value: payload[`${field}_ua`],
+          })
+        }
+        if (payload[`${field}_en`]) {
+          translations.push({
+            entity_id: saved,
+            lang: LANG.EN,
+            field: field,
+            value: payload[`${field}_en`],
+          })
+        }
+      }
+
+      if (translations.length > 0) {
+        await this.createTranslates(translations)
       }
 
       if (sectionsIds && sectionsIds.length) {

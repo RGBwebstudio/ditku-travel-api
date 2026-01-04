@@ -8,7 +8,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm'
+
+import { RoadmapTranslate } from './roadmap-translate.entity'
 
 @Entity()
 export class Roadmap {
@@ -45,4 +48,7 @@ export class Roadmap {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
+
+  @OneToMany(() => RoadmapTranslate, (translate) => translate.entity_id)
+  translates: RoadmapTranslate[]
 }

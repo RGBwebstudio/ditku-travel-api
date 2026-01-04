@@ -93,15 +93,32 @@ export class CategoryService {
       }
     }
 
+    const { title_ua, title_en, seo_text_ua, seo_text_en, ...categoryData } = dto
+    const translationsData: { lang: LANG; field: string; value: string }[] = []
+
+    if (title_ua) translationsData.push({ lang: LANG.UA, field: 'title', value: title_ua })
+    if (title_en) translationsData.push({ lang: LANG.EN, field: 'title', value: title_en })
+    if (seo_text_ua) translationsData.push({ lang: LANG.UA, field: 'seo_text', value: seo_text_ua })
+    if (seo_text_en) translationsData.push({ lang: LANG.EN, field: 'seo_text', value: seo_text_en })
+
     const data = this.categoryRepo.create({
-      ...dto,
+      ...categoryData,
       parent,
       ...(url ? { url } : {}),
     })
 
     try {
       const savedCategory = await this.categoryRepo.save(data)
-      return savedCategory
+
+      if (translationsData.length > 0) {
+        const translations = translationsData.map((t) => ({
+          entity_id: savedCategory,
+          ...t,
+        }))
+        await this.createTranslates(translations)
+      }
+
+      return savedCategory as unknown as Category
     } catch (err) {
       this.logger.error(`Error while creating category ${err}`)
       throw new BadRequestException('category is NOT_CREATED')
@@ -130,6 +147,10 @@ export class CategoryService {
         if (category.parent) {
           const [translatedParentCategory] = applyTranslations([category.parent], lang)
           category.parent = translatedParentCategory
+        }
+
+        if (category.seo_filters?.length) {
+          category.seo_filters = applyTranslations(category.seo_filters, lang)
         }
 
         if (category?.children?.length) {
@@ -221,7 +242,7 @@ export class CategoryService {
 
       const ratingMap = new Map<number, number>()
       ratings.forEach((rating) => {
-        ratingMap.set(rating.productId, Math.round(parseFloat(rating.averageRating) * 10) / 10 || 0)
+        ratingMap.set(Number(rating.productId), Math.round(parseFloat(String(rating.averageRating)) * 10) / 10 || 0)
       })
 
       entities.forEach((category) => {
@@ -279,6 +300,10 @@ export class CategoryService {
           category.parent = translatedParentCategory
         }
 
+        if (category.seo_filters?.length) {
+          category.seo_filters = applyTranslations(category.seo_filters, lang)
+        }
+
         if (category?.children?.length) {
           category.children = applyTranslationsRecursively(category.children)
         }
@@ -325,6 +350,10 @@ export class CategoryService {
         translated.parent = translatedParentCategory
       }
 
+      if (translated.seo_filters?.length) {
+        translated.seo_filters = applyTranslations(translated.seo_filters, lang)
+      }
+
       if (translated.children?.length) {
         translated.children = translated.children.map((c) => applyTranslationsRecursively(c))
       }
@@ -335,7 +364,9 @@ export class CategoryService {
     const mappedEntities = roots.map((r) => applyTranslationsRecursively(r))
 
     const fillProductsCount = async (node: Category) => {
-      const count = await this.categoryRepo.manager.getRepository('Product').count({ where: { category_id: node.id } })
+      const count = await this.categoryRepo.manager
+        .getRepository('Product')
+        .count({ where: { category_id: { id: node.id } } })
 
       node.products_count = count
 
@@ -380,9 +411,47 @@ export class CategoryService {
 
       const url = dto.url && String(dto.url).trim() !== '' ? dto.url : undefined
 
-      await this.categoryRepo.update(id, { ...dto, ...(url ? { url } : {}) })
+      const { title_ua, title_en, seo_text_ua, seo_text_en, ...categoryData } = dto
+      const translations: { lang: LANG; field: string; value: string }[] = []
+
+      if (title_ua !== undefined) translations.push({ lang: LANG.UA, field: 'title', value: title_ua })
+      if (title_en !== undefined) translations.push({ lang: LANG.EN, field: 'title', value: title_en })
+      if (seo_text_ua !== undefined) translations.push({ lang: LANG.UA, field: 'seo_text', value: seo_text_ua })
+      if (seo_text_en !== undefined) translations.push({ lang: LANG.EN, field: 'seo_text', value: seo_text_en })
+
+      await this.categoryRepo.update(id, { ...categoryData, ...(url ? { url } : {}) })
+
+      // Update translations
+      if (translations.length) {
+        for (const t of translations) {
+          // Try to find existing translation
+          const existing = await this.entityTranslateRepo.findOne({
+            where: {
+              entity_id: { id },
+              lang: t.lang,
+              field: t.field,
+            },
+          })
+
+          if (existing) {
+            existing.value = t.value
+            await this.entityTranslateRepo.save(existing)
+          } else {
+            const newTrans = this.entityTranslateRepo.create({
+              entity_id: { id } as Category,
+              lang: t.lang,
+              field: t.field,
+              value: t.value,
+            })
+            await this.entityTranslateRepo.save(newTrans)
+          }
+        }
+      }
     } catch (err) {
       this.logger.error(`Error while updating category \n ${err}`)
+      if (err instanceof BadRequestException) {
+        throw err
+      }
       if (err?.code === '23505') {
         throw new BadRequestException('NAME_ALREADY_RESERVED')
       }

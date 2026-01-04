@@ -11,6 +11,8 @@ import {
   JoinColumn,
 } from 'typeorm'
 
+import { CityTranslate } from './city-translate.entity'
+
 @Entity()
 export class City {
   @PrimaryGeneratedColumn()
@@ -40,6 +42,9 @@ export class City {
 
   @OneToMany(() => Roadmap, (roadmap) => roadmap.city_id)
   roadmaps: Roadmap[]
+
+  @OneToMany(() => CityTranslate, (translate) => translate.entity_id)
+  translates: CityTranslate[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date

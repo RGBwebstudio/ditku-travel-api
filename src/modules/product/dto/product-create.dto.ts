@@ -108,9 +108,14 @@ export class ProductCreateDto {
   @ApiPropertyOptional({
     description: 'Структура контенту блоків',
   })
-  @IsOptional()
   @IsString()
   structure?: Record<string, string>
+
+  @ApiPropertyOptional({
+    description: 'Structure for Why Travel section',
+  })
+  @IsOptional()
+  why_travel_section?: any
 
   @ApiPropertyOptional({ type: [Number] })
   @IsOptional()
@@ -182,6 +187,47 @@ export class ProductCreateDto {
   @ValidateNested({ each: true })
   @Type(() => ProductBlogDto)
   blogs?: ProductBlogDto[]
+
+  // Flattened translations (optional, for convenience)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  subtitle_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  subtitle_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_description_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_description_en?: string
 }
 
 export class ProductBlogDto {
@@ -189,12 +235,30 @@ export class ProductBlogDto {
   id?: string | number
 
   @IsString()
+  @IsOptional()
   title: string
 
   @IsString()
+  @IsOptional()
   content: string
 
   @IsArray()
   @IsString({ each: true })
   images: string[]
+
+  @IsString()
+  @IsOptional()
+  title_ua?: string
+
+  @IsString()
+  @IsOptional()
+  title_en?: string
+
+  @IsString()
+  @IsOptional()
+  content_ua?: string
+
+  @IsString()
+  @IsOptional()
+  content_en?: string
 }

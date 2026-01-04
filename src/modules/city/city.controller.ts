@@ -2,6 +2,8 @@ import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put } 
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { CityService } from './city.service'
+import { CityCreateTranslateDto } from './dto/city-create-translate.dto'
+import { CityUpdateTranslateDto } from './dto/city-update-translate.dto'
 import { CreateCityDto } from './dto/create-city.dto'
 import { UpdateCityDto } from './dto/update-city.dto'
 
@@ -55,5 +57,35 @@ export class CityController {
   @ApiOperation({ summary: 'Видалити місто' })
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.cityService.delete(id)
+  }
+
+  @Post('/translates')
+  @ApiResponse({
+    status: 201,
+    description: 'SUCCESS - Сутності успішно створено',
+  })
+  @ApiOperation({ summary: 'Створити переклади міста' })
+  createTranslates(@Body() dto: CityCreateTranslateDto[]) {
+    return this.cityService.createTranslates(dto)
+  }
+
+  @Put(':id/translates')
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Сутності успішно оновлено',
+  })
+  @ApiOperation({ summary: 'Оновити переклади міста' })
+  updateTranslates(@Body() dto: CityUpdateTranslateDto[]) {
+    return this.cityService.updateTranslates(dto)
+  }
+
+  @Delete(':id/translate')
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Сутність успішно видалено',
+  })
+  @ApiOperation({ summary: 'Видалити переклад міста' })
+  deleteTranslate(@Param('id', ParseIntPipe) id: number) {
+    return this.cityService.deleteTranslate(id)
   }
 }

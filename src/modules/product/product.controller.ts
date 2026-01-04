@@ -21,6 +21,7 @@ import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 import { RatingService } from 'src/modules/product-rating/rating.service'
 
 import { AddProductImageDto } from './dto/add-product-image.dto'
+import { CreateProductReviewDto } from './dto/create-product-review.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
 import { ProductCreateDto } from './dto/product-create.dto'
 import { ProductDeleteImagesDto } from './dto/product-delete-images.dto'
@@ -29,6 +30,7 @@ import { ProductParametersDto } from './dto/product-parameters.dto'
 import { ProductRecommendedDto } from './dto/product-recommended.dto'
 import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
 import { ProductUpdateDto } from './dto/product-update.dto'
+import { UpdateProductReviewDto } from './dto/update-product-review.dto'
 import { Product } from './entities/product.entity'
 import { ProductService } from './product.service'
 
@@ -50,14 +52,74 @@ export class ProductController {
     description: 'NOT_FOUND - Товар не знайдено',
   })
   @ApiOperation({ summary: 'Отримати всі рейтинги товару' })
-  async getProductReviews(@Param('id', ParseIntPipe) id: number) {
-    const result = await this.ratingService.getRatingsByProduct(id)
+  async getProductReviews(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const result = await this.ratingService.getRatingsByProduct(id, req.lang)
 
     return {
       rating: result.averageRating,
       rating_count: result.totalRatings,
       ratings: result.ratings,
     }
+  }
+
+  @Post(':id/reviews')
+  @ApiOperation({ summary: 'Створити відгук для товару' })
+  @ApiResponse({
+    status: 201,
+    description: 'CREATED - Відгук успішно створено',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'NOT_CREATED - Відгук не створено',
+  })
+  async createProductReview(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateProductReviewDto) {
+    const payload = {
+      name: dto.name || dto.author || 'Anonymous',
+      review: dto.review || dto.text || dto.text_ua || dto.text_en || '',
+      text_ua: dto.text_ua,
+      text_en: dto.text_en,
+      rating: dto.rating,
+      product_id: id as any,
+    }
+    return this.ratingService.setRating(payload)
+  }
+
+  @Delete('reviews/:id')
+  @ApiOperation({ summary: 'Видалити відгук товару' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Відгук успішно видалено',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NOT_FOUND - Відгук не знайдено',
+  })
+  async deleteProductReview(@Param('id', ParseIntPipe) id: number) {
+    return this.ratingService.delete(id)
+  }
+
+  @Put('reviews/:id')
+  @ApiOperation({ summary: 'Оновити відгук товару' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Відгук успішно оновлено',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NOT_FOUND - Відгук не знайдено',
+  })
+  async updateProductReview(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductReviewDto) {
+    const payload: any = {}
+    if (dto.name || dto.author) payload.name = dto.name || dto.author
+    if (dto.review || dto.text || dto.text_ua || dto.text_en) {
+      payload.review = dto.review || dto.text || dto.text_ua || dto.text_en
+    }
+    if (dto.text_ua) payload.text_ua = dto.text_ua
+    if (dto.text_en) payload.text_en = dto.text_en
+
+    if (typeof dto.rating !== 'undefined') payload.rating = dto.rating
+
+    return this.ratingService.update(id, payload)
   }
 
   @Get('search')
@@ -81,6 +143,13 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'SUCCESS - Знайдено товари' })
   async searchByTitle(@Query('q') q: string, @Req() req: Request) {
     return this.productService.searchByTitle(q, req.lang)
+  }
+
+  @Get('closest-tours')
+  @ApiOperation({ summary: 'Отримати 3 найближчі тури (по даті початку)' })
+  @ApiResponse({ status: 200, description: 'SUCCESS - Знайдено тури' })
+  async getClosestTours(@Req() req: Request) {
+    return this.productService.findClosestTours(req.lang)
   }
 
   @Get('viewed/list')

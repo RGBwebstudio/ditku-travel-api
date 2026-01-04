@@ -28,6 +28,46 @@ export class HeroSection {
   @IsOptional()
   @IsString()
   button_text?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  subtitle_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  subtitle_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_search_placeholder_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_search_placeholder_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_en?: string
 }
 
 export class IndividualToursSection {
@@ -50,6 +90,36 @@ export class IndividualToursSection {
   @IsOptional()
   @IsString()
   image?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_en?: string
 }
 
 export class EducationBlock {
@@ -62,6 +132,16 @@ export class EducationBlock {
   @IsOptional()
   @IsString()
   title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }
 
 export class EducationSection {
@@ -76,6 +156,16 @@ export class EducationSection {
   @ValidateNested({ each: true })
   @Type(() => EducationBlock)
   blocks?: EducationBlock[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }
 
 export class WhyTravelBlock {
@@ -88,6 +178,16 @@ export class WhyTravelBlock {
   @IsOptional()
   @IsString()
   title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -107,6 +207,16 @@ export class WhyTravelSection {
   @ValidateNested({ each: true })
   @Type(() => WhyTravelBlock)
   blocks?: WhyTravelBlock[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }
 
 export class ConsultationSection {
@@ -159,6 +269,96 @@ export class ConsultationSection {
   @IsOptional()
   @IsString()
   option_2_text?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  subtitle_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  subtitle_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_name_label_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_name_label_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_name_placeholder_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_name_placeholder_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_phone_label_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_phone_label_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_phone_placeholder_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  input_phone_placeholder_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  option_1_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  option_1_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  option_2_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  option_2_text_en?: string
 }
 
 export class ColoredSliderBlock {
@@ -176,6 +376,26 @@ export class ColoredSliderBlock {
   @IsOptional()
   @IsString()
   bg_color?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
 }
 
 export class ColoredSliderSection {
@@ -197,6 +417,26 @@ export class SeoSection {
   @IsOptional()
   @IsString()
   seo_description?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_description_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_description_en?: string
 }
 
 export class ToursPageStructureDto {

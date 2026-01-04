@@ -1,7 +1,11 @@
-import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put } from '@nestjs/common'
+import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
+import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+
 import { CreateRoadmapDto } from './dto/create-roadmap.dto'
+import { RoadmapCreateTranslateDto } from './dto/roadmap-create-translate.dto'
+import { RoadmapUpdateTranslateDto } from './dto/roadmap-update-translate.dto'
 import { UpdateRoadmapItemDto } from './dto/update-roadmap-item.dto'
 import { UpdateRoadmapDto } from './dto/update-roadmap.dto'
 import { RoadmapService } from './roadmap.service'
@@ -61,5 +65,38 @@ export class RoadmapController {
   @ApiOperation({ summary: 'Видалити запис roadmap' })
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.roadmapService.delete(id)
+  }
+
+  @Post('/translates')
+  @UseGuards(AuthAdminGuard)
+  @ApiResponse({
+    status: 201,
+    description: 'SUCCESS - Сутності успішно створено',
+  })
+  @ApiOperation({ summary: 'Створити переклади roadmap' })
+  createTranslates(@Body() dto: RoadmapCreateTranslateDto[]) {
+    return this.roadmapService.createTranslates(dto)
+  }
+
+  @Put(':id/translates')
+  @UseGuards(AuthAdminGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Сутності успішно оновлено',
+  })
+  @ApiOperation({ summary: 'Оновити переклади roadmap' })
+  updateTranslates(@Body() dto: RoadmapUpdateTranslateDto[]) {
+    return this.roadmapService.updateTranslates(dto)
+  }
+
+  @Delete(':id/translate')
+  @UseGuards(AuthAdminGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Сутність успішно видалено',
+  })
+  @ApiOperation({ summary: 'Видалити переклад roadmap' })
+  deleteTranslate(@Param('id', ParseIntPipe) id: number) {
+    return this.roadmapService.deleteTranslate(id)
   }
 }

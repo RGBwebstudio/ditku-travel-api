@@ -27,6 +27,24 @@ export class GlobalSettings {
   @Column({ nullable: true })
   cta_image: string
 
+  @Column({ nullable: true })
+  cta_title_ua: string
+
+  @Column({ nullable: true })
+  cta_title_en: string
+
+  @Column({ nullable: true })
+  cta_subtitle_ua: string
+
+  @Column({ nullable: true })
+  cta_subtitle_en: string
+
+  @Column({ nullable: true })
+  cta_button_text_ua: string
+
+  @Column({ nullable: true })
+  cta_button_text_en: string
+
   @Column({ enum: LANG, default: LANG.UA })
   lang: LANG
 

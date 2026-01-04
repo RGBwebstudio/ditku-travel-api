@@ -7,4 +7,14 @@ export class UpdateVideoCategoryDto {
   @IsOptional()
   @IsString()
   title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }

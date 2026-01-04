@@ -1,13 +1,10 @@
 import * as dotenv from 'dotenv'
 import { DataSource } from 'typeorm'
 
-import configuration from '../../../../config/configuration'
 import { User } from '../../../modules/user/entities/user.entity'
 import { Roles, Genders } from '../../enums/user.enum'
 
 dotenv.config()
-
-const config = configuration()
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -18,7 +15,7 @@ const dataSource = new DataSource({
   database: process.env.DB_NAME,
   entities: [User],
   synchronize: false,
-  ssl: true,
+  ssl: false,
 })
 
 async function createAdmin() {
@@ -44,8 +41,8 @@ async function createAdmin() {
     admin.birth_date = new Date()
     admin.gender = Genders.MALE
     admin.phone = '+000000000000'
-    admin.email = 'a@a.com'
-    admin.password = '11111111' // Will be hashed by @BeforeInsert
+    admin.email = 'admin@admin.com'
+    admin.password = 'Ditku_travel.12368811' // Will be hashed by @BeforeInsert
     admin.role = Roles.ADMIN
 
     await userRepository.save(admin)

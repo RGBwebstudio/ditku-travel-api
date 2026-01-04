@@ -12,9 +12,7 @@ export function applyTranslations<T extends Translatable>(entities: T[], lang: L
 
       if (filteredTranslateList?.length) {
         for (const translate of filteredTranslateList) {
-          if (entity[translate.field] !== undefined) {
-            ;(entity as Record<string, unknown>)[translate.field] = translate.value
-          }
+          ;(entity as Record<string, unknown>)[translate.field] = translate.value
         }
       }
     }

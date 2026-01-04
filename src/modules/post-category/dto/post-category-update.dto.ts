@@ -1,5 +1,20 @@
-import { PartialType } from '@nestjs/swagger'
+import { ApiPropertyOptional } from '@nestjs/swagger'
 
-import { PostCategoryCreateDto } from './post-category-create.dto'
+import { IsOptional, IsString } from 'class-validator'
 
-export class PostCategoryUpdateDto extends PartialType(PostCategoryCreateDto) {}
+export class PostCategoryUpdateDto {
+  @ApiPropertyOptional({ example: 'Новини' })
+  @IsOptional()
+  @IsString()
+  title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+}
