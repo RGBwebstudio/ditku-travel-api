@@ -66,6 +66,9 @@ export class ProductService {
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('product.images', 'images')
       .addSelect(
         (subQuery) =>
@@ -87,6 +90,9 @@ export class ProductService {
         .leftJoinAndSelect('product.seo_filters', 'seo_filters')
         .leftJoinAndSelect('product.category_id', 'category_id')
         .leftJoinAndSelect('product.format_groups', 'format_groups')
+        .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
+        .leftJoinAndSelect('product.images', 'images')
+        .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
         .leftJoinAndSelect('product.images', 'images')
         .addSelect(
           (subQuery) =>
@@ -139,6 +145,12 @@ export class ProductService {
           parameter && parameter.translates ? applyTranslations([parameter], lang)[0] : parameter
         )
       }
+
+      if (mappedProductItem.format_groups && Array.isArray(mappedProductItem.format_groups)) {
+        mappedProductItem.format_groups = mappedProductItem.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
+      }
     }
 
     return {
@@ -152,12 +164,17 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('product.parameters', 'parameters')
       .leftJoinAndSelect('parameters.translates', 'parameter_translates')
+      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
+      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
+      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
+      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -189,6 +206,33 @@ export class ProductService {
           param && param.translates ? applyTranslations([param], lang)[0] : param
         )
       }
+
+      if (product.format_groups && Array.isArray(product.format_groups)) {
+        product.format_groups = product.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
+      }
+
+      if (product.roadmaps && Array.isArray(product.roadmaps)) {
+        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
+
+        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
+          let city = rawRoadmap.city_id
+          if (city && typeof city === 'object') {
+            city = applyTranslations([city], lang)[0]
+          }
+
+          return Object.assign(new Roadmap(), {
+            id: rawRoadmap.id,
+            start_point: Boolean(rawRoadmap.start_point),
+            end_point: Boolean(rawRoadmap.end_point),
+            city_id: city,
+            time: rawRoadmap.time || '',
+            description: rawRoadmap.description || '',
+            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
+          })
+        })
+      }
     }
 
     return mappedEntities
@@ -199,12 +243,17 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('product.parameters', 'parameters')
       .leftJoinAndSelect('parameters.translates', 'parameter_translates')
+      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
+      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
+      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
+      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -236,6 +285,33 @@ export class ProductService {
           param && param.translates ? applyTranslations([param], lang)[0] : param
         )
       }
+
+      if (product.format_groups && Array.isArray(product.format_groups)) {
+        product.format_groups = product.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
+      }
+
+      if (product.roadmaps && Array.isArray(product.roadmaps)) {
+        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
+
+        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
+          let city = rawRoadmap.city_id
+          if (city && typeof city === 'object') {
+            city = applyTranslations([city], lang)[0]
+          }
+
+          return Object.assign(new Roadmap(), {
+            id: rawRoadmap.id,
+            start_point: Boolean(rawRoadmap.start_point),
+            end_point: Boolean(rawRoadmap.end_point),
+            city_id: city,
+            time: rawRoadmap.time || '',
+            description: rawRoadmap.description || '',
+            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
+          })
+        })
+      }
     }
 
     return mappedEntities
@@ -250,6 +326,12 @@ export class ProductService {
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
+      .leftJoinAndSelect('product.parameters', 'parameters')
+      .leftJoinAndSelect('parameters.translates', 'parameter_translates')
+      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
+      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
+      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
+      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -265,6 +347,39 @@ export class ProductService {
     mappedEntities = mappedEntities.map((product) => {
       if (product.category_id && product.category_id.translates) {
         product.category_id = applyTranslations([product.category_id], lang)[0]
+      }
+
+      if (product.parameters && Array.isArray(product.parameters)) {
+        product.parameters = product.parameters.map((parameter: Parameter) =>
+          parameter && parameter.translates ? applyTranslations([parameter], lang)[0] : parameter
+        )
+      }
+
+      if (product.format_groups && Array.isArray(product.format_groups)) {
+        product.format_groups = product.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
+      }
+
+      if (product.roadmaps && Array.isArray(product.roadmaps)) {
+        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
+
+        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
+          let city = rawRoadmap.city_id
+          if (city && typeof city === 'object') {
+            city = applyTranslations([city], lang)[0]
+          }
+
+          return Object.assign(new Roadmap(), {
+            id: rawRoadmap.id,
+            start_point: Boolean(rawRoadmap.start_point),
+            end_point: Boolean(rawRoadmap.end_point),
+            city_id: city,
+            time: rawRoadmap.time || '',
+            description: rawRoadmap.description || '',
+            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
+          })
+        })
       }
 
       return product
@@ -333,6 +448,12 @@ export class ProductService {
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
+      .leftJoinAndSelect('product.parameters', 'parameters')
+      .leftJoinAndSelect('parameters.translates', 'parameter_translates')
+      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
+      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
+      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
+      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -362,6 +483,27 @@ export class ProductService {
         product.parameters = product.parameters.map((param: Parameter) =>
           param && param.translates ? applyTranslations([param], lang)[0] : param
         )
+      }
+
+      if (product.roadmaps && Array.isArray(product.roadmaps)) {
+        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
+
+        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
+          let city = rawRoadmap.city_id
+          if (city && typeof city === 'object') {
+            city = applyTranslations([city], lang)[0]
+          }
+
+          return Object.assign(new Roadmap(), {
+            id: rawRoadmap.id,
+            start_point: Boolean(rawRoadmap.start_point),
+            end_point: Boolean(rawRoadmap.end_point),
+            city_id: city,
+            time: rawRoadmap.time || '',
+            description: rawRoadmap.description || '',
+            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
+          })
+        })
       }
 
       return product
@@ -399,9 +541,14 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
+      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
+      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
+      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
+      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .where('product.is_hidden = :isHidden', { isHidden: false })
 
     // SEO Filter support
@@ -505,7 +652,48 @@ export class ProductService {
 
     const [entities, count] = await queryBuilder.getManyAndCount()
 
-    const mappedEntities = applyTranslations(entities, lang)
+    let mappedEntities = applyTranslations(entities, lang)
+
+    mappedEntities = mappedEntities.map((product) => {
+      if (product.category_id && product.category_id.translates) {
+        product.category_id = applyTranslations([product.category_id], lang)[0]
+      }
+
+      if (product.parameters && Array.isArray(product.parameters)) {
+        product.parameters = product.parameters.map((param: Parameter) =>
+          param && param.translates ? applyTranslations([param], lang)[0] : param
+        )
+      }
+
+      if (product.format_groups && Array.isArray(product.format_groups)) {
+        product.format_groups = product.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
+      }
+
+      if (product.roadmaps && Array.isArray(product.roadmaps)) {
+        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
+
+        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
+          let city = rawRoadmap.city_id
+          if (city && typeof city === 'object') {
+            city = applyTranslations([city], lang)[0]
+          }
+
+          return Object.assign(new Roadmap(), {
+            id: rawRoadmap.id,
+            start_point: Boolean(rawRoadmap.start_point),
+            end_point: Boolean(rawRoadmap.end_point),
+            city_id: city,
+            time: rawRoadmap.time || '',
+            description: rawRoadmap.description || '',
+            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
+          })
+        })
+      }
+
+      return product
+    })
 
     return { entities: mappedEntities, count }
   }
@@ -521,9 +709,12 @@ export class ProductService {
         'parameters',
         'parameters.translates',
         'format_groups',
+        'format_groups.translates',
         'ratings',
         'roadmaps',
+        'roadmaps.translates',
         'roadmaps.city_id',
+        'roadmaps.city_id.translates',
         'seo_filters',
       ],
     })
@@ -543,22 +734,32 @@ export class ProductService {
         )
       }
 
+      if (mappedProductItem.format_groups && Array.isArray(mappedProductItem.format_groups)) {
+        mappedProductItem.format_groups = mappedProductItem.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
+      }
+
       const rawRoadmaps = (mappedProductItem as { roadmaps?: RawRoadmap[] }).roadmaps
       if (Array.isArray(rawRoadmaps)) {
-        const mappedRoadmaps = rawRoadmaps.map((rawRoadmap: RawRoadmap) =>
-          Object.assign(new Roadmap(), {
+        const mappedRoadmaps = applyTranslations(rawRoadmaps, lang)
+
+        mappedProductItem.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
+          let city = rawRoadmap.city_id
+          if (city && typeof city === 'object') {
+            city = applyTranslations([city], lang)[0]
+          }
+
+          return Object.assign(new Roadmap(), {
             id: rawRoadmap.id,
             start_point: Boolean(rawRoadmap.start_point),
             end_point: Boolean(rawRoadmap.end_point),
-            city_id:
-              rawRoadmap.city_id && typeof rawRoadmap.city_id === 'object' ? rawRoadmap.city_id.id : rawRoadmap.city_id,
+            city_id: city,
             time: rawRoadmap.time || '',
             description: rawRoadmap.description || '',
             order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
           })
-        )
-
-        mappedProductItem.roadmaps = mappedRoadmaps
+        })
       }
 
       return mappedProductItem
@@ -580,13 +781,16 @@ export class ProductService {
         'recommendedProducts.translates',
         'recommendedProducts.category_id',
         'format_groups',
+        'format_groups.translates',
         'sections',
         'sections.translates',
         'parameters',
         'parameters.translates',
         'ratings',
         'roadmaps',
+        'roadmaps.translates',
         'roadmaps.city_id',
+        'roadmaps.city_id.translates',
         'seo_filters',
       ],
     })
@@ -616,6 +820,12 @@ export class ProductService {
         )
       }
 
+      if (productDto.format_groups && Array.isArray(productDto.format_groups)) {
+        productDto.format_groups = productDto.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
+      }
+
       if (productDto.sections && Array.isArray(productDto.sections)) {
         productDto.sections = productDto.sections.map((section: Section) =>
           section && section.translates ? applyTranslations([section], lang)[0] : section
@@ -626,18 +836,25 @@ export class ProductService {
     })
 
     const mappedProductDto = mappedProducts[0] as { roadmaps?: RawRoadmap[] }
-    const roadmapsDto = (product.roadmaps || []).map((roadmapEntity: Roadmap) =>
-      Object.assign(new Roadmap(), {
+    const mappedRoadmaps = applyTranslations(product.roadmaps || [], lang)
+
+    const roadmapsDto = mappedRoadmaps.map((roadmapEntity: Roadmap) => {
+      let city = roadmapEntity.city_id
+      if (city && typeof city === 'object') {
+        city = applyTranslations([city], lang)[0]
+      }
+
+      return Object.assign(new Roadmap(), {
         id: roadmapEntity.id,
         start_point: Boolean(roadmapEntity.start_point),
         end_point: Boolean(roadmapEntity.end_point),
-        city_id: roadmapEntity.city_id ? roadmapEntity.city_id.id : null,
+        city_id: city,
         time: roadmapEntity.time || '',
         description: roadmapEntity.description || '',
         order:
           roadmapEntity.order !== undefined && roadmapEntity.order !== null ? Number(roadmapEntity.order) : undefined,
       })
-    )
+    })
 
     mappedProductDto.roadmaps = roadmapsDto
 
@@ -662,9 +879,12 @@ export class ProductService {
         'parameters',
         'parameters.translates',
         'format_groups',
+        'format_groups.translates',
         'ratings',
         'roadmaps',
+        'roadmaps.translates',
         'roadmaps.city_id',
+        'roadmaps.city_id.translates',
         'seo_filters',
       ],
     })
@@ -695,6 +915,7 @@ export class ProductService {
           'parameters',
           'parameters.translates',
           'format_groups',
+          'format_groups.translates',
         ],
       })
     }
@@ -712,21 +933,33 @@ export class ProductService {
         )
       }
 
+      if (prod.format_groups && Array.isArray(prod.format_groups)) {
+        prod.format_groups = prod.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
+      }
       return prod
     })
 
     const pickedMappedProduct = mappedProduct[0]
-    pickedMappedProduct.roadmaps = (product.roadmaps || []).map((roadmap) =>
-      Object.assign(new Roadmap(), {
+    const mappedRoadmaps = applyTranslations(product.roadmaps || [], lang)
+
+    pickedMappedProduct.roadmaps = mappedRoadmaps.map((roadmap) => {
+      let city = roadmap.city_id
+      if (city && typeof city === 'object') {
+        city = applyTranslations([city], lang)[0]
+      }
+
+      return Object.assign(new Roadmap(), {
         id: roadmap.id,
         start_point: Boolean(roadmap.start_point),
         end_point: Boolean(roadmap.end_point),
-        city_id: roadmap.city_id && typeof roadmap.city_id === 'object' ? roadmap.city_id.id : roadmap.city_id,
+        city_id: city,
         time: roadmap.time || '',
         description: roadmap.description || '',
         order: roadmap.order !== undefined && roadmap.order !== null ? Number(roadmap.order) : undefined,
       })
-    )
+    })
 
     const childrenWithRating: Product[] = []
     for (const child of children) {
@@ -746,6 +979,12 @@ export class ProductService {
     mappedChildren = mappedChildren.map((child) => {
       if (child.category_id && child.category_id.translates) {
         child.category_id = applyTranslations([child.category_id], lang)[0]
+      }
+
+      if (child.format_groups && Array.isArray(child.format_groups)) {
+        child.format_groups = child.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
+        )
       }
 
       if (child.parameters && Array.isArray(child.parameters)) {
@@ -771,6 +1010,7 @@ export class ProductService {
       .innerJoin('product.recommendedBy', 'recommendedBy')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
