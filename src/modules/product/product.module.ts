@@ -11,6 +11,9 @@ import { Section } from 'src/modules/section/entities/section.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 
 import { ProductImage } from './entities/product-image.entity'
+import { ProductProgramImage } from './entities/product-program-image.entity'
+import { ProductProgramTranslate } from './entities/product-program-translate.entity'
+import { ProductProgram } from './entities/product-program.entity'
 import { ProductTranslate } from './entities/product-translate.entity'
 import { Product } from './entities/product.entity'
 import { ProductController } from './product.controller'
@@ -24,6 +27,9 @@ import { ProductService } from './product.service'
       FormatGroup,
       ProductImage,
       ProductTranslate,
+      ProductProgram,
+      ProductProgramImage,
+      ProductProgramTranslate,
       Category,
       Section,
       SeoFilter,

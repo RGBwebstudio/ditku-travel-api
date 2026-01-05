@@ -20,6 +20,7 @@ import {
 } from 'typeorm'
 
 import { ProductImage } from './product-image.entity'
+import { ProductProgram } from './product-program.entity'
 import { ProductTranslate } from './product-translate.entity'
 
 @Entity()
@@ -173,6 +174,9 @@ export class Product {
 
   @OneToMany(() => Roadmap, (roadmap: Roadmap) => roadmap.product_id)
   roadmaps: Roadmap[]
+
+  @OneToMany(() => ProductProgram, (program: ProductProgram) => program.product_id)
+  programs: ProductProgram[]
 
   @Column({ type: 'timestamptz', nullable: true })
   start_at: Date

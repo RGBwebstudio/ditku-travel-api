@@ -22,6 +22,7 @@ import { RatingService } from 'src/modules/product-rating/rating.service'
 
 import { AddProductImageDto } from './dto/add-product-image.dto'
 import { CreateProductReviewDto } from './dto/create-product-review.dto'
+import { CreateProgramDto } from './dto/create-program.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
 import { ProductCreateDto } from './dto/product-create.dto'
 import { ProductDeleteImagesDto } from './dto/product-delete-images.dto'
@@ -31,6 +32,7 @@ import { ProductRecommendedDto } from './dto/product-recommended.dto'
 import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
 import { ProductUpdateDto } from './dto/product-update.dto'
 import { UpdateProductReviewDto } from './dto/update-product-review.dto'
+import { UpdateProgramDto } from './dto/update-program.dto'
 import { Product } from './entities/product.entity'
 import { ProductService } from './product.service'
 
@@ -466,5 +468,117 @@ export class ProductController {
   deleteEntityImagesByProduct(@Body() body: ProductDeleteImagesDto) {
     const ids = body?.ids || []
     return this.productService.deleteImagesByIds(ids)
+  }
+
+  // ==================== PROGRAM ENDPOINTS ====================
+
+  @Get(':id/programs')
+  @ApiOperation({ summary: 'Отримати програму туру (день за днем)' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Програму туру отримано',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NOT_FOUND - Товар не знайдено',
+  })
+  async getProductPrograms(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    return this.productService.getProductPrograms(id, req.lang)
+  }
+
+  @Post(':id/programs')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Створити день програми туру' })
+  @ApiResponse({
+    status: 201,
+    description: 'CREATED - День програми створено',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'NOT_CREATED - День програми не створено',
+  })
+  @ApiBody({ type: CreateProgramDto })
+  async createProgram(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateProgramDto) {
+    return this.productService.createProgram(id, dto)
+  }
+
+  @Put(':id/programs')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Оновити всю програму туру (масовe оновлення днів)' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Програму оновлено',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'NOT_UPDATED - Програму не оновлено',
+  })
+  @ApiBody({ type: [UpdateProgramDto] })
+  async updateProductPrograms(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProgramDto[]) {
+    return this.productService.updateProductPrograms(id, dto)
+  }
+
+  @Put('programs/:programId')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Оновити один день програми' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - День програми оновлено',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NOT_FOUND - День програми не знайдено',
+  })
+  @ApiBody({ type: UpdateProgramDto })
+  async updateProgram(@Param('programId', ParseIntPipe) programId: number, @Body() dto: UpdateProgramDto) {
+    return this.productService.updateProgram(programId, dto)
+  }
+
+  @Delete('programs/:programId')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Видалити день програми' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - День програми видалено',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NOT_FOUND - День програми не знайдено',
+  })
+  async deleteProgram(@Param('programId', ParseIntPipe) programId: number) {
+    return this.productService.deleteProgram(programId)
+  }
+
+  @Post('programs/:programId/images')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Додати зображення до дня програми' })
+  @ApiResponse({
+    status: 201,
+    description: 'SUCCESS - Зображення додано',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NOT_FOUND - День програми не знайдено',
+  })
+  async addProgramImage(
+    @Param('programId', ParseIntPipe) programId: number,
+    @Body() dto: { url?: string; path?: string; order?: number }
+  ) {
+    return this.productService.addProgramImage(programId, dto)
+  }
+
+  @Delete('programs/images/:imageId')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Видалити зображення дня програми' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Зображення видалено',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NOT_FOUND - Зображення не знайдено',
+  })
+  async deleteProgramImage(@Param('imageId', ParseIntPipe) imageId: number) {
+    return this.productService.deleteProgramImage(imageId)
   }
 }
