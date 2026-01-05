@@ -15,7 +15,7 @@ export class PostImage {
   @Column({ default: 0 })
   order: number
 
-  @ManyToOne(() => Post, (post) => post.images, {
+  @ManyToOne(() => Post, (post: Post): PostImage[] => post.images, {
     onDelete: 'CASCADE',
   })
   entity_id: Post

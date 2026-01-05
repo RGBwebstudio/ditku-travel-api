@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Put, Delete, Param, ParseIntPipe, Body, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Param, ParseIntPipe, Body, Query, UseGuards, Req } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
+import { Request } from 'express'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
@@ -19,15 +20,15 @@ export class FormatGroupController {
     status: 200,
     description: 'SUCCESS - Успішно отримано частину сутностей',
   })
-  find(@Query() { take, skip }: TakeAndSkipDto) {
-    return this.service.find(take, skip)
+  find(@Query() { take, skip }: TakeAndSkipDto, @Req() req: Request) {
+    return this.service.find(take, skip, req.lang)
   }
 
   @Get('search')
   @ApiOperation({ summary: 'Пошук формат груп за заголовком' })
   @ApiResponse({ status: 200, description: 'SUCCESS - Знайдено формат групи' })
-  search(@Query('q') q: string) {
-    return this.service.searchByTitle(q)
+  search(@Query('q') q: string, @Req() req: Request) {
+    return this.service.searchByTitle(q, req.lang)
   }
 
   @Get('all')
@@ -36,8 +37,8 @@ export class FormatGroupController {
     status: 200,
     description: 'SUCCESS - Успішно отримано всі сутності',
   })
-  findAll() {
-    return this.service.findAll()
+  findAll(@Req() req: Request) {
+    return this.service.findAll(req.lang)
   }
 
   @Get(':id')

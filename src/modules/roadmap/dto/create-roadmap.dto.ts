@@ -33,4 +33,14 @@ export class CreateRoadmapDto {
   @IsOptional()
   @IsString()
   order?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description_en?: string
 }

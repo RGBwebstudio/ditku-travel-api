@@ -73,8 +73,8 @@ export class RatingController {
     description: 'NOT_FOUND - Товар не знайдено',
   })
   @ApiOperation({ summary: 'Отримати всі рейтинги товару' })
-  async getRatingsByProduct(@Param('productId', ParseIntPipe) productId: number) {
-    const result = await this.ratingService.getRatingsByProduct(productId)
+  async getRatingsByProduct(@Param('productId', ParseIntPipe) productId: number, @Req() req: Request) {
+    const result = await this.ratingService.getRatingsByProduct(productId, req.lang)
 
     return {
       rating: result.averageRating,

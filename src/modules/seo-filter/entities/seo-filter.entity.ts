@@ -17,7 +17,10 @@ import {
   Tree,
   TreeChildren,
   TreeParent,
+  OneToMany,
 } from 'typeorm'
+
+import { SeoFilterTranslate } from './seo-filter-translate.entity'
 
 @Entity()
 @Tree('closure-table')
@@ -76,6 +79,9 @@ export class SeoFilter {
 
   @ManyToMany(() => Product, (product) => product.seo_filters)
   products: Product[]
+
+  @OneToMany(() => SeoFilterTranslate, (translate) => translate.entity_id)
+  translates: SeoFilterTranslate[]
 
   @TreeParent()
   parent?: SeoFilter

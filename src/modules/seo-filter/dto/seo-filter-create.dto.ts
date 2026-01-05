@@ -51,4 +51,44 @@ export class SeoFilterCreateDto {
   @IsOptional()
   @IsArray()
   sections?: number[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_description_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_description_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_text_en?: string
 }

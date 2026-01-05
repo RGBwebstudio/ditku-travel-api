@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString } from 'class-validator'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
@@ -34,6 +34,26 @@ export class CategoryCreateDto {
   @ApiProperty({ example: 0, nullable: false })
   @IsInt()
   order_in_list: number
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_text_en?: string
 }
 
 export class CategoryCreateResponseDto {

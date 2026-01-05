@@ -1,5 +1,3 @@
-import * as path from 'path'
-
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
@@ -18,6 +16,9 @@ import { PostUpdateImageDto } from './dto/post-update-image.dto'
 import { PostUpdateTranslateDto } from './dto/post-update-translate.dto'
 import { PostUpdateDto } from './dto/post-update.dto'
 import { PostImage } from './entities/post-image.entity'
+import { PostSectionImage } from './entities/post-section-image.entity'
+import { PostSectionTranslate } from './entities/post-section-translate.entity'
+import { PostSection } from './entities/post-section.entity'
 import { PostTranslate } from './entities/post-translate.entity'
 import { Post } from './entities/post.entity'
 
@@ -33,7 +34,13 @@ export class PostService {
     @InjectRepository(PostImage)
     private postImageRepo: Repository<PostImage>,
     @InjectRepository(PostCategory)
-    private categoryRepo: Repository<PostCategory>
+    private categoryRepo: Repository<PostCategory>,
+    @InjectRepository(PostSection)
+    private postSectionRepo: Repository<PostSection>,
+    @InjectRepository(PostSectionTranslate)
+    private postSectionTranslateRepo: Repository<PostSectionTranslate>,
+    @InjectRepository(PostSectionImage)
+    private postSectionImageRepo: Repository<PostSectionImage>
   ) {}
 
   async findAll(filter: PostFilterDto, lang?: LANG): Promise<{ entities: Post[]; count: number }> {
@@ -42,6 +49,9 @@ export class PostService {
       .leftJoinAndSelect('post.category_id', 'category')
       .leftJoinAndSelect('post.translates', 'translates')
       .leftJoinAndSelect('post.images', 'images')
+      .leftJoinAndSelect('post.sections', 'sections')
+      .leftJoinAndSelect('sections.translates', 'sectionTranslates')
+      .leftJoinAndSelect('sections.images', 'sectionImages')
 
     if (filter.category_id) {
       queryBuilder.andWhere('post.category_id = :categoryId', {
@@ -87,6 +97,11 @@ export class PostService {
 
     if (lang) {
       applyTranslations(entities, lang)
+      for (const entity of entities) {
+        if (entity.sections) {
+          applyTranslations(entity.sections, lang)
+        }
+      }
     }
 
     return { entities, count }
@@ -95,7 +110,7 @@ export class PostService {
   async findOne(id: number, lang?: LANG): Promise<Post> {
     const post = await this.postRepo.findOne({
       where: { id },
-      relations: ['category_id', 'translates', 'images'],
+      relations: ['category_id', 'translates', 'images', 'sections', 'sections.translates', 'sections.images'],
     })
 
     if (!post) {
@@ -104,6 +119,9 @@ export class PostService {
 
     if (lang) {
       applyTranslations([post], lang)
+      if (post.sections) {
+        applyTranslations(post.sections, lang)
+      }
     }
 
     return post
@@ -112,7 +130,7 @@ export class PostService {
   async findByUrl(url: string, lang?: LANG): Promise<Post> {
     const post = await this.postRepo.findOne({
       where: { url },
-      relations: ['category_id', 'translates', 'images'],
+      relations: ['category_id', 'translates', 'images', 'sections', 'sections.translates', 'sections.images'],
     })
 
     if (!post) {
@@ -121,15 +139,22 @@ export class PostService {
 
     if (lang) {
       applyTranslations([post], lang)
+      if (post.sections) {
+        applyTranslations(post.sections, lang)
+      }
     }
 
     return post
   }
 
   async create(createDto: PostCreateDto): Promise<Post> {
-    if (createDto.category_id && typeof createDto.category_id === 'number') {
+    const { sections, title_ua, title_en, content_ua, content_en, ...rest } = createDto
+
+    const translationFields = { title_ua, title_en, content_ua, content_en }
+
+    if (rest.category_id && typeof rest.category_id === 'number') {
       const category = await this.categoryRepo.findOne({
-        where: { id: createDto.category_id },
+        where: { id: rest.category_id },
       })
       if (!category) {
         throw new BadRequestException('Category is NOT_FOUND')
@@ -139,21 +164,31 @@ export class PostService {
     }
 
     const existingPost = await this.postRepo.findOne({
-      where: { url: createDto.url },
+      where: { url: rest.url },
     })
     if (existingPost) {
       throw new BadRequestException('Post with this URL ALREADY_EXISTS')
     }
 
-    const post = this.postRepo.create(createDto)
-    return await this.postRepo.save(post)
+    const post = this.postRepo.create(rest)
+    const savedPost = await this.postRepo.save(post)
+
+    if (sections && sections.length > 0) {
+      await this.saveSections(savedPost, sections)
+    }
+
+    await this.savePostTranslations(savedPost, translationFields)
+
+    return this.findOne(savedPost.id)
   }
 
   async update(id: number, updateDto: PostUpdateDto): Promise<Post> {
+    const { sections, title_ua, title_en, content_ua, content_en, ...rest } = updateDto
+    const translationFields = { title_ua, title_en, content_ua, content_en }
     const existingPost = await this.findOne(id)
 
-    if (updateDto.category_id !== undefined && updateDto.category_id !== null) {
-      const categoryId = Number(updateDto.category_id)
+    if (rest.category_id !== undefined && rest.category_id !== null) {
+      const categoryId = Number(rest.category_id)
       if (Number.isNaN(categoryId)) {
         throw new BadRequestException('Category NOT_FOUND')
       }
@@ -166,17 +201,26 @@ export class PostService {
       }
     }
 
-    if (updateDto.url && updateDto.url !== existingPost.url) {
+    if (rest.url && rest.url !== existingPost.url) {
       const existingUrlPost = await this.postRepo.findOne({
-        where: { url: updateDto.url },
+        where: { url: rest.url },
       })
       if (existingUrlPost) {
         throw new BadRequestException('Post with this URL ALREADY_EXISTS')
       }
     }
 
-    Object.assign(existingPost, updateDto)
-    return await this.postRepo.save(existingPost)
+    Object.assign(existingPost, rest)
+    await this.postRepo.save(existingPost)
+
+    if (sections) {
+      await this.postSectionRepo.delete({ post: { id } })
+      await this.saveSections(existingPost, sections)
+    }
+
+    await this.savePostTranslations(existingPost, translationFields)
+
+    return this.findOne(id)
   }
 
   async remove(id: number): Promise<void> {
@@ -284,6 +328,44 @@ export class PostService {
     }
   }
 
+  private async saveSections(post: Post, sectionsDto: any[]) {
+    for (const [index, sectionDto] of sectionsDto.entries()) {
+      const section = this.postSectionRepo.create({
+        post,
+        order: sectionDto.order !== undefined ? sectionDto.order : index,
+      })
+      const savedSection = await this.postSectionRepo.save(section)
+
+      // Translations
+      const translationsToSave: { field: string; value: string; lang: LANG }[] = []
+      if (sectionDto.title_ua) translationsToSave.push({ field: 'title', value: sectionDto.title_ua, lang: LANG.UA })
+      if (sectionDto.title_en) translationsToSave.push({ field: 'title', value: sectionDto.title_en, lang: LANG.EN })
+      if (sectionDto.description_ua)
+        translationsToSave.push({ field: 'description', value: sectionDto.description_ua, lang: LANG.UA })
+      if (sectionDto.description_en)
+        translationsToSave.push({ field: 'description', value: sectionDto.description_en, lang: LANG.EN })
+
+      for (const t of translationsToSave) {
+        await this.postSectionTranslateRepo.save({
+          section_id: savedSection,
+          field: t.field,
+          value: t.value,
+          lang: t.lang,
+        })
+      }
+
+      // Images
+      if (sectionDto.images && sectionDto.images.length > 0) {
+        for (const url of sectionDto.images) {
+          await this.postSectionImageRepo.save({
+            section_id: savedSection,
+            url,
+          })
+        }
+      }
+    }
+  }
+
   async removeImage(imageId: number): Promise<void> {
     const image = await this.postImageRepo.findOne({
       where: { id: imageId },
@@ -294,5 +376,40 @@ export class PostService {
     }
 
     await this.postImageRepo.remove(image)
+  }
+
+  private async savePostTranslations(
+    post: Post,
+    dto: { title_ua?: string; title_en?: string; content_ua?: string; content_en?: string }
+  ) {
+    const translationsToSave: { field: string; value: string; lang: LANG }[] = []
+
+    if (dto.title_ua) translationsToSave.push({ field: 'title', value: dto.title_ua, lang: LANG.UA })
+    if (dto.title_en) translationsToSave.push({ field: 'title', value: dto.title_en, lang: LANG.EN })
+    if (dto.content_ua) translationsToSave.push({ field: 'content', value: dto.content_ua, lang: LANG.UA })
+    if (dto.content_en) translationsToSave.push({ field: 'content', value: dto.content_en, lang: LANG.EN })
+
+    for (const t of translationsToSave) {
+      // Check if translation exists to update or create
+      const existingTranslation = await this.postTranslateRepo.findOne({
+        where: {
+          entity_id: { id: post.id },
+          field: t.field,
+          lang: t.lang,
+        },
+      })
+
+      if (existingTranslation) {
+        existingTranslation.value = t.value
+        await this.postTranslateRepo.save(existingTranslation)
+      } else {
+        await this.postTranslateRepo.save({
+          entity_id: post,
+          field: t.field,
+          value: t.value,
+          lang: t.lang,
+        })
+      }
+    }
   }
 }

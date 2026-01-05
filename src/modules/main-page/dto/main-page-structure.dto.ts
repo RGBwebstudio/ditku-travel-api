@@ -57,6 +57,66 @@ export class ClosestTours {
   @ApiPropertyOptional()
   @IsOptional()
   labels?: any
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  age_label_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  age_label_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_from_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_from_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  skills_label_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  skills_label_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  learning_label_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  learning_label_en?: string
 }
 
 export class ImprovementCard {
@@ -88,6 +148,26 @@ export class ImprovementCard {
   @IsOptional()
   @IsString()
   icon_bg_color?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
 }
 
 export class ImprovementSection {
@@ -105,6 +185,26 @@ export class ImprovementSection {
   @IsOptional()
   @IsString()
   title_highlight?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_main_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_main_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_en?: string
 
   @ApiPropertyOptional({ type: [ImprovementCard] })
   @IsOptional()
@@ -134,6 +234,16 @@ export class VideoReviewItem {
   @IsOptional()
   @IsString()
   preview_image?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }
 
 export class VideoReviewTab {
@@ -148,6 +258,16 @@ export class VideoReviewTab {
   @ValidateNested({ each: true })
   @Type(() => VideoReviewItem)
   videos?: VideoReviewItem[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }
 
 export class VideoReviews {
@@ -162,6 +282,16 @@ export class VideoReviews {
   @ValidateNested({ each: true })
   @Type(() => VideoReviewTab)
   tabs?: VideoReviewTab[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }
 
 export class BlogTab {
@@ -174,6 +304,16 @@ export class BlogTab {
   @IsOptional()
   @IsString()
   slug?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }
 
 export class BlogArticle {
@@ -289,7 +429,27 @@ export class SliderItem {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   color?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
 }
 
 export class Banner {
@@ -327,6 +487,46 @@ export class Banner {
   @IsOptional()
   @IsString()
   banner_text_hightlight?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_top_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_bottom_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_top_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_bottom_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  button_text_ua?: string
 }
 
 export class ChooseTourItem {
@@ -377,6 +577,26 @@ export class ChooseTourItem {
   @IsOptional()
   @IsString()
   link_slug?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description_en?: string
 }
 
 export class ChooseTourTab {
@@ -393,6 +613,16 @@ export class ChooseTourTab {
   @IsOptional()
   @IsString()
   slug?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 
   @ApiPropertyOptional({ type: [ChooseTourItem] })
   @IsOptional()
@@ -412,6 +642,26 @@ export class ChooseTourSection {
   @IsOptional()
   @IsString()
   title_highlight?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_main_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_main_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_en?: string
 
   @ApiPropertyOptional({ type: [ChooseTourTab] })
   @IsOptional()
@@ -449,6 +699,46 @@ export class PhotoReportSection {
   @IsString()
   title_part_2?: string
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_1_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_1_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_2_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_2_en?: string
+
   @ApiPropertyOptional({ type: [PhotoReportImage] })
   @IsOptional()
   @IsArray()
@@ -475,6 +765,26 @@ export class SafetyAndTrustItem {
   @IsOptional()
   @IsString()
   variant?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
 }
 
 export class SafetyAndTrustSection {
@@ -492,6 +802,36 @@ export class SafetyAndTrustSection {
   @IsOptional()
   @IsString()
   title_black_2?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_middle_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_middle_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_main_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_main_en?: string
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -527,6 +867,16 @@ export class DocumentItem {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   url?: string
 }
 
@@ -535,6 +885,16 @@ export class OurDocumentsSection {
   @IsOptional()
   @IsString()
   title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 
   @ApiPropertyOptional({ type: [DocumentItem] })
   @IsOptional()
@@ -554,6 +914,26 @@ export class SeoSection {
   @IsOptional()
   @IsString()
   seo_text?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seo_text_en?: string
 }
 
 export class MainPageStructureDto {
@@ -657,4 +1037,8 @@ export class MainPageStructureDto {
   @ApiPropertyOptional()
   @IsOptional()
   cta_and_seo?: any
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  slider_section?: any
 }

@@ -26,6 +26,7 @@ export class SectionService {
       take,
       skip,
       order: { created_at: 'DESC' },
+      relations: ['translates'],
     })
     return { entities, count }
   }

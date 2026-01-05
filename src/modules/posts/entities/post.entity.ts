@@ -12,6 +12,7 @@ import {
 } from 'typeorm'
 
 import { PostImage } from './post-image.entity'
+import { PostSection } from './post-section.entity'
 import { PostTranslate } from './post-translate.entity'
 
 @Entity()
@@ -63,11 +64,14 @@ export class Post {
   @JoinColumn({ name: 'category_id' })
   category_id: PostCategory
 
-  @OneToMany(() => PostTranslate, (translate: PostTranslate) => translate.entity_id)
+  @OneToMany(() => PostTranslate, (translate: PostTranslate): Post => translate.entity_id)
   translates: PostTranslate[]
 
-  @OneToMany(() => PostImage, (image: PostImage) => image.entity_id)
+  @OneToMany(() => PostImage, (image: PostImage): Post => image.entity_id)
   images: PostImage[]
+
+  @OneToMany(() => PostSection, (section: PostSection): Post => section.post, { cascade: true })
+  sections: PostSection[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date

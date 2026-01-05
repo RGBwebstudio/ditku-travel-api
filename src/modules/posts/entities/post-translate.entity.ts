@@ -16,7 +16,7 @@ export class PostTranslate {
   @Column({ type: 'enum', enum: LANG })
   lang: LANG
 
-  @ManyToOne(() => Post, (post) => post.translates, {
+  @ManyToOne(() => Post, (post: Post): PostTranslate[] => post.translates, {
     onDelete: 'CASCADE',
   })
   entity_id: Post

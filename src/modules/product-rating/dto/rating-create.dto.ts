@@ -14,6 +14,16 @@ export class RatingCreateDto {
   @IsOptional()
   review: string
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
+
   @ApiProperty({ example: 5 })
   @IsNumber()
   rating: number

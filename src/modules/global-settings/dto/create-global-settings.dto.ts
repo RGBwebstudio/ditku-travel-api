@@ -38,6 +38,36 @@ export class CreateGlobalSettingsDto {
   @IsOptional()
   cta_image: string
 
+  @ApiProperty({ example: 'Готові подорожувати?' })
+  @IsString()
+  @IsOptional()
+  cta_title_ua?: string
+
+  @ApiProperty({ example: 'Ready to travel?' })
+  @IsString()
+  @IsOptional()
+  cta_title_en?: string
+
+  @ApiProperty({ example: 'Відкрийте світ з нами' })
+  @IsString()
+  @IsOptional()
+  cta_subtitle_ua?: string
+
+  @ApiProperty({ example: 'Discover the world with us' })
+  @IsString()
+  @IsOptional()
+  cta_subtitle_en?: string
+
+  @ApiProperty({ example: 'Почати' })
+  @IsString()
+  @IsOptional()
+  cta_button_text_ua?: string
+
+  @ApiProperty({ example: 'Get Started' })
+  @IsString()
+  @IsOptional()
+  cta_button_text_en?: string
+
   @ApiProperty({ example: LANG.UA })
   @IsEnum(LANG)
   lang: LANG

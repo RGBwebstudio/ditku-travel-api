@@ -1,7 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsBoolean, IsString, IsInt, Min, IsOptional } from 'class-validator'
+import { Type } from 'class-transformer'
+import { IsBoolean, IsString, IsInt, Min, IsOptional, ValidateNested, IsArray } from 'class-validator'
 import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
+
+import { CreatePostSectionDto } from './create-post-section.dto'
 
 export class PostCreateDto {
   @ApiProperty({ example: false })
@@ -57,4 +60,31 @@ export class PostCreateDto {
   @ApiProperty({ example: 1 })
   @IsInt()
   category_id: PostCategory
+
+  @ApiPropertyOptional({ type: [CreatePostSectionDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreatePostSectionDto)
+  sections?: CreatePostSectionDto[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  content_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  content_en?: string
 }

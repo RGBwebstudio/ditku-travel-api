@@ -81,6 +81,9 @@ export class Product {
   @Column({ type: 'jsonb', nullable: true })
   structure: any
 
+  @Column({ type: 'jsonb', nullable: true })
+  why_travel_section: any
+
   @ManyToMany(() => SeoFilter, (seoFilter: SeoFilter) => seoFilter.products, {
     onDelete: 'CASCADE',
   })

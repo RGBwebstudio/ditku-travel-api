@@ -4,9 +4,6 @@ import { IsInt, IsString, IsOptional, IsArray, Validate } from 'class-validator'
 import { IsExistIdInArray } from 'src/common/validators/isExistIdInArray.validator'
 
 export class ParameterCategoryCreateDto {
-  @ApiPropertyOptional({ example: '123' })
-  @IsString()
-  @IsOptional()
   @ApiProperty({ example: 'Сорт' })
   @IsString()
   title: string
@@ -23,4 +20,14 @@ export class ParameterCategoryCreateDto {
   @IsOptional()
   @Validate(IsExistIdInArray, ['parameter'])
   parameter_ids?: number[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
 }

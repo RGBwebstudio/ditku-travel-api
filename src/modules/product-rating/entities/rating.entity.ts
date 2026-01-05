@@ -1,5 +1,15 @@
 import { Product } from 'src/modules/product/entities/product.entity'
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm'
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm'
+
+import { RatingTranslate } from './rating-translate.entity'
 
 @Entity()
 export class Rating {
@@ -28,4 +38,7 @@ export class Rating {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
+
+  @OneToMany(() => RatingTranslate, (translate: RatingTranslate) => translate.entity_id)
+  translates: RatingTranslate[]
 }

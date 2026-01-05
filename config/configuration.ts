@@ -4,14 +4,14 @@ export default () => ({
   db: {
     type: 'postgres',
     host: process.env.DB_HOSTING,
-    port: process.env.DB_POST,
+    port: process.env.DB_POST || 5432,
     username: process.env.DB_LOGIN,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     synchronize: true,
     logging: false,
-    ssl: true,
+    ssl: false,
   } as TypeOrmModuleOptions,
   mail: {
     host: process.env.MAIL_HOST,

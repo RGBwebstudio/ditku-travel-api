@@ -89,7 +89,7 @@ export class ParameterCategoryService {
   async findOne(id: number, lang: LANG): Promise<ParameterCategory> {
     const entity = await this.parameterCategoryRepo.findOne({
       where: { id },
-      relations: ['parameters'],
+      relations: ['parameters', 'translates'],
     })
 
     if (!entity) throw new NotFoundException('parameter category is NOT_FOUND')
@@ -100,7 +100,7 @@ export class ParameterCategoryService {
   }
 
   async create(dto: ParameterCategoryCreateDto) {
-    const { parameter_ids, ...categoryData } = dto
+    const { parameter_ids, title_ua, title_en, ...categoryData } = dto
     const newEntity = this.parameterCategoryRepo.create(categoryData)
 
     const exists = await this.parameterCategoryRepo
@@ -124,9 +124,21 @@ export class ParameterCategoryService {
 
       const savedCategory = await this.parameterCategoryRepo.save(newEntity)
 
+      const translationsData: { lang: LANG; field: string; value: string }[] = []
+      if (title_ua) translationsData.push({ lang: LANG.UA, field: 'title', value: title_ua })
+      if (title_en) translationsData.push({ lang: LANG.EN, field: 'title', value: title_en })
+
+      if (translationsData.length > 0) {
+        const translations = translationsData.map((t) => ({
+          entity_id: savedCategory,
+          ...t,
+        }))
+        await this.createTranslates(translations)
+      }
+
       return await this.parameterCategoryRepo.findOne({
         where: { id: savedCategory.id },
-        relations: ['parameters'],
+        relations: ['parameters', 'translates'],
       })
     } catch (err) {
       this.logger.error(`Error while creating parameter category ${err}`)
@@ -135,7 +147,8 @@ export class ParameterCategoryService {
   }
 
   async update(id: number, dto: ParameterCategoryUpdateDto): Promise<ParameterCategory | null> {
-    const { parameter_ids, ...categoryData } = dto
+    this.logger.log(`Updating parameter category ${id}: ${JSON.stringify(dto)}`)
+    const { parameter_ids, title_ua, title_en, ...categoryData } = dto
 
     const category = await this.parameterCategoryRepo.findOne({
       where: { id },
@@ -173,9 +186,38 @@ export class ParameterCategoryService {
 
     await this.parameterCategoryRepo.save(category)
 
+    const translations: { lang: LANG; field: string; value: string }[] = []
+    if (title_ua !== undefined) translations.push({ lang: LANG.UA, field: 'title', value: title_ua })
+    if (title_en !== undefined) translations.push({ lang: LANG.EN, field: 'title', value: title_en })
+
+    if (translations.length) {
+      for (const t of translations) {
+        const existing = await this.entityTranslateRepo.findOne({
+          where: {
+            entity_id: { id },
+            lang: t.lang,
+            field: t.field,
+          },
+        })
+
+        if (existing) {
+          existing.value = t.value
+          await this.entityTranslateRepo.save(existing)
+        } else {
+          const newTrans = this.entityTranslateRepo.create({
+            entity_id: { id } as unknown as ParameterCategory,
+            lang: t.lang,
+            field: t.field,
+            value: t.value,
+          })
+          await this.entityTranslateRepo.save(newTrans)
+        }
+      }
+    }
+
     return await this.parameterCategoryRepo.findOne({
       where: { id },
-      relations: ['parameters'],
+      relations: ['parameters', 'translates'],
     })
   }
 

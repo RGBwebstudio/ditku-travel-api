@@ -59,6 +59,7 @@ export class PostCategoryService {
       .createQueryBuilder('category')
       .leftJoinAndSelect('category.posts', 'post')
       .leftJoinAndSelect('post.images', 'image')
+      .leftJoinAndSelect('post.translates', 'postTranslate')
       .leftJoinAndSelect('category.translates', 'translate')
       .orderBy('category.created_at', 'DESC')
 
@@ -87,8 +88,17 @@ export class PostCategoryService {
       processedCategories = processedCategories.filter((category) => category.posts && category.posts.length > 0)
     }
 
-    // Apply translations
+    // Apply translations to categories
     const translatedCategories = lang ? applyTranslations(processedCategories, lang) : processedCategories
+
+    // Apply translations to nested posts
+    if (lang) {
+      for (const category of translatedCategories) {
+        if (category.posts && Array.isArray(category.posts)) {
+          category.posts = applyTranslations(category.posts, lang)
+        }
+      }
+    }
 
     return { entities: translatedCategories }
   }
@@ -107,7 +117,9 @@ export class PostCategoryService {
   }
 
   async create(createDto: PostCategoryCreateDto): Promise<PostCategory> {
-    const title = createDto.title ? String(createDto.title).trim() : undefined
+    const { title_ua, title_en, ...rest } = createDto
+    const title = rest.title ? String(rest.title).trim() : undefined
+
     if (title) {
       const existingWithSameTitle = await this.postCategoryRepository
         .createQueryBuilder('c')
@@ -116,9 +128,14 @@ export class PostCategoryService {
       if (existingWithSameTitle) throw new BadRequestException('NAME_ALREADY_RESERVED')
     }
 
-    const postCategoryData = this.postCategoryRepository.create(createDto)
+    const postCategoryData = this.postCategoryRepository.create(rest)
     try {
-      return await this.postCategoryRepository.save(postCategoryData)
+      const saved = await this.postCategoryRepository.save(postCategoryData)
+
+      if (title_ua) await this.saveTranslate(saved, 'title', title_ua, LANG.UA)
+      if (title_en) await this.saveTranslate(saved, 'title', title_en, LANG.EN)
+
+      return await this.findOne(saved.id)
     } catch (err) {
       this.logger.error(`Error while creating post category ${err}`)
       throw new BadRequestException('post category is NOT_CREATED')
@@ -126,12 +143,13 @@ export class PostCategoryService {
   }
 
   async update(id: number, updateDto: PostCategoryUpdateDto): Promise<PostCategory> {
+    const { title_ua, title_en, ...rest } = updateDto
     const existingPostCategory = await this.postCategoryRepository.findOne({
       where: { id },
     })
     if (!existingPostCategory) throw new NotFoundException('post category is NOT_FOUND')
 
-    const newTitle = updateDto.title ? String(updateDto.title).trim() : undefined
+    const newTitle = rest.title ? String(rest.title).trim() : undefined
     if (newTitle && newTitle.toLowerCase() !== String(existingPostCategory.title || '').toLowerCase()) {
       const duplicateTitleEntity = await this.postCategoryRepository
         .createQueryBuilder('c')
@@ -142,13 +160,42 @@ export class PostCategoryService {
     }
 
     try {
-      await this.postCategoryRepository.update(id, { ...updateDto })
+      if (Object.keys(rest).length > 0) {
+        await this.postCategoryRepository.update(id, { ...rest })
+      }
+
+      const entity = await this.postCategoryRepository.findOne({ where: { id } })
+      if (!entity) throw new NotFoundException('post category is NOT_FOUND')
+
+      if (title_ua !== undefined) await this.saveTranslate(entity, 'title', title_ua, LANG.UA)
+      if (title_en !== undefined) await this.saveTranslate(entity, 'title', title_en, LANG.EN)
     } catch (err) {
       this.logger.error(`Error while updating post category ${err}`)
       throw new BadRequestException('post category is NOT_UPDATED')
     }
 
     return this.findOne(id)
+  }
+
+  private async saveTranslate(category: PostCategory, field: string, value: string, lang: LANG) {
+    const exist = await this.postCategoryTranslateRepository.findOne({
+      where: {
+        entity_id: { id: category.id },
+        field,
+        lang,
+      },
+    })
+
+    if (exist) {
+      await this.postCategoryTranslateRepository.update(exist.id, { value })
+    } else {
+      await this.postCategoryTranslateRepository.save({
+        entity_id: category,
+        field,
+        value,
+        lang,
+      })
+    }
   }
 
   async delete(id: number) {
