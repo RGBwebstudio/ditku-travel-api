@@ -8,6 +8,7 @@ import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
+import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
 import { ProductUpdateDto } from 'src/modules/product/dto/product-update.dto'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
@@ -61,7 +62,9 @@ export class ProductService {
     @InjectRepository(ProductProgramImage)
     private programImageRepo: Repository<ProductProgramImage>,
     @InjectRepository(ProductProgramTranslate)
-    private programTranslateRepo: Repository<ProductProgramTranslate>
+    private programTranslateRepo: Repository<ProductProgramTranslate>,
+    @InjectRepository(Rating)
+    private ratingRepo: Repository<Rating>
   ) {}
 
   async searchByTitle(
@@ -634,8 +637,8 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-    // Query 2: Load roadmaps and programs in parallel
-    const [roadmaps, programs] = await Promise.all([
+    // Query 2: Load roadmaps, programs, and reviews in parallel
+    const [roadmaps, programs, reviews] = await Promise.all([
       this.productRepo.manager
         .getRepository(Roadmap)
         .createQueryBuilder('r')
@@ -652,6 +655,13 @@ export class ProductService {
         .where('p.product_id = :productId', { productId: product.id })
         .orderBy('p.order_in_list', 'ASC')
         .addOrderBy('p.day', 'ASC')
+        .getMany(),
+      this.ratingRepo
+        .createQueryBuilder('r')
+        .leftJoinAndSelect('r.translates', 'translates')
+        .where('r.product_id = :productId', { productId: product.id })
+        .andWhere('r.approved = :approved', { approved: true })
+        .orderBy('r.created_at', 'DESC')
         .getMany(),
     ])
 
@@ -738,6 +748,24 @@ export class ProductService {
       translates: program.translates,
     }))
 
+    // Apply translations to reviews and calculate stats
+    const mappedReviews = applyTranslations(reviews || [], lang)
+    const totalRating = reviews.reduce((sum: number, r: Rating) => sum + Number(r.rating), 0)
+    const averageRating = reviews.length > 0 ? Math.round((totalRating / reviews.length) * 10) / 10 : 0
+
+    ;(mappedProductDto as any).reviews = {
+      items: mappedReviews.map((review: Rating) => ({
+        id: review.id,
+        name: review.name,
+        rating: Number(review.rating),
+        review: review.review,
+        created_at: review.created_at,
+        translates: review.translates,
+      })),
+      average_rating: averageRating,
+      total_count: reviews.length,
+    }
+
     return mappedProducts[0]
   }
 
@@ -766,8 +794,8 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-    // Run roadmaps, programs, and children queries in parallel
-    const [roadmaps, programs, children] = await Promise.all([
+    // Run roadmaps, programs, reviews, and children queries in parallel
+    const [roadmaps, programs, reviews, children] = await Promise.all([
       // Query 2: Load roadmaps with city data
       this.productRepo.manager
         .getRepository(Roadmap)
@@ -787,7 +815,15 @@ export class ProductService {
         .orderBy('p.order_in_list', 'ASC')
         .addOrderBy('p.day', 'ASC')
         .getMany(),
-      // Query 4: Load children
+      // Query 4: Load reviews (approved only)
+      this.ratingRepo
+        .createQueryBuilder('r')
+        .leftJoinAndSelect('r.translates', 'translates')
+        .where('r.product_id = :productId', { productId: product.id })
+        .andWhere('r.approved = :approved', { approved: true })
+        .orderBy('r.created_at', 'DESC')
+        .getMany(),
+      // Query 5: Load children
       this.productRepo.find({
         where: { parent_id: { id: product.id } },
         relations: ['category_id', 'images', 'translates'],
@@ -861,6 +897,24 @@ export class ProductService {
         })),
       translates: program.translates,
     }))
+
+    // Apply translations to reviews and calculate stats
+    const mappedReviews = applyTranslations(reviews || [], lang)
+    const totalRating = reviews.reduce((sum: number, r: Rating) => sum + Number(r.rating), 0)
+    const averageRating = reviews.length > 0 ? Math.round((totalRating / reviews.length) * 10) / 10 : 0
+
+    ;(pickedMappedProduct as any).reviews = {
+      items: mappedReviews.map((review: Rating) => ({
+        id: review.id,
+        name: review.name,
+        rating: Number(review.rating),
+        review: review.review,
+        created_at: review.created_at,
+        translates: review.translates,
+      })),
+      average_rating: averageRating,
+      total_count: reviews.length,
+    }
 
     // Batch query for all child ratings (avoids N+1 problem)
     let mappedChildren: Product[] = []

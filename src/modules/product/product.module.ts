@@ -6,6 +6,7 @@ import { IsExist } from 'src/common/validators/isExist.validator'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
+import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { RatingModule } from 'src/modules/product-rating/rating.module'
 import { Section } from 'src/modules/section/entities/section.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
@@ -33,6 +34,7 @@ import { ProductService } from './product.service'
       Category,
       Section,
       SeoFilter,
+      Rating,
     ]),
     HttpModule,
     RatingModule,
