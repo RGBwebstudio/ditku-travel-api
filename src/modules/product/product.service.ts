@@ -8,6 +8,7 @@ import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
+import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
 import { ProductUpdateDto } from 'src/modules/product/dto/product-update.dto'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
@@ -16,11 +17,16 @@ import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import { In, Repository, DeepPartial } from 'typeorm'
 
 import { AddProductImageDto } from './dto/add-product-image.dto'
+import { CreateProgramDto } from './dto/create-program.dto'
 import { ProductCreateImageDto } from './dto/product-create-image.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
 import { ProductParametersDto } from './dto/product-parameters.dto'
 import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
+import { UpdateProgramDto } from './dto/update-program.dto'
 import { ProductImage } from './entities/product-image.entity'
+import { ProductProgramImage } from './entities/product-program-image.entity'
+import { ProductProgramTranslate } from './entities/product-program-translate.entity'
+import { ProductProgram } from './entities/product-program.entity'
 import { ProductTranslate } from './entities/product-translate.entity'
 import { Product } from './entities/product.entity'
 
@@ -50,7 +56,15 @@ export class ProductService {
     @InjectRepository(ProductImage)
     private entityImageRepo: Repository<ProductImage>,
     @InjectRepository(SeoFilter)
-    private seoFilterRepo: Repository<SeoFilter>
+    private seoFilterRepo: Repository<SeoFilter>,
+    @InjectRepository(ProductProgram)
+    private programRepo: Repository<ProductProgram>,
+    @InjectRepository(ProductProgramImage)
+    private programImageRepo: Repository<ProductProgramImage>,
+    @InjectRepository(ProductProgramTranslate)
+    private programTranslateRepo: Repository<ProductProgramTranslate>,
+    @InjectRepository(Rating)
+    private ratingRepo: Repository<Rating>
   ) {}
 
   async searchByTitle(
@@ -66,8 +80,6 @@ export class ProductService {
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
-      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
-      .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('product.images', 'images')
       .addSelect(
@@ -90,8 +102,6 @@ export class ProductService {
         .leftJoinAndSelect('product.seo_filters', 'seo_filters')
         .leftJoinAndSelect('product.category_id', 'category_id')
         .leftJoinAndSelect('product.format_groups', 'format_groups')
-        .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
-        .leftJoinAndSelect('product.images', 'images')
         .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
         .leftJoinAndSelect('product.images', 'images')
         .addSelect(
@@ -169,12 +179,6 @@ export class ProductService {
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
-      .leftJoinAndSelect('product.parameters', 'parameters')
-      .leftJoinAndSelect('parameters.translates', 'parameter_translates')
-      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
-      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
-      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
-      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -201,37 +205,10 @@ export class ProductService {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
 
-      if (product.parameters && Array.isArray(product.parameters)) {
-        product.parameters = product.parameters.map((param: Parameter) =>
-          param && param.translates ? applyTranslations([param], lang)[0] : param
-        )
-      }
-
       if (product.format_groups && Array.isArray(product.format_groups)) {
         product.format_groups = product.format_groups.map((item) =>
           item && item.translates ? applyTranslations([item], lang)[0] : item
         )
-      }
-
-      if (product.roadmaps && Array.isArray(product.roadmaps)) {
-        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
-
-        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
-          let city = rawRoadmap.city_id
-          if (city && typeof city === 'object') {
-            city = applyTranslations([city], lang)[0]
-          }
-
-          return Object.assign(new Roadmap(), {
-            id: rawRoadmap.id,
-            start_point: Boolean(rawRoadmap.start_point),
-            end_point: Boolean(rawRoadmap.end_point),
-            city_id: city,
-            time: rawRoadmap.time || '',
-            description: rawRoadmap.description || '',
-            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
-          })
-        })
       }
     }
 
@@ -242,18 +219,9 @@ export class ProductService {
     const result = await this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
-      .leftJoinAndSelect('product.format_groups', 'format_groups')
-      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
-      .leftJoinAndSelect('product.seo_filters', 'seo_filters')
-      .leftJoinAndSelect('product.parameters', 'parameters')
-      .leftJoinAndSelect('parameters.translates', 'parameter_translates')
-      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
-      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
-      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
-      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -279,39 +247,6 @@ export class ProductService {
       if (product.category_id && product.category_id.translates) {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
-
-      if (product.parameters && Array.isArray(product.parameters)) {
-        product.parameters = product.parameters.map((param: Parameter) =>
-          param && param.translates ? applyTranslations([param], lang)[0] : param
-        )
-      }
-
-      if (product.format_groups && Array.isArray(product.format_groups)) {
-        product.format_groups = product.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
-        )
-      }
-
-      if (product.roadmaps && Array.isArray(product.roadmaps)) {
-        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
-
-        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
-          let city = rawRoadmap.city_id
-          if (city && typeof city === 'object') {
-            city = applyTranslations([city], lang)[0]
-          }
-
-          return Object.assign(new Roadmap(), {
-            id: rawRoadmap.id,
-            start_point: Boolean(rawRoadmap.start_point),
-            end_point: Boolean(rawRoadmap.end_point),
-            city_id: city,
-            time: rawRoadmap.time || '',
-            description: rawRoadmap.description || '',
-            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
-          })
-        })
-      }
     }
 
     return mappedEntities
@@ -322,16 +257,11 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
-      .leftJoinAndSelect('product.parameters', 'parameters')
-      .leftJoinAndSelect('parameters.translates', 'parameter_translates')
-      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
-      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
-      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
-      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -349,37 +279,10 @@ export class ProductService {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
 
-      if (product.parameters && Array.isArray(product.parameters)) {
-        product.parameters = product.parameters.map((parameter: Parameter) =>
-          parameter && parameter.translates ? applyTranslations([parameter], lang)[0] : parameter
-        )
-      }
-
       if (product.format_groups && Array.isArray(product.format_groups)) {
         product.format_groups = product.format_groups.map((item) =>
           item && item.translates ? applyTranslations([item], lang)[0] : item
         )
-      }
-
-      if (product.roadmaps && Array.isArray(product.roadmaps)) {
-        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
-
-        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
-          let city = rawRoadmap.city_id
-          if (city && typeof city === 'object') {
-            city = applyTranslations([city], lang)[0]
-          }
-
-          return Object.assign(new Roadmap(), {
-            id: rawRoadmap.id,
-            start_point: Boolean(rawRoadmap.start_point),
-            end_point: Boolean(rawRoadmap.end_point),
-            city_id: city,
-            time: rawRoadmap.time || '',
-            description: rawRoadmap.description || '',
-            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
-          })
-        })
       }
 
       return product
@@ -444,16 +347,11 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category_id', 'category_id')
       .leftJoinAndSelect('product.format_groups', 'format_groups')
+      .leftJoinAndSelect('format_groups.translates', 'format_groups_translates')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
       .leftJoinAndSelect('category_id.translates', 'category_translates')
-      .leftJoinAndSelect('product.parameters', 'parameters')
-      .leftJoinAndSelect('parameters.translates', 'parameter_translates')
-      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
-      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
-      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
-      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
       .addSelect(
         (subQuery) =>
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
@@ -479,31 +377,10 @@ export class ProductService {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
 
-      if (product.parameters && Array.isArray(product.parameters)) {
-        product.parameters = product.parameters.map((param: Parameter) =>
-          param && param.translates ? applyTranslations([param], lang)[0] : param
+      if (product.format_groups && Array.isArray(product.format_groups)) {
+        product.format_groups = product.format_groups.map((item) =>
+          item && item.translates ? applyTranslations([item], lang)[0] : item
         )
-      }
-
-      if (product.roadmaps && Array.isArray(product.roadmaps)) {
-        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
-
-        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
-          let city = rawRoadmap.city_id
-          if (city && typeof city === 'object') {
-            city = applyTranslations([city], lang)[0]
-          }
-
-          return Object.assign(new Roadmap(), {
-            id: rawRoadmap.id,
-            start_point: Boolean(rawRoadmap.start_point),
-            end_point: Boolean(rawRoadmap.end_point),
-            city_id: city,
-            time: rawRoadmap.time || '',
-            description: rawRoadmap.description || '',
-            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
-          })
-        })
       }
 
       return product
@@ -545,10 +422,7 @@ export class ProductService {
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.translates', 'translates')
       .leftJoinAndSelect('product.seo_filters', 'seo_filters')
-      .leftJoinAndSelect('product.roadmaps', 'roadmaps')
-      .leftJoinAndSelect('roadmaps.translates', 'roadmaps_translates')
-      .leftJoinAndSelect('roadmaps.city_id', 'city_id_roadmap')
-      .leftJoinAndSelect('city_id_roadmap.translates', 'city_id_roadmap_translates')
+      .leftJoinAndSelect('category_id.translates', 'category_translates')
       .where('product.is_hidden = :isHidden', { isHidden: false })
 
     // SEO Filter support
@@ -659,37 +533,10 @@ export class ProductService {
         product.category_id = applyTranslations([product.category_id], lang)[0]
       }
 
-      if (product.parameters && Array.isArray(product.parameters)) {
-        product.parameters = product.parameters.map((param: Parameter) =>
-          param && param.translates ? applyTranslations([param], lang)[0] : param
-        )
-      }
-
       if (product.format_groups && Array.isArray(product.format_groups)) {
         product.format_groups = product.format_groups.map((item) =>
           item && item.translates ? applyTranslations([item], lang)[0] : item
         )
-      }
-
-      if (product.roadmaps && Array.isArray(product.roadmaps)) {
-        const mappedRoadmaps = applyTranslations(product.roadmaps, lang)
-
-        product.roadmaps = mappedRoadmaps.map((rawRoadmap: RawRoadmap) => {
-          let city = rawRoadmap.city_id
-          if (city && typeof city === 'object') {
-            city = applyTranslations([city], lang)[0]
-          }
-
-          return Object.assign(new Roadmap(), {
-            id: rawRoadmap.id,
-            start_point: Boolean(rawRoadmap.start_point),
-            end_point: Boolean(rawRoadmap.end_point),
-            city_id: city,
-            time: rawRoadmap.time || '',
-            description: rawRoadmap.description || '',
-            order: rawRoadmap.order !== undefined && rawRoadmap.order !== null ? Number(rawRoadmap.order) : undefined,
-          })
-        })
       }
 
       return product
@@ -769,33 +616,57 @@ export class ProductService {
   }
 
   async findOne(id: number, lang: LANG, req: Request): Promise<Product> {
+    // Query 1: Load product with basic relations (no roadmaps)
     const product = await this.productRepo.findOne({
       where: { id },
       relations: [
         'category_id',
+        'category_id.translates',
         'parent_id',
         'images',
         'translates',
-        'recommendedProducts',
-        'recommendedProducts.images',
-        'recommendedProducts.translates',
-        'recommendedProducts.category_id',
         'format_groups',
         'format_groups.translates',
         'sections',
         'sections.translates',
         'parameters',
         'parameters.translates',
-        'ratings',
-        'roadmaps',
-        'roadmaps.translates',
-        'roadmaps.city_id',
-        'roadmaps.city_id.translates',
         'seo_filters',
       ],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    // Query 2: Load roadmaps, programs, and reviews in parallel
+    const [roadmaps, programs, reviews] = await Promise.all([
+      this.productRepo.manager
+        .getRepository(Roadmap)
+        .createQueryBuilder('r')
+        .leftJoinAndSelect('r.translates', 't')
+        .leftJoinAndSelect('r.city_id', 'city')
+        .leftJoinAndSelect('city.translates', 'city_t')
+        .where('r.product_id = :productId', { productId: product.id })
+        .orderBy('r.order', 'ASC')
+        .getMany(),
+      this.programRepo
+        .createQueryBuilder('p')
+        .leftJoinAndSelect('p.images', 'images')
+        .leftJoinAndSelect('p.translates', 'translates')
+        .where('p.product_id = :productId', { productId: product.id })
+        .orderBy('p.order_in_list', 'ASC')
+        .addOrderBy('p.day', 'ASC')
+        .getMany(),
+      this.ratingRepo
+        .createQueryBuilder('r')
+        .leftJoinAndSelect('r.translates', 'translates')
+        .where('r.product_id = :productId', { productId: product.id })
+        .andWhere('r.approved = :approved', { approved: true })
+        .orderBy('r.created_at', 'DESC')
+        .getMany(),
+    ])
+
+    product.roadmaps = roadmaps
+    product.programs = programs
 
     if (req?.session) {
       if (!req.session.products || !Array.isArray(req.session.products)) {
@@ -858,6 +729,43 @@ export class ProductService {
 
     mappedProductDto.roadmaps = roadmapsDto
 
+    // Apply translations to programs
+    const mappedPrograms = applyTranslations(programs || [], lang)
+    ;(mappedProductDto as any).programs = mappedPrograms.map((program: ProductProgram) => ({
+      id: program.id,
+      day: program.day,
+      title: program.title,
+      description: program.description,
+      order: program.order,
+      images: (program.images || [])
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((img) => ({
+          id: img.id,
+          url: img.url,
+          path: img.path,
+          order: img.order,
+        })),
+      translates: program.translates,
+    }))
+
+    // Apply translations to reviews and calculate stats
+    const mappedReviews = applyTranslations(reviews || [], lang)
+    const totalRating = reviews.reduce((sum: number, r: Rating) => sum + Number(r.rating), 0)
+    const averageRating = reviews.length > 0 ? Math.round((totalRating / reviews.length) * 10) / 10 : 0
+
+    ;(mappedProductDto as any).reviews = {
+      items: mappedReviews.map((review: Rating) => ({
+        id: review.id,
+        name: review.name,
+        rating: Number(review.rating),
+        review: review.review,
+        created_at: review.created_at,
+        translates: review.translates,
+      })),
+      average_rating: averageRating,
+      total_count: reviews.length,
+    }
+
     return mappedProducts[0]
   }
 
@@ -869,28 +777,63 @@ export class ProductService {
     product: ProductWithoutRatings
     children: ProductWithoutRatings[]
   }> {
+    // Query 1: Load product with basic relations (no roadmaps)
     const product = await this.productRepo.findOne({
       where: { url },
       relations: [
         'category_id',
+        'category_id.translates',
         'parent_id',
         'images',
         'translates',
-        'parameters',
-        'parameters.translates',
         'format_groups',
         'format_groups.translates',
-        'ratings',
-        'roadmaps',
-        'roadmaps.translates',
-        'roadmaps.city_id',
-        'roadmaps.city_id.translates',
         'seo_filters',
       ],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
+    // Run roadmaps, programs, reviews, and children queries in parallel
+    const [roadmaps, programs, reviews, children] = await Promise.all([
+      // Query 2: Load roadmaps with city data
+      this.productRepo.manager
+        .getRepository(Roadmap)
+        .createQueryBuilder('r')
+        .leftJoinAndSelect('r.translates', 't')
+        .leftJoinAndSelect('r.city_id', 'city')
+        .leftJoinAndSelect('city.translates', 'city_t')
+        .where('r.product_id = :productId', { productId: product.id })
+        .orderBy('r.order', 'ASC')
+        .getMany(),
+      // Query 3: Load programs with images and translations
+      this.programRepo
+        .createQueryBuilder('p')
+        .leftJoinAndSelect('p.images', 'images')
+        .leftJoinAndSelect('p.translates', 'translates')
+        .where('p.product_id = :productId', { productId: product.id })
+        .orderBy('p.order_in_list', 'ASC')
+        .addOrderBy('p.day', 'ASC')
+        .getMany(),
+      // Query 4: Load reviews (approved only)
+      this.ratingRepo
+        .createQueryBuilder('r')
+        .leftJoinAndSelect('r.translates', 'translates')
+        .where('r.product_id = :productId', { productId: product.id })
+        .andWhere('r.approved = :approved', { approved: true })
+        .orderBy('r.created_at', 'DESC')
+        .getMany(),
+      // Query 5: Load children
+      this.productRepo.find({
+        where: { parent_id: { id: product.id } },
+        relations: ['category_id', 'images', 'translates'],
+      }),
+    ])
+
+    product.roadmaps = roadmaps
+    product.programs = programs
+
+    // Track viewed products in session
     if (req?.session) {
       if (!req.session.products || !Array.isArray(req.session.products)) {
         req.session.products = []
@@ -901,36 +844,11 @@ export class ProductService {
       }
     }
 
-    let children: Product[] = []
-
-    if (product) {
-      children = await this.productRepo.find({
-        where: { parent_id: { id: product.id } },
-        relations: [
-          'category_id',
-          'category_id.translates',
-          'parent_id',
-          'images',
-          'translates',
-          'parameters',
-          'parameters.translates',
-          'format_groups',
-          'format_groups.translates',
-        ],
-      })
-    }
-
     let mappedProduct = applyTranslations([product], lang)
 
     mappedProduct = mappedProduct.map((prod) => {
       if (prod.category_id && prod.category_id.translates) {
         prod.category_id = applyTranslations([prod.category_id], lang)[0]
-      }
-
-      if (prod.parameters && Array.isArray(prod.parameters)) {
-        prod.parameters = prod.parameters.map((param: Parameter) =>
-          param && param.translates ? applyTranslations([param], lang)[0] : param
-        )
       }
 
       if (prod.format_groups && Array.isArray(prod.format_groups)) {
@@ -961,40 +879,81 @@ export class ProductService {
       })
     })
 
-    const childrenWithRating: Product[] = []
-    for (const child of children) {
-      const ratingResult = await this.productRepo
-        .createQueryBuilder()
-        .select('COALESCE(AVG(r.rating), 0)', 'averageRating')
-        .from('rating', 'r')
-        .where('r.productIdId = :productId', { productId: child.id })
-        .getRawOne()
+    // Apply translations to programs
+    const mappedPrograms = applyTranslations(programs || [], lang)
+    ;(pickedMappedProduct as any).programs = mappedPrograms.map((program: ProductProgram) => ({
+      id: program.id,
+      day: program.day,
+      title: program.title,
+      description: program.description,
+      order: program.order,
+      images: (program.images || [])
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((img) => ({
+          id: img.id,
+          url: img.url,
+          path: img.path,
+          order: img.order,
+        })),
+      translates: program.translates,
+    }))
 
-      child.rating = parseFloat(ratingResult.averageRating) || 0
-      childrenWithRating.push(child)
+    // Apply translations to reviews and calculate stats
+    const mappedReviews = applyTranslations(reviews || [], lang)
+    const totalRating = reviews.reduce((sum: number, r: Rating) => sum + Number(r.rating), 0)
+    const averageRating = reviews.length > 0 ? Math.round((totalRating / reviews.length) * 10) / 10 : 0
+
+    ;(pickedMappedProduct as any).reviews = {
+      items: mappedReviews.map((review: Rating) => ({
+        id: review.id,
+        name: review.name,
+        rating: Number(review.rating),
+        review: review.review,
+        created_at: review.created_at,
+        translates: review.translates,
+      })),
+      average_rating: averageRating,
+      total_count: reviews.length,
     }
 
-    let mappedChildren = applyTranslations(childrenWithRating, lang)
+    // Batch query for all child ratings (avoids N+1 problem)
+    let mappedChildren: Product[] = []
+    if (children.length > 0) {
+      const childIds = children.map((c) => c.id)
+      const ratingsResult = await this.productRepo
+        .createQueryBuilder()
+        .select('r.productIdId', 'productId')
+        .addSelect('COALESCE(AVG(r.rating), 0)', 'averageRating')
+        .from('rating', 'r')
+        .where('r.productIdId IN (:...childIds)', { childIds })
+        .groupBy('r.productIdId')
+        .getRawMany()
 
-    mappedChildren = mappedChildren.map((child) => {
-      if (child.category_id && child.category_id.translates) {
-        child.category_id = applyTranslations([child.category_id], lang)[0]
+      const ratingsMap = new Map<number, number>()
+      for (const r of ratingsResult) {
+        ratingsMap.set(Number(r.productId), parseFloat(r.averageRating) || 0)
       }
 
-      if (child.format_groups && Array.isArray(child.format_groups)) {
-        child.format_groups = child.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
-        )
+      for (const child of children) {
+        child.rating = ratingsMap.get(child.id) || 0
       }
 
-      if (child.parameters && Array.isArray(child.parameters)) {
-        child.parameters = child.parameters.map((param) =>
-          param && param.translates ? applyTranslations([param], lang)[0] : param
-        )
-      }
+      mappedChildren = applyTranslations(children, lang)
 
-      return child
-    })
+      mappedChildren = mappedChildren.map((child) => {
+        if (child.category_id && child.category_id.translates) {
+          child.category_id = applyTranslations([child.category_id], lang)[0]
+        }
+
+        if (child.format_groups && Array.isArray(child.format_groups)) {
+          child.format_groups = child.format_groups.map((item) =>
+            item && item.translates ? applyTranslations([item], lang)[0] : item
+          )
+        }
+
+        return child
+      })
+    }
 
     return {
       product: mappedProduct[0],
@@ -1480,5 +1439,239 @@ export class ProductService {
     })
 
     return mapped
+  }
+
+  // ==================== PROGRAM CRUD METHODS ====================
+
+  async getProductPrograms(productId: number, lang: LANG): Promise<any[]> {
+    const product = await this.productRepo.findOne({ where: { id: productId } })
+    if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    const programs = await this.programRepo
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.images', 'images')
+      .leftJoinAndSelect('p.translates', 'translates')
+      .where('p.product_id = :productId', { productId })
+      .orderBy('p.order_in_list', 'ASC')
+      .addOrderBy('p.day', 'ASC')
+      .getMany()
+
+    const mappedPrograms = applyTranslations(programs, lang)
+
+    return mappedPrograms.map((program) => ({
+      id: program.id,
+      day: program.day,
+      title: program.title,
+      description: program.description,
+      order: program.order,
+      images: (program.images || [])
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((img) => ({
+          id: img.id,
+          url: img.url,
+          path: img.path,
+          order: img.order,
+        })),
+      translates: program.translates,
+    }))
+  }
+
+  async createProgram(productId: number, dto: CreateProgramDto): Promise<ProductProgram> {
+    const product = await this.productRepo.findOne({ where: { id: productId } })
+    if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    try {
+      const program = this.programRepo.create({
+        day: dto.day,
+        title: dto.title,
+        description: dto.description || '',
+        order: dto.order || 0,
+        product_id: product,
+      })
+
+      const saved = await this.programRepo.save(program)
+
+      // Create images if provided
+      if (dto.images && dto.images.length > 0) {
+        const images = dto.images.map((img, index) =>
+          this.programImageRepo.create({
+            url: img.url,
+            path: img.path,
+            order: img.order ?? index,
+            program_id: saved,
+          })
+        )
+        await this.programImageRepo.save(images)
+      }
+
+      // Create translations if provided
+      if (dto.translates && dto.translates.length > 0) {
+        const translates = dto.translates.map((t) =>
+          this.programTranslateRepo.create({
+            lang: t.lang,
+            field: t.field,
+            value: t.value,
+            entity_id: saved,
+          })
+        )
+        await this.programTranslateRepo.save(translates)
+      }
+
+      // Return with relations
+      return (await this.programRepo.findOne({
+        where: { id: saved.id },
+        relations: ['images', 'translates'],
+      })) as ProductProgram
+    } catch (err) {
+      this.logger.error(`Error creating program: ${err}`)
+      throw new BadRequestException('program is NOT_CREATED')
+    }
+  }
+
+  async updateProgram(programId: number, dto: UpdateProgramDto): Promise<ProductProgram> {
+    const program = await this.programRepo.findOne({
+      where: { id: programId },
+      relations: ['images', 'translates'],
+    })
+
+    if (!program) throw new NotFoundException('program is NOT_FOUND')
+
+    try {
+      // Update scalar fields
+      if (dto.day !== undefined) program.day = dto.day
+      if (dto.title !== undefined) program.title = dto.title
+      if (dto.description !== undefined) program.description = dto.description
+      if (dto.order !== undefined) program.order = dto.order
+
+      await this.programRepo.save(program)
+
+      // Update images if provided
+      if (dto.images !== undefined) {
+        // Delete existing images
+        await this.programImageRepo.delete({ program_id: { id: programId } })
+
+        // Create new images
+        if (dto.images.length > 0) {
+          const images = dto.images.map((img, index) =>
+            this.programImageRepo.create({
+              url: img.url,
+              path: img.path,
+              order: img.order ?? index,
+              program_id: program,
+            })
+          )
+          await this.programImageRepo.save(images)
+        }
+      }
+
+      // Update translations if provided
+      if (dto.translates !== undefined) {
+        // Delete existing translations
+        await this.programTranslateRepo.delete({ entity_id: { id: programId } })
+
+        // Create new translations
+        if (dto.translates.length > 0) {
+          const translates = dto.translates.map((t) =>
+            this.programTranslateRepo.create({
+              lang: t.lang,
+              field: t.field,
+              value: t.value,
+              entity_id: program,
+            })
+          )
+          await this.programTranslateRepo.save(translates)
+        }
+      }
+
+      return (await this.programRepo.findOne({
+        where: { id: programId },
+        relations: ['images', 'translates'],
+      })) as ProductProgram
+    } catch (err) {
+      this.logger.error(`Error updating program: ${err}`)
+      throw new BadRequestException('program is NOT_UPDATED')
+    }
+  }
+
+  async deleteProgram(programId: number): Promise<{ message: string }> {
+    const result = await this.programRepo.delete(programId)
+
+    if (result.affected === 0) {
+      throw new NotFoundException('program is NOT_FOUND')
+    }
+
+    return { message: 'SUCCESS' }
+  }
+
+  async updateProductPrograms(
+    productId: number,
+    programs: (CreateProgramDto | UpdateProgramDto)[]
+  ): Promise<ProductProgram[]> {
+    const product = await this.productRepo.findOne({ where: { id: productId } })
+    if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    try {
+      // Get existing programs
+      const existingPrograms = await this.programRepo.find({
+        where: { product_id: { id: productId } },
+      })
+
+      const existingIds = existingPrograms.map((p) => p.id)
+      const incomingIds = programs.filter((p) => (p as UpdateProgramDto).id).map((p) => (p as UpdateProgramDto).id!)
+
+      // Delete programs that are not in the incoming list
+      const toDelete = existingIds.filter((id) => !incomingIds.includes(id))
+      if (toDelete.length > 0) {
+        await this.programRepo.delete(toDelete)
+      }
+
+      const result: ProductProgram[] = []
+
+      for (const programDto of programs) {
+        if ((programDto as UpdateProgramDto).id) {
+          // Update existing program
+          const updated = await this.updateProgram((programDto as UpdateProgramDto).id!, programDto as UpdateProgramDto)
+          result.push(updated)
+        } else {
+          // Create new program
+          const created = await this.createProgram(productId, programDto as CreateProgramDto)
+          result.push(created)
+        }
+      }
+
+      return result
+    } catch (err) {
+      this.logger.error(`Error updating product programs: ${err}`)
+      throw new BadRequestException('programs are NOT_UPDATED')
+    }
+  }
+
+  async addProgramImage(programId: number, dto: { url?: string; path?: string; order?: number }): Promise<{ message: string }> {
+    const program = await this.programRepo.findOne({ where: { id: programId } })
+    if (!program) throw new NotFoundException('program is NOT_FOUND')
+
+    try {
+      const image = this.programImageRepo.create({
+        url: dto.url,
+        path: dto.path,
+        order: dto.order || 0,
+        program_id: program,
+      })
+      await this.programImageRepo.save(image)
+      return { message: 'Image added successfully' }
+    } catch (err) {
+      this.logger.error(`Error adding program image: ${err}`)
+      throw new BadRequestException('image is NOT_CREATED')
+    }
+  }
+
+  async deleteProgramImage(imageId: number): Promise<{ message: string }> {
+    const result = await this.programImageRepo.delete(imageId)
+
+    if (result.affected === 0) {
+      throw new NotFoundException('program image is NOT_FOUND')
+    }
+
+    return { message: 'SUCCESS' }
   }
 }
