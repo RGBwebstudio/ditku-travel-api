@@ -32,4 +32,8 @@ export class RatingCreateDto {
   @IsInt()
   @Validate(IsExist, ['product', 'id'])
   product_id: Product
+
+  @ApiPropertyOptional({ example: '2025-01-15T12:00:00.000Z' })
+  @IsOptional()
+  created_at?: Date
 }
