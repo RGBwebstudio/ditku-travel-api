@@ -120,6 +120,7 @@ export class ProductController {
     if (dto.text_en) payload.text_en = dto.text_en
 
     if (typeof dto.rating !== 'undefined') payload.rating = dto.rating
+    if (dto.created_at) payload.created_at = new Date(dto.created_at)
 
     return this.ratingService.update(id, payload)
   }
