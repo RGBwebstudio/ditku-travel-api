@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { Request } from 'express'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
+import { LANG } from 'src/common/enums/translation.enum'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 import { CreatePageConstructorDto } from './dto/create-page-constructor.dto'
@@ -41,6 +42,17 @@ export class PageConstructorController {
   @ApiOperation({ summary: 'Отримати конструктор сторінки за мовою' })
   findOne(@Req() req: Request, @Query('page_type') page_type?: PageType) {
     return this.pageConstructorService.findOne(req.lang, page_type)
+  }
+
+  @Get('by-slug/:slug')
+  @ApiOperation({ summary: 'Отримати сторінку за URL (slug)' })
+  @ApiResponse({
+    status: 200,
+    description: 'SUCCESS - Сутність успішно отримано',
+  })
+  @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
+  findByUrl(@Param('slug') slug: string, @Query('lang') lang: LANG) {
+    return this.pageConstructorService.findByUrl(slug, lang)
   }
 
   @Post()

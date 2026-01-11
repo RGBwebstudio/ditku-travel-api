@@ -50,6 +50,20 @@ export class PageConstructorService {
     return entities
   }
 
+  async findByUrl(url: string, lang: LANG): Promise<PageConstructor> {
+    const entity = await this.repo.findOne({
+      where: { url, lang },
+    })
+
+    this.logger.log('Found page-constructor', entity)
+
+    if (!entity) {
+      throw new NotFoundException('entity of page-constructor NOT_FOUND')
+    }
+
+    return entity
+  }
+
   async update(dto: UpdatePageConstructorDto & { id?: number }): Promise<PageConstructor | null> {
     const { id } = dto
     if (!id) {
