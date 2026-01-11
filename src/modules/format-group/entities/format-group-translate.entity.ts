@@ -25,7 +25,7 @@ export class FormatGroupTranslate {
   @Column({ type: 'enum', enum: LANG })
   lang: LANG
 
-  @Column({ type: 'enum', enum: ['title'], default: 'title' })
+  @Column({ type: 'enum', enum: ['title', 'subtitle'], default: 'title' })
   field: string
 
   @Column({ type: 'text' })
