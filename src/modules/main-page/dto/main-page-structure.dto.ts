@@ -936,6 +936,52 @@ export class SeoSection {
   seo_text_en?: string
 }
 
+export class ExperienceCard {
+  @ApiPropertyOptional()
+  @IsOptional()
+  id?: number | string
+
+  @ApiPropertyOptional({ description: 'The statistic number, e.g. "23"' })
+  @IsOptional()
+  @IsString()
+  number?: string
+
+  @ApiPropertyOptional({ description: 'The statistic number in Ukrainian' })
+  @IsOptional()
+  @IsString()
+  number_ua?: string
+
+  @ApiPropertyOptional({ description: 'The statistic number in English' })
+  @IsOptional()
+  @IsString()
+  number_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  image?: string
+
+  @ApiPropertyOptional({ description: 'Color variant for the card' })
+  @IsOptional()
+  @IsString()
+  color?: string
+}
+
 export class MainPageStructureDto {
   @ApiPropertyOptional({ type: () => ClosestTours })
   @IsOptional()
@@ -948,6 +994,13 @@ export class MainPageStructureDto {
   @ValidateNested()
   @Type(() => SeoSection)
   seo_section?: SeoSection
+
+  @ApiPropertyOptional({ type: [ExperienceCard] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ExperienceCard)
+  experience_cards?: ExperienceCard[]
 
   @IsOptional()
   cta_section?: any
