@@ -19,6 +19,7 @@ import { PostImage } from './entities/post-image.entity'
 import { PostSectionImage } from './entities/post-section-image.entity'
 import { PostSectionTranslate } from './entities/post-section-translate.entity'
 import { PostSection } from './entities/post-section.entity'
+import { PostSocial } from './entities/post-social.entity'
 import { PostTranslate } from './entities/post-translate.entity'
 import { Post } from './entities/post.entity'
 
@@ -40,7 +41,9 @@ export class PostService {
     @InjectRepository(PostSectionTranslate)
     private postSectionTranslateRepo: Repository<PostSectionTranslate>,
     @InjectRepository(PostSectionImage)
-    private postSectionImageRepo: Repository<PostSectionImage>
+    private postSectionImageRepo: Repository<PostSectionImage>,
+    @InjectRepository(PostSocial)
+    private postSocialRepo: Repository<PostSocial>
   ) {}
 
   async findAll(filter: PostFilterDto, lang?: LANG): Promise<{ entities: Post[]; count: number }> {
@@ -50,6 +53,7 @@ export class PostService {
       .leftJoinAndSelect('post.translates', 'translates')
       .leftJoinAndSelect('post.images', 'images')
       .leftJoinAndSelect('post.sections', 'sections')
+      .leftJoinAndSelect('post.socials', 'socials')
       .leftJoinAndSelect('sections.translates', 'sectionTranslates')
       .leftJoinAndSelect('sections.images', 'sectionImages')
 
@@ -85,12 +89,12 @@ export class PostService {
 
     queryBuilder.orderBy('post.created_at', 'DESC')
 
-    if (filter.limit) {
-      queryBuilder.take(filter.limit)
+    if (filter.take) {
+      queryBuilder.take(filter.take)
     }
 
-    if (filter.offset) {
-      queryBuilder.skip(filter.offset)
+    if (filter.skip) {
+      queryBuilder.skip(filter.skip)
     }
 
     const [entities, count] = await queryBuilder.getManyAndCount()
@@ -110,7 +114,15 @@ export class PostService {
   async findOne(id: number, lang?: LANG): Promise<Post> {
     const post = await this.postRepo.findOne({
       where: { id },
-      relations: ['category_id', 'translates', 'images', 'sections', 'sections.translates', 'sections.images'],
+      relations: [
+        'category_id',
+        'translates',
+        'images',
+        'sections',
+        'sections.translates',
+        'sections.images',
+        'socials',
+      ],
     })
 
     if (!post) {
@@ -130,7 +142,15 @@ export class PostService {
   async findByUrl(url: string, lang?: LANG): Promise<Post> {
     const post = await this.postRepo.findOne({
       where: { url },
-      relations: ['category_id', 'translates', 'images', 'sections', 'sections.translates', 'sections.images'],
+      relations: [
+        'category_id',
+        'translates',
+        'images',
+        'sections',
+        'sections.translates',
+        'sections.images',
+        'socials',
+      ],
     })
 
     if (!post) {
@@ -177,6 +197,10 @@ export class PostService {
       await this.saveSections(savedPost, sections)
     }
 
+    if (createDto.socials && createDto.socials.length > 0) {
+      await this.saveSocials(savedPost, createDto.socials)
+    }
+
     await this.savePostTranslations(savedPost, translationFields)
 
     return this.findOne(savedPost.id)
@@ -216,6 +240,11 @@ export class PostService {
     if (sections) {
       await this.postSectionRepo.delete({ post: { id } })
       await this.saveSections(existingPost, sections)
+    }
+
+    if (updateDto.socials) {
+      await this.postSocialRepo.delete({ post: { id } })
+      await this.saveSocials(existingPost, updateDto.socials)
     }
 
     await this.savePostTranslations(existingPost, translationFields)
@@ -333,6 +362,7 @@ export class PostService {
       const section = this.postSectionRepo.create({
         post,
         order: sectionDto.order !== undefined ? sectionDto.order : index,
+        type: sectionDto.type || 'content',
       })
       const savedSection = await this.postSectionRepo.save(section)
 
@@ -344,6 +374,50 @@ export class PostService {
         translationsToSave.push({ field: 'description', value: sectionDto.description_ua, lang: LANG.UA })
       if (sectionDto.description_en)
         translationsToSave.push({ field: 'description', value: sectionDto.description_en, lang: LANG.EN })
+
+      // Banner 1
+      if (sectionDto.banner1_title_ua)
+        translationsToSave.push({ field: 'banner1_title', value: sectionDto.banner1_title_ua, lang: LANG.UA })
+      if (sectionDto.banner1_title_en)
+        translationsToSave.push({ field: 'banner1_title', value: sectionDto.banner1_title_en, lang: LANG.EN })
+      if (sectionDto.banner1_button_text_ua)
+        translationsToSave.push({
+          field: 'banner1_button_text',
+          value: sectionDto.banner1_button_text_ua,
+          lang: LANG.UA,
+        })
+      if (sectionDto.banner1_button_text_en)
+        translationsToSave.push({
+          field: 'banner1_button_text',
+          value: sectionDto.banner1_button_text_en,
+          lang: LANG.EN,
+        })
+      if (sectionDto.banner1_link_ua)
+        translationsToSave.push({ field: 'banner1_link', value: sectionDto.banner1_link_ua, lang: LANG.UA })
+      if (sectionDto.banner1_link_en)
+        translationsToSave.push({ field: 'banner1_link', value: sectionDto.banner1_link_en, lang: LANG.EN })
+
+      // Banner 2
+      if (sectionDto.banner2_title_ua)
+        translationsToSave.push({ field: 'banner2_title', value: sectionDto.banner2_title_ua, lang: LANG.UA })
+      if (sectionDto.banner2_title_en)
+        translationsToSave.push({ field: 'banner2_title', value: sectionDto.banner2_title_en, lang: LANG.EN })
+      if (sectionDto.banner2_button_text_ua)
+        translationsToSave.push({
+          field: 'banner2_button_text',
+          value: sectionDto.banner2_button_text_ua,
+          lang: LANG.UA,
+        })
+      if (sectionDto.banner2_button_text_en)
+        translationsToSave.push({
+          field: 'banner2_button_text',
+          value: sectionDto.banner2_button_text_en,
+          lang: LANG.EN,
+        })
+      if (sectionDto.banner2_link_ua)
+        translationsToSave.push({ field: 'banner2_link', value: sectionDto.banner2_link_ua, lang: LANG.UA })
+      if (sectionDto.banner2_link_en)
+        translationsToSave.push({ field: 'banner2_link', value: sectionDto.banner2_link_en, lang: LANG.EN })
 
       for (const t of translationsToSave) {
         await this.postSectionTranslateRepo.save({
@@ -410,6 +484,17 @@ export class PostService {
           lang: t.lang,
         })
       }
+    }
+  }
+
+  private async saveSocials(post: Post, socialsDto: any[]) {
+    for (const socialDto of socialsDto) {
+      const social = this.postSocialRepo.create({
+        post,
+        type: socialDto.type,
+        url: socialDto.url,
+      })
+      await this.postSocialRepo.save(social)
     }
   }
 }

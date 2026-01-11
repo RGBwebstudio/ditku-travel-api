@@ -8,6 +8,7 @@ import { PostImage } from './entities/post-image.entity'
 import { PostSectionImage } from './entities/post-section-image.entity'
 import { PostSectionTranslate } from './entities/post-section-translate.entity'
 import { PostSection } from './entities/post-section.entity'
+import { PostSocial } from './entities/post-social.entity'
 import { PostTranslate } from './entities/post-translate.entity'
 import { Post } from './entities/post.entity'
 import { PostController } from './post.controller'
@@ -23,6 +24,7 @@ import { PostService } from './post.service'
       PostSection,
       PostSectionTranslate,
       PostSectionImage,
+      PostSocial,
     ]),
   ],
   controllers: [PostController],

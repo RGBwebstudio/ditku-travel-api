@@ -5,6 +5,7 @@ import { IsBoolean, IsString, IsInt, Min, IsOptional, ValidateNested, IsArray } 
 import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
 
 import { CreatePostSectionDto } from './create-post-section.dto'
+import { CreatePostSocialDto } from './create-post-social.dto'
 
 export class PostCreateDto {
   @ApiProperty({ example: false })
@@ -67,6 +68,13 @@ export class PostCreateDto {
   @ValidateNested({ each: true })
   @Type(() => CreatePostSectionDto)
   sections?: CreatePostSectionDto[]
+
+  @ApiPropertyOptional({ type: [CreatePostSocialDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreatePostSocialDto)
+  socials?: CreatePostSocialDto[]
 
   @ApiPropertyOptional()
   @IsOptional()

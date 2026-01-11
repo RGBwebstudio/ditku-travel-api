@@ -25,6 +25,9 @@ export class PostSection {
   @Column({ type: 'int', default: 0 })
   order: number
 
+  @Column({ default: 'content' })
+  type: string
+
   @OneToMany(() => PostSectionTranslate, (translate: PostSectionTranslate): PostSection => translate.section_id, {
     cascade: true,
   })
