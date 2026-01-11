@@ -76,7 +76,7 @@ export class FormatGroupService {
       throw new BadRequestException('ALREADY_CREATED')
     }
 
-    const { title_ua, title_en, ...rest } = dto
+    const { title_ua, title_en, subtitle_ua, subtitle_en, ...rest } = dto
 
     const data = this.repo.create(rest)
     try {
@@ -100,6 +100,24 @@ export class FormatGroupService {
         })
       }
 
+      if (subtitle_ua) {
+        await this.translateRepo.save({
+          entity_id: saved,
+          lang: LANG.UA,
+          field: 'subtitle',
+          value: subtitle_ua,
+        })
+      }
+
+      if (subtitle_en) {
+        await this.translateRepo.save({
+          entity_id: saved,
+          lang: LANG.EN,
+          field: 'subtitle',
+          value: subtitle_en,
+        })
+      }
+
       return this.findOne(saved.id)
     } catch (err) {
       this.logger.error(`Error while creating format_group: ${err}`)
@@ -111,7 +129,7 @@ export class FormatGroupService {
     const exists = await this.repo.findOne({ where: { id } })
     if (!exists) throw new NotFoundException('format_group is NOT_FOUND')
 
-    const { title_ua, title_en, ...rest } = dto
+    const { title_ua, title_en, subtitle_ua, subtitle_en, ...rest } = dto
 
     try {
       await this.repo.update(id, { ...rest })
@@ -144,6 +162,38 @@ export class FormatGroupService {
             lang: LANG.EN,
             field: 'title',
             value: title_en,
+          })
+        }
+      }
+
+      if (subtitle_ua) {
+        const existing = await this.translateRepo.findOne({
+          where: { entity_id: { id }, lang: LANG.UA, field: 'subtitle' },
+        })
+        if (existing) {
+          await this.translateRepo.update(existing.id, { value: subtitle_ua })
+        } else {
+          await this.translateRepo.save({
+            entity_id: exists,
+            lang: LANG.UA,
+            field: 'subtitle',
+            value: subtitle_ua,
+          })
+        }
+      }
+
+      if (subtitle_en) {
+        const existing = await this.translateRepo.findOne({
+          where: { entity_id: { id }, lang: LANG.EN, field: 'subtitle' },
+        })
+        if (existing) {
+          await this.translateRepo.update(existing.id, { value: subtitle_en })
+        } else {
+          await this.translateRepo.save({
+            entity_id: exists,
+            lang: LANG.EN,
+            field: 'subtitle',
+            value: subtitle_en,
           })
         }
       }

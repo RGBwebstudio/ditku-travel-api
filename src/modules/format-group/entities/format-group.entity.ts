@@ -22,6 +22,9 @@ export class FormatGroup {
   @Column()
   value: string
 
+  @Column({ nullable: true })
+  subtitle: string
+
   @ManyToMany(() => Product, (product) => product.format_groups)
   products: Product[]
 
