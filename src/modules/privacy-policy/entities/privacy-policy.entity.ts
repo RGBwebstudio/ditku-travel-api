@@ -6,7 +6,7 @@ export class PrivacyPolicy {
   @PrimaryGeneratedColumn()
   id: number
   @Column({ type: 'jsonb', default: '{}' })
-  structure: string
+  structure: any
 
   @Column({ enum: LANG, default: LANG.UA })
   lang: LANG

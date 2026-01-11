@@ -18,6 +18,10 @@ export class CookieService {
   ) {}
 
   async create(dto: CreateCookieDto): Promise<Cookie> {
+    if (typeof dto.structure === 'string') {
+      dto.structure = JSON.parse(dto.structure)
+    }
+
     const entity = this.repo.create(dto)
     try {
       return await this.repo.save(entity)
@@ -39,13 +43,20 @@ export class CookieService {
 
   async findOne(lang: LANG): Promise<Cookie> {
     const entity = await this.repo.findOne({ where: { lang } })
-    if (!entity) throw new NotFoundException('entity of cookie NOT_FOUND')
+    if (!entity) {
+      return this.repo.save(this.repo.create({ lang, structure: {} }))
+    }
     return entity
   }
 
   async update(dto: UpdateCookieDto): Promise<Cookie | null> {
     const { lang } = dto
-    const result = await this.repo.update({ lang }, dto)
+
+    if (dto.structure && typeof dto.structure === 'string') {
+      dto.structure = JSON.parse(dto.structure)
+    }
+
+    const result = await this.repo.update({ lang }, dto as unknown as any)
 
     if (result.affected === 0) {
       const created = this.repo.create(dto)
