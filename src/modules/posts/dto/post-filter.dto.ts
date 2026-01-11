@@ -37,11 +37,11 @@ export class PostFilterDto {
   @IsOptional()
   @IsInt()
   @Type(() => Number)
-  limit?: number
+  take?: number
 
   @ApiPropertyOptional({ example: 0 })
   @IsOptional()
   @IsInt()
   @Type(() => Number)
-  offset?: number
+  skip?: number
 }

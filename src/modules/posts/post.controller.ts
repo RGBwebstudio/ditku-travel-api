@@ -44,8 +44,8 @@ export class PostController {
     const { take, skip, filter } = query
     const filterDto: Partial<PostFilterDto> = {
       ...filter,
-      limit: take,
-      offset: skip,
+      take,
+      skip,
     }
 
     return this.postService.findAll(filterDto as PostFilterDto, req.lang)

@@ -13,6 +13,7 @@ import {
 
 import { PostImage } from './post-image.entity'
 import { PostSection } from './post-section.entity'
+import { PostSocial } from './post-social.entity'
 import { PostTranslate } from './post-translate.entity'
 
 @Entity()
@@ -72,6 +73,9 @@ export class Post {
 
   @OneToMany(() => PostSection, (section: PostSection): Post => section.post, { cascade: true })
   sections: PostSection[]
+
+  @OneToMany(() => PostSocial, (social: PostSocial) => social.post, { cascade: true })
+  socials: PostSocial[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date

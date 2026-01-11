@@ -39,4 +39,70 @@ export class CreatePostSectionDto {
   @IsInt()
   @Min(0)
   order?: number
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  type?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_button_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_button_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_link_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_link_en?: string
+
+  // Banner 2
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_button_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_button_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_link_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_link_en?: string
 }
