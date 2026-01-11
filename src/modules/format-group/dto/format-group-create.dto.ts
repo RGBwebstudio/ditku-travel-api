@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 
-import { IsString } from 'class-validator'
+import { IsOptional, IsString } from 'class-validator'
 
 export class FormatGroupCreateDto {
   @ApiProperty({ example: '8-10' })
@@ -18,4 +18,19 @@ export class FormatGroupCreateDto {
   @ApiProperty({ example: 'title_en' })
   @IsString()
   title_en: string
+
+  @ApiProperty({ example: 'subtitle', required: false })
+  @IsString()
+  @IsOptional()
+  subtitle?: string
+
+  @ApiProperty({ example: 'subtitle_ua', required: false })
+  @IsString()
+  @IsOptional()
+  subtitle_ua?: string
+
+  @ApiProperty({ example: 'subtitle_en', required: false })
+  @IsString()
+  @IsOptional()
+  subtitle_en?: string
 }

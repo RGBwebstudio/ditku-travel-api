@@ -5,12 +5,13 @@ import { Request } from 'express'
 import { LANG } from 'src/common/enums/translation.enum'
 import { ProductWithoutRatings } from 'src/common/utils/apply-rating'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
+import { flattenTranslations } from 'src/common/utils/flatten-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
-import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
 import { ProductUpdateDto } from 'src/modules/product/dto/product-update.dto'
+import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
@@ -158,7 +159,7 @@ export class ProductService {
 
       if (mappedProductItem.format_groups && Array.isArray(mappedProductItem.format_groups)) {
         mappedProductItem.format_groups = mappedProductItem.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
+          item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
       }
     }
@@ -207,7 +208,7 @@ export class ProductService {
 
       if (product.format_groups && Array.isArray(product.format_groups)) {
         product.format_groups = product.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
+          item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
       }
     }
@@ -281,7 +282,7 @@ export class ProductService {
 
       if (product.format_groups && Array.isArray(product.format_groups)) {
         product.format_groups = product.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
+          item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
       }
 
@@ -379,7 +380,7 @@ export class ProductService {
 
       if (product.format_groups && Array.isArray(product.format_groups)) {
         product.format_groups = product.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
+          item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
       }
 
@@ -535,7 +536,7 @@ export class ProductService {
 
       if (product.format_groups && Array.isArray(product.format_groups)) {
         product.format_groups = product.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
+          item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
       }
 
@@ -583,7 +584,7 @@ export class ProductService {
 
       if (mappedProductItem.format_groups && Array.isArray(mappedProductItem.format_groups)) {
         mappedProductItem.format_groups = mappedProductItem.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
+          item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
       }
 
@@ -693,7 +694,7 @@ export class ProductService {
 
       if (productDto.format_groups && Array.isArray(productDto.format_groups)) {
         productDto.format_groups = productDto.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
+          item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
       }
 
@@ -853,7 +854,7 @@ export class ProductService {
 
       if (prod.format_groups && Array.isArray(prod.format_groups)) {
         prod.format_groups = prod.format_groups.map((item) =>
-          item && item.translates ? applyTranslations([item], lang)[0] : item
+          item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
       }
       return prod
@@ -947,7 +948,7 @@ export class ProductService {
 
         if (child.format_groups && Array.isArray(child.format_groups)) {
           child.format_groups = child.format_groups.map((item) =>
-            item && item.translates ? applyTranslations([item], lang)[0] : item
+            item && item.translates ? flattenTranslations([item], lang)[0] : item
           )
         }
 
@@ -1646,7 +1647,10 @@ export class ProductService {
     }
   }
 
-  async addProgramImage(programId: number, dto: { url?: string; path?: string; order?: number }): Promise<{ message: string }> {
+  async addProgramImage(
+    programId: number,
+    dto: { url?: string; path?: string; order?: number }
+  ): Promise<{ message: string }> {
     const program = await this.programRepo.findOne({ where: { id: programId } })
     if (!program) throw new NotFoundException('program is NOT_FOUND')
 
