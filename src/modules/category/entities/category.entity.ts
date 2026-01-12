@@ -36,9 +36,6 @@ export class Category {
   @Column({ default: false })
   show_on_main_page: boolean
 
-  @Column({ default: false })
-  show_in_main_tabs: boolean
-
   @Column({ unique: true })
   title: string
 
