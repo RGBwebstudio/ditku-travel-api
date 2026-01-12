@@ -1278,10 +1278,6 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-    // Debug: Log incoming sections data
-    this.logger.log(`[SECTIONS DEBUG] dto.sections: ${JSON.stringify(dto.sections)}`)
-    this.logger.log(`[SECTIONS DEBUG] dto.productSections: ${JSON.stringify((dto as any).productSections)}`)
-
     try {
       /* eslint-disable @typescript-eslint/no-unused-vars */
       const {
@@ -1380,26 +1376,18 @@ export class ProductService {
         productSectionObjects ||
         (productSections !== undefined && Array.isArray(productSections) ? productSections : undefined)
 
-      this.logger.log(`[SECTIONS DEBUG] productSectionObjects: ${JSON.stringify(productSectionObjects)}`)
-      this.logger.log(`[SECTIONS DEBUG] productSections from destructured dto: ${JSON.stringify(productSections)}`)
-      this.logger.log(`[SECTIONS DEBUG] sectionObjectsToProcess: ${JSON.stringify(sectionObjectsToProcess)}`)
-
       if (sectionObjectsToProcess && sectionObjectsToProcess.length >= 0) {
-        this.logger.log(`[SECTIONS DEBUG] Entering section CRUD, count: ${sectionObjectsToProcess.length}`)
         // Get existing sections for this product
         const existingSections = await this.productSectionRepo.find({
           where: { product_id: { id: product.id } },
           relations: ['translates'],
         })
-        this.logger.log(`[SECTIONS DEBUG] Found ${existingSections.length} existing sections`)
 
         const incomingIds = sectionObjectsToProcess.filter((s) => s.id).map((s) => s.id as number)
-        this.logger.log(`[SECTIONS DEBUG] Incoming IDs: ${JSON.stringify(incomingIds)}`)
 
         // Delete sections not in incoming array
         const sectionsToDelete = existingSections.filter((es) => !incomingIds.includes(es.id))
         if (sectionsToDelete.length > 0) {
-          this.logger.log(`[SECTIONS DEBUG] Deleting ${sectionsToDelete.length} sections`)
           await this.productSectionRepo.remove(sectionsToDelete)
         }
 
