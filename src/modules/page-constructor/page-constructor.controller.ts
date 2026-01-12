@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Req, UseGuards } from '@nestjs/common'
+import { Logger } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { Request } from 'express'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
-import { LANG } from 'src/common/enums/translation.enum'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 
 import { CreatePageConstructorDto } from './dto/create-page-constructor.dto'
@@ -15,6 +15,7 @@ import { PageConstructorService } from './page-constructor.service'
 @ApiTags('Конструктор сторінок')
 @Controller('page-constructor')
 export class PageConstructorController {
+  private readonly logger = new Logger(PageConstructorController.name)
   constructor(private readonly pageConstructorService: PageConstructorService) {}
 
   @Get()
@@ -51,8 +52,9 @@ export class PageConstructorController {
     description: 'SUCCESS - Сутність успішно отримано',
   })
   @ApiResponse({ status: 404, description: 'NOT_FOUND - Сутність не знайдено' })
-  findByUrl(@Param('slug') slug: string, @Query('lang') lang: LANG) {
-    return this.pageConstructorService.findByUrl(slug, lang)
+  findByUrl(@Param('slug') slug: string, @Req() req: Request) {
+    this.logger.log(`findByUrl: ${slug}, ${req.lang}`)
+    return this.pageConstructorService.findByUrl(slug, req.lang)
   }
 
   @Post()
