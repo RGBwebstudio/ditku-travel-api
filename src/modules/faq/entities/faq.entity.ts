@@ -10,11 +10,23 @@ export class Faq {
   @Column({ default: false })
   show_in_product: boolean
 
-  @Column()
+  @Column({ nullable: true })
   title: string
 
-  @Column()
+  @Column({ nullable: true })
   text: string
+
+  @Column({ type: 'text', nullable: true })
+  title_ua: string
+
+  @Column({ type: 'text', nullable: true })
+  title_en: string
+
+  @Column({ type: 'text', nullable: true })
+  text_ua: string
+
+  @Column({ type: 'text', nullable: true })
+  text_en: string
 
   @OneToMany(() => FaqTranslate, (translates) => translates.entity_id)
   translates: FaqTranslate[]

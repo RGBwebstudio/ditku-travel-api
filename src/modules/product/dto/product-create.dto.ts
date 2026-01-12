@@ -115,8 +115,8 @@ export class ProductCreateDto {
   @ApiPropertyOptional({
     description: 'Структура контенту блоків',
   })
-  @IsString()
-  structure?: Record<string, string>
+  @IsOptional()
+  structure?: any
 
   @ApiPropertyOptional({
     description: 'Structure for Why Travel section',
@@ -139,6 +139,14 @@ export class ProductCreateDto {
   })
   @IsOptional()
   learning?: any
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  learning_ua?: any
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  learning_en?: any
 
   @ApiPropertyOptional({
     description: 'Detailed itinerary array',
@@ -194,12 +202,42 @@ export class ProductCreateDto {
   @IsInt({ each: true })
   blog_ids?: number[]
 
+  @ApiPropertyOptional({ type: [Number], description: 'Array of FAQ IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  faq_ids?: number[]
+
+  @ApiPropertyOptional({ type: [Number], description: 'Array of Recommended Product IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  recommended_ids?: number[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  faq_header_pink_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  faq_header_pink_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  faq_header_black_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  faq_header_black_en?: string
+
   @ApiPropertyOptional({ description: 'Array of blog objects' })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProductBlogDto)
-  blogs?: ProductBlogDto[]
+  blogs?: any[]
 
   // Flattened translations (optional, for convenience)
   @ApiPropertyOptional()
@@ -256,15 +294,15 @@ export class ProductBlogDto {
 
   @IsString()
   @IsOptional()
-  title: string
+  title?: string
 
   @IsString()
   @IsOptional()
-  content: string
+  content?: string
 
+  @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  images: string[]
+  images?: any[]
 
   @IsString()
   @IsOptional()
@@ -280,7 +318,10 @@ export class ProductBlogDto {
 
   @IsString()
   @IsOptional()
-  content_en?: string
+  content_en?: string;
+
+  // Allow any extra properties from Post entity
+  [key: string]: any
 }
 
 export class ProductSectionDto {
