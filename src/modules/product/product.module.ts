@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { IsExist } from 'src/common/validators/isExist.validator'
 import { Category } from 'src/modules/category/entities/category.entity'
+import { Faq } from 'src/modules/faq/entities/faq.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
@@ -41,6 +42,7 @@ import { ProductService } from './product.service'
       SeoFilter,
       Rating,
       Post,
+      Faq,
     ]),
     HttpModule,
     RatingModule,

@@ -7,6 +7,7 @@ import { ProductWithoutRatings } from 'src/common/utils/apply-rating'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { flattenTranslations } from 'src/common/utils/flatten-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
+import { Faq } from 'src/modules/faq/entities/faq.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
@@ -53,6 +54,7 @@ export class ProductService {
     @InjectRepository(Parameter) private parameterRepo: Repository<Parameter>,
     @InjectRepository(Category) private categoryRepo: Repository<Category>,
     @InjectRepository(Section) private sectionRepo: Repository<Section>,
+    @InjectRepository(Faq) private faqRepo: Repository<Faq>,
     @InjectRepository(FormatGroup)
     private formatGroupRepo: Repository<FormatGroup>,
     @InjectRepository(ProductTranslate)
@@ -647,8 +649,8 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-    // Query 2: Load heavy relations in parallel (roadmaps, programs, reviews, blogs, sections)
-    const [roadmaps, programs, reviews, linkedBlogs, productSections] = await Promise.all([
+    // Query 2: Load heavy relations in parallel (roadmaps, programs, reviews, blogs, sections, faqs)
+    const [roadmaps, programs, reviews, linkedBlogs, productSections, faqs] = await Promise.all([
       this.productRepo.manager
         .getRepository(Roadmap)
         .createQueryBuilder('r')
@@ -682,6 +684,7 @@ export class ProductService {
         relations: ['translates'],
         order: { order: 'ASC' },
       }),
+      this.productRepo.createQueryBuilder().relation(Product, 'faqs').of(product.id).loadMany(),
     ])
 
     product.roadmaps = roadmaps
@@ -689,6 +692,7 @@ export class ProductService {
     product.ratings = reviews
     product.linkedBlogs = linkedBlogs
     product.productSections = productSections
+    product.faqs = faqs
 
     if (req?.session) {
       if (!req.session.products || !Array.isArray(req.session.products)) {
@@ -847,8 +851,8 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-    // Run roadmaps, programs, reviews, and children queries in parallel
-    const [roadmaps, programs, reviews, children] = await Promise.all([
+    // Run roadmaps, programs, reviews, children, and faqs queries in parallel
+    const [roadmaps, programs, reviews, children, faqs] = await Promise.all([
       // Query 2: Load roadmaps with city data
       this.productRepo.manager
         .getRepository(Roadmap)
@@ -881,10 +885,13 @@ export class ProductService {
         where: { parent_id: { id: product.id } },
         relations: ['category_id', 'images', 'translates'],
       }),
+      // Query 6: Load FAQs
+      this.productRepo.createQueryBuilder().relation(Product, 'faqs').of(product.id).loadMany(),
     ])
 
     product.roadmaps = roadmaps
     product.programs = programs
+    product.faqs = faqs
 
     // Track viewed products in session
     if (req?.session) {
@@ -1070,8 +1077,30 @@ export class ProductService {
       delete productPayload.end_date
     }
 
-    const sectionsIds = Array.isArray(dto.sections) ? dto.sections : undefined
-    if (sectionsIds) delete productPayload.sections
+    // Filter sections to separate IDs (numbers) from objects (productSections)
+    let sectionsIds: number[] | undefined = undefined
+    let productSectionObjects: any[] | undefined = undefined
+
+    if (Array.isArray(dto.sections)) {
+      if (dto.sections.length === 0) {
+        // Empty array - no sections
+        sectionsIds = []
+      } else if (typeof dto.sections[0] === 'object') {
+        // These are product section objects
+        productSectionObjects = dto.sections
+      } else {
+        // These are global section IDs
+        sectionsIds = dto.sections.filter((s): s is number => typeof s === 'number')
+      }
+    }
+
+    // Also check for explicit productSections field
+    if (!productSectionObjects && Array.isArray(dto.productSections) && dto.productSections.length > 0) {
+      productSectionObjects = dto.productSections
+    }
+
+    if (dto.sections) delete productPayload.sections
+    if ((productPayload as any).productSections) delete (productPayload as any).productSections
 
     const formatGroupIds: number[] | undefined =
       Array.isArray(dto.format_group) && dto.format_group.length ? dto.format_group : undefined
@@ -1080,10 +1109,19 @@ export class ProductService {
     const seoFiltersIds = Array.isArray(dto.seo_filters) ? dto.seo_filters : undefined
     if (seoFiltersIds) delete productPayload.seo_filters
 
-    const blogIds = Array.isArray(dto.blog_ids) ? dto.blog_ids : undefined
+    // Get blog IDs from blog_ids OR extract from blogs array (full Post objects)
+    let blogIds: number[] | undefined = Array.isArray(dto.blog_ids) ? dto.blog_ids : undefined
+    if (!blogIds && Array.isArray(dto.blogs) && dto.blogs.length > 0) {
+      blogIds = dto.blogs
+        .map((b: unknown): number | undefined => (typeof b === 'number' ? b : (b as { id?: number })?.id))
+        .filter((id): id is number => typeof id === 'number')
+    }
     if (blogIds) delete productPayload.blog_ids
     // Remove old blogs jsonb field from payload since we use linkedBlogs relation now
     delete productPayload.blogs
+
+    const faqIds = Array.isArray(dto.faq_ids) ? dto.faq_ids : undefined
+    if (faqIds) delete productPayload.faq_ids
 
     const product = this.productRepo.create(productPayload as DeepPartial<Product>)
 
@@ -1111,12 +1149,19 @@ export class ProductService {
         saved.seo_filters = seoFilters
         await this.productRepo.save(saved)
       }
-
       if (blogIds && blogIds.length) {
         const blogs = await this.postRepo.findBy({
           id: In(blogIds),
         })
         saved.linkedBlogs = blogs
+        await this.productRepo.save(saved)
+      }
+
+      if (faqIds && faqIds.length) {
+        const faqs = await this.faqRepo.findBy({
+          id: In(faqIds),
+        })
+        saved.faqs = faqs
         await this.productRepo.save(saved)
       }
 
@@ -1157,20 +1202,85 @@ export class ProductService {
         await this.productRepo.save(saved)
       }
 
+      // Handle productSections creation (content blocks)
+      if (productSectionObjects && productSectionObjects.length > 0) {
+        for (const sectionDto of productSectionObjects) {
+          let sectionEntity = this.productSectionRepo.create({
+            type: sectionDto.type || 'content',
+            order: sectionDto.order ?? 0,
+            title: sectionDto.title || sectionDto.title_ua || '',
+            description: sectionDto.description || sectionDto.description_ua || '',
+            images: sectionDto.images || [],
+            banner1_title: sectionDto.banner1_title_ua,
+            banner1_button_text: sectionDto.banner1_button_text_ua,
+            banner1_link: sectionDto.banner1_link_ua,
+            banner2_title: sectionDto.banner2_title_ua,
+            banner2_button_text: sectionDto.banner2_button_text_ua,
+            banner2_link: sectionDto.banner2_link_ua,
+            product_id: saved,
+          })
+
+          sectionEntity = await this.productSectionRepo.save(sectionEntity)
+
+          // Handle translations for this section
+          const sectionTranslateFields = [
+            'title',
+            'description',
+            'banner1_title',
+            'banner1_button_text',
+            'banner1_link',
+            'banner2_title',
+            'banner2_button_text',
+            'banner2_link',
+          ]
+
+          // Create translations
+          for (const field of sectionTranslateFields) {
+            const uaValue = sectionDto[`${field}_ua`]
+            const enValue = sectionDto[`${field}_en`]
+
+            if (uaValue) {
+              const translateUA = this.productSectionTranslateRepo.create({
+                field,
+                value: uaValue,
+                lang: LANG.UA,
+                entity_id: sectionEntity,
+              })
+              await this.productSectionTranslateRepo.save(translateUA)
+            }
+
+            if (enValue) {
+              const translateEN = this.productSectionTranslateRepo.create({
+                field,
+                value: enValue,
+                lang: LANG.EN,
+                entity_id: sectionEntity,
+              })
+              await this.productSectionTranslateRepo.save(translateEN)
+            }
+          }
+        }
+      }
+
       return saved
     } catch (err) {
-      this.logger.error(`Error while creating product \n ${err}`)
-      throw new BadRequestException('product is NOT_CREATED')
+      this.logger.error(`Error while creating product: ${err?.message || err}`)
+      this.logger.error(err?.stack || err)
+      throw new BadRequestException(`product is NOT_CREATED: ${err?.message || 'Unknown error'}`)
     }
   }
 
   async update(id: number, dto: ProductUpdateDto): Promise<Product | null> {
     const product = await this.productRepo.findOne({
       where: { id },
-      relations: ['sections', 'seo_filters', 'parameters', 'format_groups', 'linkedBlogs'],
+      relations: ['sections', 'seo_filters', 'parameters', 'format_groups', 'linkedBlogs', 'faqs'],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    // Debug: Log incoming sections data
+    this.logger.log(`[SECTIONS DEBUG] dto.sections: ${JSON.stringify(dto.sections)}`)
+    this.logger.log(`[SECTIONS DEBUG] dto.productSections: ${JSON.stringify((dto as any).productSections)}`)
 
     try {
       /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -1179,6 +1289,7 @@ export class ProductService {
         format_group,
         seo_filters,
         blog_ids,
+        faq_ids,
         blogs,
         productSections,
         parameters: rawParams,
@@ -1206,8 +1317,10 @@ export class ProductService {
       let productSectionObjects: any[] | undefined = undefined
 
       if (sectionsFromDto !== undefined && Array.isArray(sectionsFromDto)) {
-        // Check if first item is an object (product section) or number (global section ID)
-        if (sectionsFromDto.length > 0 && typeof sectionsFromDto[0] === 'object') {
+        // Empty array means clear all product sections
+        if (sectionsFromDto.length === 0) {
+          productSectionObjects = []
+        } else if (typeof sectionsFromDto[0] === 'object') {
           // These are product sections (objects with type, title, etc.)
           productSectionObjects = sectionsFromDto
         } else {
@@ -1249,6 +1362,12 @@ export class ProductService {
         product.format_groups = formatGroups
       }
 
+      const faqIds: number[] | undefined = Array.isArray(faq_ids) ? faq_ids : undefined
+      if (faqIds !== undefined) {
+        const faqs = faqIds.length ? await this.faqRepo.findBy({ id: In(faqIds) }) : []
+        product.faqs = faqs
+      }
+
       const blogIdsToUpdate: number[] | undefined =
         dto.blog_ids !== undefined && Array.isArray(dto.blog_ids) ? dto.blog_ids : undefined
       if (blogIdsToUpdate !== undefined) {
@@ -1260,18 +1379,27 @@ export class ProductService {
       const sectionObjectsToProcess =
         productSectionObjects ||
         (productSections !== undefined && Array.isArray(productSections) ? productSections : undefined)
+
+      this.logger.log(`[SECTIONS DEBUG] productSectionObjects: ${JSON.stringify(productSectionObjects)}`)
+      this.logger.log(`[SECTIONS DEBUG] productSections from destructured dto: ${JSON.stringify(productSections)}`)
+      this.logger.log(`[SECTIONS DEBUG] sectionObjectsToProcess: ${JSON.stringify(sectionObjectsToProcess)}`)
+
       if (sectionObjectsToProcess && sectionObjectsToProcess.length >= 0) {
+        this.logger.log(`[SECTIONS DEBUG] Entering section CRUD, count: ${sectionObjectsToProcess.length}`)
         // Get existing sections for this product
         const existingSections = await this.productSectionRepo.find({
           where: { product_id: { id: product.id } },
           relations: ['translates'],
         })
+        this.logger.log(`[SECTIONS DEBUG] Found ${existingSections.length} existing sections`)
 
         const incomingIds = sectionObjectsToProcess.filter((s) => s.id).map((s) => s.id as number)
+        this.logger.log(`[SECTIONS DEBUG] Incoming IDs: ${JSON.stringify(incomingIds)}`)
 
         // Delete sections not in incoming array
         const sectionsToDelete = existingSections.filter((es) => !incomingIds.includes(es.id))
         if (sectionsToDelete.length > 0) {
+          this.logger.log(`[SECTIONS DEBUG] Deleting ${sectionsToDelete.length} sections`)
           await this.productSectionRepo.remove(sectionsToDelete)
         }
 
