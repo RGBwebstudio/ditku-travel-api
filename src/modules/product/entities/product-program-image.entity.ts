@@ -22,4 +22,3 @@ export class ProductProgramImage {
   @JoinColumn({ name: 'program_id' })
   program_id: ProductProgram
 }
-

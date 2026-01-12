@@ -1,8 +1,8 @@
 import { join } from 'path'
 
-import { ValidationPipe } from '@nestjs/common'
+import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { NestFactory } from '@nestjs/core'
+import { NestFactory, Reflector } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
@@ -21,7 +21,7 @@ async function bootstrap() {
 
   app.use(bodyParser.json({ limit: '100mb' }))
   app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }))
-  app.useGlobalInterceptors(new LanguageInterceptor())
+  app.useGlobalInterceptors(new LanguageInterceptor(), new ClassSerializerInterceptor(app.get(Reflector)))
 
   const configService = app.get(ConfigService)
 

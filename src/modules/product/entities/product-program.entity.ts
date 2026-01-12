@@ -9,9 +9,9 @@ import {
   JoinColumn,
 } from 'typeorm'
 
-import { Product } from './product.entity'
 import { ProductProgramImage } from './product-program-image.entity'
 import { ProductProgramTranslate } from './product-program-translate.entity'
+import { Product } from './product.entity'
 
 @Entity()
 export class ProductProgram {
@@ -48,4 +48,3 @@ export class ProductProgram {
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
 }
-

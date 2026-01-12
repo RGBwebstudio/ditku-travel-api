@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { City } from 'src/modules/city/entities/city.entity'
 import { Country } from 'src/modules/country/entities/country.entity'
@@ -77,6 +78,7 @@ export class SeoFilter {
   @ManyToMany(() => Menu, (menu) => menu.seo_filters)
   menus: Menu[]
 
+  @Exclude()
   @ManyToMany(() => Product, (product) => product.seo_filters)
   products: Product[]
 

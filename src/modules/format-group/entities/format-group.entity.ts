@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer'
 import { Product } from 'src/modules/product/entities/product.entity'
 import {
   Entity,
@@ -25,6 +26,7 @@ export class FormatGroup {
   @Column({ nullable: true })
   subtitle: string
 
+  @Exclude()
   @ManyToMany(() => Product, (product) => product.format_groups)
   products: Product[]
 

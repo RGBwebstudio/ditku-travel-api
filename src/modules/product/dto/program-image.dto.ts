@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
 import { IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class ProgramImageDto {
@@ -22,4 +23,3 @@ export class ProgramImageDto {
   @IsNumber()
   order?: number
 }
-

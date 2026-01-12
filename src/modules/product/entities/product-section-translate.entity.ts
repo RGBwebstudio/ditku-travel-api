@@ -1,10 +1,10 @@
 import { LANG } from 'src/common/enums/translation.enum'
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 
-import { ProductProgram } from './product-program.entity'
+import { ProductSection } from './product-section.entity'
 
-@Entity()
-export class ProductProgramTranslate {
+@Entity('product_content_section_translate')
+export class ProductSectionTranslate {
   @PrimaryGeneratedColumn()
   id: number
 
@@ -17,8 +17,8 @@ export class ProductProgramTranslate {
   @Column({ type: 'enum', enum: LANG })
   lang: LANG
 
-  @ManyToOne(() => ProductProgram, (program) => program.translates, {
+  @ManyToOne(() => ProductSection, (section: ProductSection) => section.translates, {
     onDelete: 'CASCADE',
   })
-  entity_id: ProductProgram
+  entity_id: ProductSection
 }
