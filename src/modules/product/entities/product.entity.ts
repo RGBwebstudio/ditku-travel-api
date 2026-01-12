@@ -1,6 +1,7 @@
 import { Category } from 'src/modules/category/entities/category.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
+import { Post } from 'src/modules/posts/entities/post.entity'
 import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
@@ -21,6 +22,7 @@ import {
 
 import { ProductImage } from './product-image.entity'
 import { ProductProgram } from './product-program.entity'
+import { ProductSection } from './product-section.entity'
 import { ProductTranslate } from './product-translate.entity'
 
 @Entity()
@@ -61,6 +63,9 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   skills: string
 
+  @Column({ type: 'jsonb', nullable: true, default: [] })
+  skills_list: any[]
+
   @Column({ type: 'varchar', nullable: true })
   age: string
 
@@ -97,6 +102,16 @@ export class Product {
 
   @Column({ type: 'jsonb', nullable: true, default: [] })
   blogs: any[]
+
+  @ManyToMany(() => Post, (post: Post) => post.products, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable({
+    name: 'product_blogs',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'blog_id', referencedColumnName: 'id' },
+  })
+  linkedBlogs: Post[]
 
   @Column({ default: 0 })
   order_in_list: number
@@ -177,6 +192,9 @@ export class Product {
 
   @OneToMany(() => ProductProgram, (program: ProductProgram) => program.product_id)
   programs: ProductProgram[]
+
+  @OneToMany(() => ProductSection, (section: ProductSection) => section.product_id)
+  productSections: ProductSection[]
 
   @Column({ type: 'timestamptz', nullable: true })
   start_at: Date

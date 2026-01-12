@@ -97,6 +97,13 @@ export class ProductCreateDto {
   @IsString()
   skills?: string
 
+  @ApiPropertyOptional({ description: 'Array of structured skills' })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SkillItemDto)
+  skills_list?: SkillItemDto[]
+
   @ApiPropertyOptional({
     example: 'критичне мислення, пізнання світу, емоційний досвід',
     description: 'Досліджуємо (через кому)',
@@ -117,10 +124,10 @@ export class ProductCreateDto {
   @IsOptional()
   why_travel_section?: any
 
-  @ApiPropertyOptional({ type: [Number] })
+  @ApiPropertyOptional({ description: 'Global section IDs (numbers) OR product section objects' })
   @IsOptional()
   @IsArray()
-  sections?: number[]
+  sections?: (number | Record<string, any>)[]
 
   @ApiPropertyOptional({ example: '6-17 років' })
   @IsOptional()
@@ -181,6 +188,12 @@ export class ProductCreateDto {
   @IsInt({ each: true })
   seo_filters?: number[]
 
+  @ApiPropertyOptional({ type: [Number], description: 'Array of Blog Post IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  blog_ids?: number[]
+
   @ApiPropertyOptional({ description: 'Array of blog objects' })
   @IsOptional()
   @IsArray()
@@ -228,6 +241,13 @@ export class ProductCreateDto {
   @IsOptional()
   @IsString()
   seo_description_en?: string
+
+  @ApiPropertyOptional({ description: 'Array of product sections (content blocks)' })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductSectionDto)
+  productSections?: ProductSectionDto[]
 }
 
 export class ProductBlogDto {
@@ -261,4 +281,132 @@ export class ProductBlogDto {
   @IsString()
   @IsOptional()
   content_en?: string
+}
+
+export class ProductSectionDto {
+  @IsOptional()
+  @IsInt()
+  id?: number
+
+  @IsString()
+  @IsOptional()
+  type?: string // 'content' | 'banners' | 'quote'
+
+  @IsInt()
+  @IsOptional()
+  order?: number
+
+  @IsString()
+  @IsOptional()
+  title?: string
+
+  @IsString()
+  @IsOptional()
+  description?: string
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  images?: string[]
+
+  // Localized fields
+  @IsString()
+  @IsOptional()
+  title_ua?: string
+
+  @IsString()
+  @IsOptional()
+  title_en?: string
+
+  @IsString()
+  @IsOptional()
+  description_ua?: string
+
+  @IsString()
+  @IsOptional()
+  description_en?: string
+
+  // Banner 1 fields
+  @IsString()
+  @IsOptional()
+  banner1_title_ua?: string
+
+  @IsString()
+  @IsOptional()
+  banner1_title_en?: string
+
+  @IsString()
+  @IsOptional()
+  banner1_button_text_ua?: string
+
+  @IsString()
+  @IsOptional()
+  banner1_button_text_en?: string
+
+  @IsString()
+  @IsOptional()
+  banner1_link_ua?: string
+
+  @IsString()
+  @IsOptional()
+  banner1_link_en?: string
+
+  // Banner 2 fields
+  @IsString()
+  @IsOptional()
+  banner2_title_ua?: string
+
+  @IsString()
+  @IsOptional()
+  banner2_title_en?: string
+
+  @IsString()
+  @IsOptional()
+  banner2_button_text_ua?: string
+
+  @IsString()
+  @IsOptional()
+  banner2_button_text_en?: string
+
+  @IsString()
+  @IsOptional()
+  banner2_link_ua?: string
+
+  @IsString()
+  @IsOptional()
+  banner2_link_en?: string
+}
+
+export class SkillItemDto {
+  @IsOptional()
+  @IsString()
+  id?: string
+
+  @IsOptional()
+  @IsString()
+  image?: string
+
+  @IsOptional()
+  @IsString()
+  bg_color?: string
+
+  @IsOptional()
+  @IsBoolean()
+  is_full_card?: boolean
+
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_en?: string
+
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @IsOptional()
+  @IsString()
+  text_en?: string
 }
