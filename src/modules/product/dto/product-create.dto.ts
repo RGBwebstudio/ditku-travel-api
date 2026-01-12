@@ -208,6 +208,12 @@ export class ProductCreateDto {
   @IsInt({ each: true })
   faq_ids?: number[]
 
+  @ApiPropertyOptional({ type: [Number], description: 'Array of Recommended Product IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  recommended_ids?: number[]
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

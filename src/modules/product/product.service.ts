@@ -1123,6 +1123,9 @@ export class ProductService {
     const faqIds = Array.isArray(dto.faq_ids) ? dto.faq_ids : undefined
     if (faqIds) delete productPayload.faq_ids
 
+    const recommendedIds = Array.isArray(dto.recommended_ids) ? dto.recommended_ids : undefined
+    if (recommendedIds) delete productPayload.recommended_ids
+
     const product = this.productRepo.create(productPayload as DeepPartial<Product>)
 
     try {
@@ -1162,6 +1165,14 @@ export class ProductService {
           id: In(faqIds),
         })
         saved.faqs = faqs
+        await this.productRepo.save(saved)
+      }
+
+      if (recommendedIds && recommendedIds.length) {
+        const recommendedProducts = await this.productRepo.findBy({
+          id: In(recommendedIds),
+        })
+        saved.recommendedProducts = recommendedProducts
         await this.productRepo.save(saved)
       }
 
@@ -1286,6 +1297,7 @@ export class ProductService {
         seo_filters,
         blog_ids,
         faq_ids,
+        recommended_ids,
         blogs,
         productSections,
         parameters: rawParams,
@@ -1362,6 +1374,14 @@ export class ProductService {
       if (faqIds !== undefined) {
         const faqs = faqIds.length ? await this.faqRepo.findBy({ id: In(faqIds) }) : []
         product.faqs = faqs
+      }
+
+      const recommendedIds: number[] | undefined = Array.isArray(recommended_ids) ? recommended_ids : undefined
+      if (recommendedIds !== undefined) {
+        const recommendedProducts = recommendedIds.length
+          ? await this.productRepo.findBy({ id: In(recommendedIds) })
+          : []
+        product.recommendedProducts = recommendedProducts
       }
 
       const blogIdsToUpdate: number[] | undefined =
