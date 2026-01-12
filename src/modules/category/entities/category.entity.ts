@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer'
 import { Menu } from 'src/modules/menu/entities/menu.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
@@ -47,6 +48,7 @@ export class Category {
   @Column()
   seo_text: string
 
+  @Exclude()
   @OneToMany(() => Product, (product) => product.category_id)
   products: Product[]
 

@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer'
 import { ParameterCategory } from 'src/modules/parameter-category/entities/parameter-category.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
 import {
@@ -34,6 +35,7 @@ export class Parameter {
   @Column({ default: 0 })
   order_in_list: number
 
+  @Exclude()
   @ManyToMany(() => Product, (product) => product.parameters, {
     onDelete: 'CASCADE',
   })

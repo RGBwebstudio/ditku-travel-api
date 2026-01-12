@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer'
 import { Product } from 'src/modules/product/entities/product.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import {
@@ -21,6 +22,7 @@ export class Section {
   @Column()
   title: string
 
+  @Exclude()
   @ManyToMany(() => Product, (product) => product.sections, {
     onDelete: 'CASCADE',
   })

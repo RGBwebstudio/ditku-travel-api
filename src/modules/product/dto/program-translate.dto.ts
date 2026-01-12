@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
 
@@ -20,4 +21,3 @@ export class ProgramTranslateDto {
   @IsString()
   value: string
 }
-

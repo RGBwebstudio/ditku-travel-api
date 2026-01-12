@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+
 import { Type } from 'class-transformer'
 import { IsNumber, IsOptional, IsString, IsArray, ValidateNested, Min } from 'class-validator'
 
@@ -48,4 +49,3 @@ export class CreateProgramDto {
   @Type(() => ProgramTranslateDto)
   translates?: ProgramTranslateDto[]
 }
-
