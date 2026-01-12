@@ -100,7 +100,6 @@ export class CategoryController {
     summary: 'Отримати всі кореневі категорії з дітьми до depth',
   })
   findAllSubtree(@Query('depth') depth: string, @Req() req: Request) {
-    console.log('fire')
     const parsedDepth = depth !== undefined ? parseInt(depth, 10) : 1
     return this.categoryService.findAllSubtree(isNaN(parsedDepth) ? 1 : parsedDepth, req.lang)
   }

@@ -55,8 +55,6 @@ export class PageConstructorService {
       where: { url, lang },
     })
 
-    this.logger.log('Found page-constructor', entity)
-
     if (!entity) {
       throw new NotFoundException('entity of page-constructor NOT_FOUND')
     }

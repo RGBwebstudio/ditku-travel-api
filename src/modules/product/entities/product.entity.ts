@@ -1,4 +1,5 @@
 import { Category } from 'src/modules/category/entities/category.entity'
+import { Faq } from 'src/modules/faq/entities/faq.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
@@ -204,6 +205,26 @@ export class Product {
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date
+
+  @Column({ type: 'varchar', nullable: true })
+  faq_header_pink_ua: string
+
+  @Column({ type: 'varchar', nullable: true })
+  faq_header_pink_en: string
+
+  @Column({ type: 'varchar', nullable: true })
+  faq_header_black_ua: string
+
+  @Column({ type: 'varchar', nullable: true })
+  faq_header_black_en: string
+
+  @ManyToMany(() => Faq, { onDelete: 'CASCADE' })
+  @JoinTable({
+    name: 'product_faqs',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'faq_id', referencedColumnName: 'id' },
+  })
+  faqs: Faq[]
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
