@@ -126,6 +126,20 @@ export class ImageService {
     }
   }
 
+  async uploadImages(
+    files: Express.Multer.File[],
+    categoryId?: number | null,
+    lg?: string,
+    md?: string,
+    sm?: string
+  ): Promise<Image[]> {
+    const images: Image[] = []
+    for (const file of files) {
+      images.push(await this.uploadImage(file, categoryId, lg, md, sm))
+    }
+    return images
+  }
+
   async findAll(query: ImageQueryDto): Promise<{
     data: Image[]
     total: number

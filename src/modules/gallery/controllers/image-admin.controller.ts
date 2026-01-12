@@ -11,11 +11,11 @@ import {
   Post,
   Query,
   Req,
-  UploadedFile,
+  UploadedFiles, // New
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { FilesInterceptor } from '@nestjs/platform-express'
 import {
   ApiBearerAuth,
   ApiBody,
@@ -35,7 +35,6 @@ import { ImageListResponseDto } from '../dto/image-list-response.dto'
 import { ImageQueryDto } from '../dto/image-query.dto'
 import { ImageResponseDto } from '../dto/image-response.dto'
 import { UpdateImageDto } from '../dto/update-image.dto'
-import { UploadImageDto } from '../dto/upload-image.dto'
 import { GalleryFileUploadPipe } from '../pipes/gallery-file-upload.pipe'
 import { ImageService } from '../services/image.service'
 
@@ -48,12 +47,23 @@ export class ImageAdminController {
 
   @Post('upload')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(FileInterceptor('file'))
-  @ApiOperation({ summary: 'Upload an image' })
+  @UseInterceptors(FilesInterceptor('files'))
+  @ApiOperation({ summary: 'Upload images' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Image file to upload',
-    type: UploadImageDto,
+    description: 'Image files to upload',
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
   })
   @ApiQuery({
     name: 'lg',
@@ -75,8 +85,8 @@ export class ImageAdminController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Image uploaded successfully',
-    type: ImageResponseDto,
+    description: 'Images uploaded successfully',
+    type: [ImageResponseDto],
   })
   @ApiResponse({
     status: 400,
@@ -86,14 +96,14 @@ export class ImageAdminController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   async upload(
     @Req() req: Request,
-    @UploadedFile(new GalleryFileUploadPipe()) file: Express.Multer.File,
+    @UploadedFiles(new GalleryFileUploadPipe()) files: Array<Express.Multer.File>,
     @Query('categoryId', new ParseIntPipe({ optional: true }))
     categoryId?: number,
     @Query('lg') lg?: string,
     @Query('md') md?: string,
     @Query('sm') sm?: string
   ) {
-    return await this.imageService.uploadImage(file, categoryId || null, lg, md, sm)
+    return await this.imageService.uploadImages(files, categoryId || null, lg, md, sm)
   }
 
   @Get()
