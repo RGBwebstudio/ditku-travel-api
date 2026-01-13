@@ -45,8 +45,7 @@ export class ImageService {
   private async resizeAndConvertImage(buffer: Buffer, width: number, height: number): Promise<Buffer> {
     return await sharp(buffer)
       .resize(width, height, {
-        fit: 'cover',
-        position: 'center',
+        fit: 'inside',
       })
       .avif({ quality: this.avifQuality })
       .toBuffer()
@@ -125,6 +124,20 @@ export class ImageService {
       }
       throw new BadRequestException('NOT_UPLOADED')
     }
+  }
+
+  async uploadImages(
+    files: Express.Multer.File[],
+    categoryId?: number | null,
+    lg?: string,
+    md?: string,
+    sm?: string
+  ): Promise<Image[]> {
+    const images: Image[] = []
+    for (const file of files) {
+      images.push(await this.uploadImage(file, categoryId, lg, md, sm))
+    }
+    return images
   }
 
   async findAll(query: ImageQueryDto): Promise<{
