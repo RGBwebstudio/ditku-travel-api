@@ -23,7 +23,14 @@ export class MenuService {
       take,
       skip,
       order: { order_in_list: 'ASC', created_at: 'DESC' },
-      relations: ['category_id', 'seo_filters'],
+      relations: [
+        'category_id',
+        'category_id.children',
+        'category_id.translates',
+        'category_id.children.translates',
+        'seo_filters',
+        'seo_filters.translates',
+      ],
     })
     return { entities, count }
   }
@@ -31,7 +38,14 @@ export class MenuService {
   async findAllEntities() {
     const entities = await this.repo.find({
       order: { order_in_list: 'ASC' },
-      relations: ['category_id', 'seo_filters'],
+      relations: [
+        'category_id',
+        'category_id.children',
+        'category_id.translates',
+        'category_id.children.translates',
+        'seo_filters',
+        'seo_filters.translates',
+      ],
     })
     return { entities }
   }
