@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsInt, IsOptional, IsString, Validate, IsNumber } from 'class-validator'
+import { IsInt, IsOptional, IsString, Validate, IsNumber, IsBoolean } from 'class-validator'
 import { IsExist } from 'src/common/validators/isExist.validator'
 import { Product } from 'src/modules/product/entities/product.entity'
 
@@ -36,4 +36,9 @@ export class RatingCreateDto {
   @ApiPropertyOptional({ example: '2025-01-15T12:00:00.000Z' })
   @IsOptional()
   created_at?: Date
+
+  @ApiPropertyOptional({ example: false })
+  @IsBoolean()
+  @IsOptional()
+  approved?: boolean
 }

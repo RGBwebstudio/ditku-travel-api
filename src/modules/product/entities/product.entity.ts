@@ -77,10 +77,16 @@ export class Product {
   program: any
 
   @Column({ type: 'jsonb', nullable: true })
-  inclusive: string[]
+  inclusive: Array<{
+    id?: string
+    icon?: string
+    bg_color?: string
+    text_ua?: string
+    text_en?: string
+  }>
 
   @Column({ type: 'jsonb', nullable: true })
-  notIncludes: string[]
+  notIncludes: Array<{ id?: string; text_ua?: string; text_en?: string }>
 
   @Column({ type: 'jsonb', nullable: true })
   advantages: any

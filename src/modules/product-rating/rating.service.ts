@@ -41,6 +41,7 @@ export class RatingService {
       name: dto.name,
       review: dto.review,
       rating: String(dto.rating),
+      approved: dto.approved ?? false,
       product_id: { id: productId },
     })
 
