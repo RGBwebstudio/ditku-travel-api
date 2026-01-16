@@ -433,6 +433,10 @@ export class SkillItemDto {
 
   @IsOptional()
   @IsString()
+  decor?: string
+
+  @IsOptional()
+  @IsString()
   bg_color?: string
 
   @IsOptional()
