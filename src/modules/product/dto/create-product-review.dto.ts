@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsNumber, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class CreateProductReviewDto {
   @ApiPropertyOptional()
@@ -40,6 +40,11 @@ export class CreateProductReviewDto {
   @ApiPropertyOptional()
   @IsOptional()
   created_at?: any
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  approved?: boolean
 
   @ApiPropertyOptional()
   @IsOptional()

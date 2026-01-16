@@ -18,7 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed:all": "ts-node -r tsconfig-paths/register src/common/database/seeds/create-admin.ts"
+    "seed:all": "ts-node -r tsconfig-paths/register src/common/database/seeds/create-admin.ts",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
+    "migration:run:prod": "typeorm migration:run -d dist/data-source.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",

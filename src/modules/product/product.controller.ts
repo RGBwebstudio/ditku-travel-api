@@ -81,6 +81,7 @@ export class ProductController {
       text_ua: dto.text_ua,
       text_en: dto.text_en,
       rating: dto.rating,
+      approved: dto.approved ?? false,
       product_id: id as any,
     }
     return this.ratingService.setRating(payload)
@@ -121,6 +122,7 @@ export class ProductController {
 
     if (typeof dto.rating !== 'undefined') payload.rating = dto.rating
     if (dto.created_at) payload.created_at = new Date(dto.created_at)
+    if (typeof dto.approved !== 'undefined') payload.approved = dto.approved
 
     return this.ratingService.update(id, payload)
   }

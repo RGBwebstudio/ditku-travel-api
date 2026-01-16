@@ -154,15 +154,19 @@ export class ProductCreateDto {
   @IsOptional()
   program?: any
 
-  @ApiPropertyOptional({ type: [String] })
+  @ApiPropertyOptional({ description: 'Array of inclusive items' })
   @IsOptional()
   @IsArray()
-  inclusive?: string[]
+  @ValidateNested({ each: true })
+  @Type(() => InclusiveItemDto)
+  inclusive?: InclusiveItemDto[]
 
-  @ApiPropertyOptional({ type: [String] })
+  @ApiPropertyOptional({ description: 'Array of not included items' })
   @IsOptional()
   @IsArray()
-  notIncludes?: string[]
+  @ValidateNested({ each: true })
+  @Type(() => NotIncludedItemDto)
+  notIncludes?: NotIncludedItemDto[]
 
   @ApiPropertyOptional({
     description: 'Advantages array',
@@ -429,6 +433,10 @@ export class SkillItemDto {
 
   @IsOptional()
   @IsString()
+  decor?: string
+
+  @IsOptional()
+  @IsString()
   bg_color?: string
 
   @IsOptional()
@@ -442,6 +450,42 @@ export class SkillItemDto {
   @IsOptional()
   @IsString()
   title_en?: string
+
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @IsOptional()
+  @IsString()
+  text_en?: string
+}
+
+export class InclusiveItemDto {
+  @IsOptional()
+  @IsString()
+  id?: string
+
+  @IsOptional()
+  @IsString()
+  icon?: string
+
+  @IsOptional()
+  @IsString()
+  bg_color?: string
+
+  @IsOptional()
+  @IsString()
+  text_ua?: string
+
+  @IsOptional()
+  @IsString()
+  text_en?: string
+}
+
+export class NotIncludedItemDto {
+  @IsOptional()
+  @IsString()
+  id?: string
 
   @IsOptional()
   @IsString()
