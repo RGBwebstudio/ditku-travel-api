@@ -40,8 +40,15 @@ async function bootstrap() {
 
   const PgSession = pgSession(session)
 
+  const originAllowlist = configService.get<string>('ORIGIN_ALLOWLIST')
+  let origin: boolean | string[] = true
+
+  if (originAllowlist) {
+    origin = originAllowlist.split(',').map((url) => url.trim())
+  }
+
   app.enableCors({
-    origin: true,
+    origin,
     methods: 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS',
     credentials: true,
   })
