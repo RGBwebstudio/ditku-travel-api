@@ -40,11 +40,16 @@ async function bootstrap() {
 
   const PgSession = pgSession(session)
 
+  app.set('trust proxy', 1)
+
   const originAllowlist = configService.get<string>('ORIGIN_ALLOWLIST')
   let origin: boolean | string[] = true
 
   if (originAllowlist) {
     origin = originAllowlist.split(',').map((url) => url.trim())
+    console.log('CORS Allowed Origins:', origin)
+  } else {
+    console.log('CORS Allowed Origins: ALL (fallback)')
   }
 
   app.enableCors({
@@ -53,19 +58,28 @@ async function bootstrap() {
     credentials: true,
   })
 
+  // Construct connection string if DB_CONNECTION_STRING is missing
+  // This prevents app crash if the full string isn't provided in env
+  const dbConnectionString =
+    configService.get<string>('DB_CONNECTION_STRING') ||
+    `postgres://${configService.get('DB_LOGIN')}:${configService.get('DB_PASSWORD')}@${configService.get('DB_HOSTING')}:${configService.get('DB_POST') || 5432}/${configService.get('DB_NAME')}`
+
   app.use(
     session({
       store: new PgSession({
-        conString: configService.get<string>('DB_CONNECTION_STRING'),
+        conString: dbConnectionString,
       }),
-      secret: process.env.SESSION_SECRET as string,
+      secret: process.env.SESSION_SECRET || 'secret_fallback_do_not_use_in_prod',
       resave: false,
       saveUninitialized: false,
       cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        // Secure cookies require HTTPS. Auto-detect via 'trust proxy' or explicit env.
+        secure: process.env.NODE_ENV === 'production' || process.env.MAIL_SECURE === 'true',
+        // 'none' + secure:true is required for cross-site cookies if domains differ completely.
+        // If subdomains share root, 'lax' is usually fine, but 'none' is safest for cross-site fetch with credentials.
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
       },
     })
