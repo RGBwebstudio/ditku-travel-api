@@ -12,7 +12,6 @@ RUN apk add --no-cache python3 make g++
 COPY package*.json ./
 
 # Install dependencies (including devDependencies)
-# using npm install instead of ci to avoid issues if package-lock.json is slightly out of sync
 RUN npm install
 
 # Copy source code
@@ -29,36 +28,12 @@ FROM node:20-alpine AS production
 
 WORKDIR /usr/src/app
 
-# Install runtime dependencies for native modules if needed (e.g., sharp might need vips)
-# Usually sharp prebuilds work, but if we encounter missing shared libs, we add them here.
-# For now, minimal.
-
 # Copy built assets from builder
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
 
 # Create uploads directory as per application logic (../../uploads relative to dist/src/main)
-# If main is at dist/main.js, then ../.. is /usr/src
-# In main.ts: join(__dirname, '../..', 'uploads')
-# If run from /usr/src/app:
-# dist/main.js -> __dirname = /usr/src/app/dist
-# ../.. -> /usr/src
-# So uploads should be at /usr/src/uploads presumably?
-# Let's check main.ts logic again carefully:
-# join(__dirname, '../..', 'uploads')
-# If compiled to dist/src/main.js (common in NestJS monorepo or standard structure):
-#   __dirname = /usr/src/app/dist/src
-#   ../.. = /usr/src/app/dist
-#   app.useStaticAssets(join(__dirname, '../..', 'uploads')) -> /usr/src/app/uploads would be ../../.. from dist/src
-# Use standard NestJS build output:
-# Usually dist/main.js.
-# If so: dirname is /usr/src/app/dist.
-# ../.. is /usr/src.
-# So uploads is expected at /usr/src/uploads.
-# The WORKDIR is /usr/src/app.
-# So valid path: /usr/src/uploads.
-# We'll create it just in case, though usually this is a volume mount.
 RUN mkdir -p /usr/src/app/uploads
 
 # Expose port (default 4200)

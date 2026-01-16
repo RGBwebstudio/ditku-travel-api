@@ -42,16 +42,18 @@ async function bootstrap() {
 
   app.set('trust proxy', 1)
 
-  app.use((req, res, next) => {
-    console.log(`[Request] ${req.method} ${req.url} | Origin: ${req.headers.origin}`)
-    next()
-  })
+  const originAllowlist = configService.get<string>('ORIGIN_ALLOWLIST')
+  let origin: boolean | string[] = true
+
+  if (originAllowlist) {
+    origin = originAllowlist.split(',').map((url) => url.trim())
+    console.log('CORS Allowed Origins:', origin)
+  } else {
+    console.log('CORS Allowed Origins: ALL (fallback)')
+  }
 
   app.enableCors({
-    origin: (requestOrigin, callback) => {
-      console.log(`[CORS] Request Origin: ${requestOrigin}`)
-      callback(null, true)
-    },
+    origin,
     methods: 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS',
     credentials: true,
   })
