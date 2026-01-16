@@ -53,13 +53,11 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin,
+    origin: true,
     methods: 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS',
     credentials: true,
   })
 
-  // Construct connection string if DB_CONNECTION_STRING is missing
-  // This prevents app crash if the full string isn't provided in env
   const dbConnectionString =
     configService.get<string>('DB_CONNECTION_STRING') ||
     `postgres://${configService.get('DB_LOGIN')}:${configService.get('DB_PASSWORD')}@${configService.get('DB_HOSTING')}:${configService.get('DB_POST') || 5432}/${configService.get('DB_NAME')}`
