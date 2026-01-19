@@ -439,6 +439,84 @@ export class SeoSection {
   seo_description_en?: string
 }
 
+export class FiltersSection {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_en?: string
+}
+
+export class PhotoReportImage {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  url?: string
+}
+
+export class PhotoReportSection {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_1?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_2?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_1_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_2_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_1_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_highlight_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title_part_2_en?: string
+
+  @ApiPropertyOptional({ type: [PhotoReportImage] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PhotoReportImage)
+  images?: PhotoReportImage[]
+}
+
 export class ToursPageStructureDto {
   @ApiPropertyOptional({ type: () => HeroSection })
   @IsOptional()
@@ -484,4 +562,16 @@ export class ToursPageStructureDto {
 
   @IsOptional()
   cta_section?: any
+
+  @ApiPropertyOptional({ type: () => FiltersSection })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => FiltersSection)
+  filters_section?: FiltersSection
+
+  @ApiPropertyOptional({ type: () => PhotoReportSection })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PhotoReportSection)
+  photo_report_section?: PhotoReportSection
 }

@@ -64,6 +64,9 @@ export class Category {
   @Column({ default: 0 })
   order_in_list: number
 
+  @Column({ type: 'jsonb', default: {} })
+  structure: any
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date
 

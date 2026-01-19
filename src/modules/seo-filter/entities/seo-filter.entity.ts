@@ -44,9 +44,12 @@ export class SeoFilter {
   @Column({ type: 'text', nullable: true })
   seo_text: string
 
+  @Column({ type: 'jsonb', default: {} })
+  structure: any
+
   @ManyToOne(() => Category, (category) => category.id, {
-    nullable: true,
-    onDelete: 'SET NULL',
+    nullable: false,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category

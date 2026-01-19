@@ -200,12 +200,6 @@ export class ProductCreateDto {
   @IsInt({ each: true })
   seo_filters?: number[]
 
-  @ApiPropertyOptional({ type: [Number], description: 'Array of Blog Post IDs' })
-  @IsOptional()
-  @IsArray()
-  @IsInt({ each: true })
-  blog_ids?: number[]
-
   @ApiPropertyOptional({ type: [Number], description: 'Array of FAQ IDs' })
   @IsOptional()
   @IsArray()
@@ -237,11 +231,6 @@ export class ProductCreateDto {
   @IsOptional()
   @IsString()
   faq_header_black_en?: string
-
-  @ApiPropertyOptional({ description: 'Array of blog objects' })
-  @IsOptional()
-  @IsArray()
-  blogs?: any[]
 
   // Flattened translations (optional, for convenience)
   @ApiPropertyOptional()
@@ -292,42 +281,6 @@ export class ProductCreateDto {
   productSections?: ProductSectionDto[]
 }
 
-export class ProductBlogDto {
-  @IsOptional()
-  id?: string | number
-
-  @IsString()
-  @IsOptional()
-  title?: string
-
-  @IsString()
-  @IsOptional()
-  content?: string
-
-  @IsOptional()
-  @IsArray()
-  images?: any[]
-
-  @IsString()
-  @IsOptional()
-  title_ua?: string
-
-  @IsString()
-  @IsOptional()
-  title_en?: string
-
-  @IsString()
-  @IsOptional()
-  content_ua?: string
-
-  @IsString()
-  @IsOptional()
-  content_en?: string;
-
-  // Allow any extra properties from Post entity
-  [key: string]: any
-}
-
 export class ProductSectionDto {
   @IsOptional()
   @IsInt()
@@ -353,6 +306,15 @@ export class ProductSectionDto {
   @IsOptional()
   @IsString({ each: true })
   images?: string[]
+
+  // Badge fields
+  @IsString()
+  @IsOptional()
+  badge_ua?: string
+
+  @IsString()
+  @IsOptional()
+  badge_en?: string
 
   // Localized fields
   @IsString()

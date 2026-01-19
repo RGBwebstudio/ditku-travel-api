@@ -109,4 +109,14 @@ export class SectionService {
     if (result.affected === 0) throw new NotFoundException('section translate is NOT_FOUND')
     return { message: 'OK' }
   }
+  async findUsed() {
+    const qb = this.repo
+      .createQueryBuilder('section')
+      .innerJoin('section.products', 'product')
+      .leftJoinAndSelect('section.translates', 'translates')
+
+    const entities = await qb.getMany()
+    const unique = Array.from(new Map(entities.map((e) => [e.id, e])).values())
+    return { entities: unique }
+  }
 }

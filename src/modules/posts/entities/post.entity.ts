@@ -1,6 +1,5 @@
 import { Exclude } from 'class-transformer'
 import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
-import { Product } from 'src/modules/product/entities/product.entity'
 import {
   Entity,
   Column,
@@ -8,7 +7,6 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
   Index,
@@ -85,8 +83,4 @@ export class Post {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
-
-  @ManyToMany(() => Product, (product: Product) => product.linkedBlogs)
-  @Exclude()
-  products: Product[]
 }

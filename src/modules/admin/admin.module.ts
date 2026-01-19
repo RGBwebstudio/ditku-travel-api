@@ -6,7 +6,6 @@ import { CategoryModule } from 'src/modules/category/category.module'
 import { CityModule } from 'src/modules/city/city.module'
 import { CookieModule } from 'src/modules/cookie/cookie.module'
 import { CountryModule } from 'src/modules/country/country.module'
-import { DAPModule } from 'src/modules/delivery-and-payment/faq.module'
 import { FaqModule } from 'src/modules/faq/faq.module'
 import { MainPageModule } from 'src/modules/main-page/main-page.module'
 import { MenuModule } from 'src/modules/menu/menu.module'
@@ -31,7 +30,6 @@ import { AdminCityController } from './city.controller'
 import { AdminContactsController } from './contacts.controller'
 import { AdminCookieController } from './cookie.controller'
 import { AdminCountryController } from './country.controller'
-import { AdminDapController } from './dap.controller'
 import { AdminFaqController } from './faq.controller'
 import { AdminMainPageController } from './main-page.controller'
 import { AdminMenuController } from './menu.controller'
@@ -60,7 +58,7 @@ import { AdminVideoController } from './video.controller'
     FaqModule,
     CookieModule,
     ContactsModule,
-    DAPModule,
+
     UserModule,
     ParameterModule,
     ParameterCategoryModule,
@@ -84,7 +82,7 @@ import { AdminVideoController } from './video.controller'
     AdminProductController,
     AdminFaqController,
     AdminCookieController,
-    AdminDapController,
+
     AdminTermsOfUseController,
     AdminContactsController,
     AdminPrivacyPolicyController,

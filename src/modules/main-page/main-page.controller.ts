@@ -35,10 +35,6 @@ export class MainPageController {
   })
   @ApiOperation({ summary: 'Отримати контент головної сторінки' })
   findOne(@Req() req: Request) {
-    console.log('DEBUG: findOne called')
-    console.log('DEBUG: headers', req.headers)
-    console.log('DEBUG: req.lang', req.lang)
-    console.log('DEBUG: params', req.params)
     return this.mainPageService.findOne(req.lang)
   }
 

@@ -27,6 +27,12 @@ export class SectionController {
     return { entities: result.entities }
   }
 
+  @Get('used')
+  @ApiOperation({ summary: 'Отримати секції, що використовуються в товарах' })
+  async findUsed() {
+    return this.sectionService.findUsed()
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Отримати секцію' })
   async findOne(@Param('id', ParseIntPipe) id: number) {

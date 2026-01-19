@@ -1,5 +1,7 @@
-import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put } from '@nestjs/common'
+import { Controller, Get, Post, Param, Query, Body, ParseIntPipe, Delete, Put, Req } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+
+import { Request } from 'express'
 
 import { CityService } from './city.service'
 import { CityCreateTranslateDto } from './dto/city-create-translate.dto'
@@ -33,6 +35,16 @@ export class CityController {
     }
 
     return this.cityService.getAllList()
+  }
+
+  @Get('start-points')
+  async getStartPoints(@Req() req: Request) {
+    return this.cityService.findStartPoints(req.lang)
+  }
+
+  @Get('end-points')
+  async getEndPoints(@Req() req: Request) {
+    return this.cityService.findEndPoints(req.lang)
   }
 
   @Get(':id')

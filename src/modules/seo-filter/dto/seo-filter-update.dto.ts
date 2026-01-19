@@ -91,4 +91,8 @@ export class SeoFilterUpdateDto {
   @IsOptional()
   @IsString()
   seo_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  structure?: any
 }

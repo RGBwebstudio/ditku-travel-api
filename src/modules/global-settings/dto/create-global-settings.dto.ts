@@ -23,6 +23,16 @@ export class CreateGlobalSettingsDto {
   @IsOptional()
   cta_text: string
 
+  @ApiProperty({ example: 'Приєднуйтесь до нас.' })
+  @IsString()
+  @IsOptional()
+  cta_text_ua?: string
+
+  @ApiProperty({ example: 'Join us.' })
+  @IsString()
+  @IsOptional()
+  cta_text_en?: string
+
   @ApiProperty({ example: 'Get Started' })
   @IsString()
   @IsOptional()

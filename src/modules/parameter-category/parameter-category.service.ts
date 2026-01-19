@@ -286,4 +286,16 @@ export class ParameterCategoryService {
 
     return { message: 'OK' }
   }
+
+  async findUsed(lang: LANG) {
+    const qb = this.parameterCategoryRepo
+      .createQueryBuilder('category')
+      .innerJoinAndSelect('category.parameters', 'param')
+      .innerJoin('param.products', 'product')
+      .leftJoinAndSelect('category.translates', 'translates')
+
+    const entities = await qb.getMany()
+
+    return { entities: applyTranslations(entities, lang) }
+  }
 }

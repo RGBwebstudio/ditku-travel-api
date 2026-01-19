@@ -63,8 +63,12 @@ export class ProductFilterDto {
 
   @ApiPropertyOptional({
     example: 1,
-    description: 'SEO Filter ID to filter products by seo_filter relation',
+    description: 'SEO Filter ID or URL slug to filter products by seo_filter relation',
   })
   @IsOptional()
-  seo_filter?: number
+  seo_filter?: number | string
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  is_popular?: boolean
 }

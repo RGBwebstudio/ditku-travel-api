@@ -29,10 +29,12 @@ export class ProductSection {
   @Column({ type: 'text', default: '' })
   description: string
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  badge: string
+
   @Column({ type: 'jsonb', nullable: true, default: [] })
   images: string[]
 
-  // Banner 1 fields (for 'banners' type)
   @Column({ type: 'varchar', length: 255, nullable: true })
   banner1_title: string
 
@@ -42,7 +44,6 @@ export class ProductSection {
   @Column({ type: 'varchar', length: 500, nullable: true })
   banner1_link: string
 
-  // Banner 2 fields (for 'banners' type)
   @Column({ type: 'varchar', length: 255, nullable: true })
   banner2_title: string
 

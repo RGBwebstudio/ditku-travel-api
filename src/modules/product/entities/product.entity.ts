@@ -2,7 +2,6 @@ import { Category } from 'src/modules/category/entities/category.entity'
 import { Faq } from 'src/modules/faq/entities/faq.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
-import { Post } from 'src/modules/posts/entities/post.entity'
 import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
@@ -34,7 +33,7 @@ export class Product {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
+  @Column({ default: false })
   is_top: boolean
 
   @Column()
@@ -106,19 +105,6 @@ export class Product {
     inverseJoinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
   })
   seo_filters: SeoFilter[]
-
-  @Column({ type: 'jsonb', nullable: true, default: [] })
-  blogs: any[]
-
-  @ManyToMany(() => Post, (post: Post) => post.products, {
-    onDelete: 'CASCADE',
-  })
-  @JoinTable({
-    name: 'product_blogs',
-    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'blog_id', referencedColumnName: 'id' },
-  })
-  linkedBlogs: Post[]
 
   @Column({ default: 0 })
   order_in_list: number

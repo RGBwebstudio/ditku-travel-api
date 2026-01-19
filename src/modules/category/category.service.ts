@@ -93,7 +93,7 @@ export class CategoryService {
       }
     }
 
-    const { title_ua, title_en, seo_text_ua, seo_text_en, ...categoryData } = dto
+    const { title_ua, title_en, seo_text_ua, seo_text_en, structure, ...categoryData } = dto
     const translationsData: { lang: LANG; field: string; value: string }[] = []
 
     if (title_ua) translationsData.push({ lang: LANG.UA, field: 'title', value: title_ua })
@@ -105,6 +105,7 @@ export class CategoryService {
       ...categoryData,
       parent,
       ...(url ? { url } : {}),
+      ...(structure ? { structure } : {}),
     })
 
     try {
@@ -411,7 +412,7 @@ export class CategoryService {
 
       const url = dto.url && String(dto.url).trim() !== '' ? dto.url : undefined
 
-      const { title_ua, title_en, seo_text_ua, seo_text_en, ...categoryData } = dto
+      const { title_ua, title_en, seo_text_ua, seo_text_en, structure, ...categoryData } = dto
       const translations: { lang: LANG; field: string; value: string }[] = []
 
       if (title_ua !== undefined) translations.push({ lang: LANG.UA, field: 'title', value: title_ua })
@@ -419,7 +420,11 @@ export class CategoryService {
       if (seo_text_ua !== undefined) translations.push({ lang: LANG.UA, field: 'seo_text', value: seo_text_ua })
       if (seo_text_en !== undefined) translations.push({ lang: LANG.EN, field: 'seo_text', value: seo_text_en })
 
-      await this.categoryRepo.update(id, { ...categoryData, ...(url ? { url } : {}) })
+      await this.categoryRepo.update(id, {
+        ...categoryData,
+        ...(url ? { url } : {}),
+        ...(structure ? { structure } : {}),
+      })
 
       // Update translations
       if (translations.length) {
@@ -474,6 +479,21 @@ export class CategoryService {
           await this.categoryRepo.save(child)
         }
       }
+
+      const hasProducts = await this.categoryRepo.manager.getRepository('Product').count({
+        where: { category_id: { id: id } },
+      })
+      if (hasProducts > 0) throw new BadRequestException('HAS_CHILDS')
+
+      const hasMenus = await this.categoryRepo.manager.getRepository('Menu').count({
+        where: { category_id: { id: id } },
+      })
+      if (hasMenus > 0) throw new BadRequestException('HAS_CHILDS')
+
+      const hasSeoFilters = await this.categoryRepo.manager.getRepository('SeoFilter').count({
+        where: { category_id: { id: id } },
+      })
+      if (hasSeoFilters > 0) throw new BadRequestException('HAS_CHILDS')
 
       const result = await this.categoryRepo.delete(id)
       if (result.affected === 0) {

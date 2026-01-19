@@ -184,6 +184,9 @@ export class SeoFilterService {
     if (createDto.seo_text !== undefined) {
       seoFilterData.seo_text = createDto.seo_text
     }
+    if (createDto.structure !== undefined) {
+      seoFilterData.structure = createDto.structure
+    }
 
     if (createDto.category_id) {
       seoFilterData.category_id = {
@@ -277,6 +280,9 @@ export class SeoFilterService {
     }
     if (updateDto.seo_text !== undefined) {
       existingEntity.seo_text = updateDto.seo_text
+    }
+    if (updateDto.structure !== undefined) {
+      existingEntity.structure = updateDto.structure
     }
 
     const relEntity = existingEntity as SeoFilterRel
@@ -419,6 +425,9 @@ export class SeoFilterService {
       }
     } catch (err) {
       this.logger.error(`Error while deleting seo_filter: ${err}`)
+      if (err?.code === '23503') {
+        throw new BadRequestException('DEPENDENCY_EXISTS')
+      }
       throw err
     }
 

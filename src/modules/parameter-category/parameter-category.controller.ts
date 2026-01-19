@@ -40,6 +40,12 @@ export class ParameterCategoryController {
     return this.parameterCategoryService.findAllList(req.lang)
   }
 
+  @Get('used')
+  @ApiOperation({ summary: 'Отримати категорії параметрів та параметри, що використовуються в товарах' })
+  async findUsed(@Req() req: Request) {
+    return this.parameterCategoryService.findUsed(req.lang)
+  }
+
   @Get()
   @ApiOperation({ summary: 'Отримати частину категорій параметрів' })
   @ApiResponse({

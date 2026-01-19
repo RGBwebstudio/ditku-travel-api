@@ -150,6 +150,13 @@ export class ProductController {
     return this.productService.searchByTitle(q, req.lang)
   }
 
+  @Get('top-filtered')
+  @ApiOperation({ summary: 'Отримати топ тури' })
+  @ApiResponse({ status: 200, description: 'SUCCESS' })
+  async getTopFiltered(@Req() req: Request) {
+    return this.productService.findTopFiltered(req.lang)
+  }
+
   @Get('closest-tours')
   @ApiOperation({ summary: 'Отримати 3 найближчі тури (по даті початку)' })
   @ApiResponse({ status: 200, description: 'SUCCESS - Знайдено тури' })
@@ -184,7 +191,19 @@ export class ProductController {
   })
   @ApiOperation({ summary: 'Отримати список фільтрованих товарів' })
   filter(@Query() query: ProductFilterDto, @Req() req: Request) {
-    const { categories, parameters, sections, take, skip, start_point, end_point, startAt, endAt, seo_filter } = query
+    const {
+      categories,
+      parameters,
+      sections,
+      take,
+      skip,
+      start_point,
+      end_point,
+      startAt,
+      endAt,
+      seo_filter,
+      is_popular,
+    } = query
 
     return this.productService.filter(
       categories,
@@ -197,7 +216,8 @@ export class ProductController {
       end_point,
       startAt,
       endAt,
-      seo_filter
+      seo_filter,
+      is_popular
     )
   }
 
