@@ -10,13 +10,13 @@ import { Category } from 'src/modules/category/entities/category.entity'
 import { Faq } from 'src/modules/faq/entities/faq.entity'
 import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
+import { Post } from 'src/modules/posts/entities/post.entity'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
-import { ProductUpdateDto } from 'src/modules/product/dto/product-update.dto'
 import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
-import { In, Repository, DeepPartial } from 'typeorm'
+import { Repository, In, DeepPartial } from 'typeorm'
 
 import { AddProductImageDto } from './dto/add-product-image.dto'
 import { CreateProgramDto } from './dto/create-program.dto'
@@ -24,6 +24,7 @@ import { ProductCreateImageDto } from './dto/product-create-image.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
 import { ProductParametersDto } from './dto/product-parameters.dto'
 import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
+import { ProductUpdateDto } from './dto/product-update.dto'
 import { UpdateProgramDto } from './dto/update-program.dto'
 import { ProductImage } from './entities/product-image.entity'
 import { ProductProgramImage } from './entities/product-program-image.entity'
@@ -34,15 +35,7 @@ import { ProductSection } from './entities/product-section.entity'
 import { ProductTranslate } from './entities/product-translate.entity'
 import { Product } from './entities/product.entity'
 
-type RawRoadmap = {
-  id: number
-  start_point: boolean
-  end_point: boolean
-  city_id?: number | { id: number } | null
-  time?: string
-  description?: string
-  order?: number | string | null
-}
+type RawRoadmap = Roadmap
 
 @Injectable()
 export class ProductService {
@@ -74,7 +67,9 @@ export class ProductService {
     @InjectRepository(ProductSection)
     private productSectionRepo: Repository<ProductSection>,
     @InjectRepository(ProductSectionTranslate)
-    private productSectionTranslateRepo: Repository<ProductSectionTranslate>
+    private productSectionTranslateRepo: Repository<ProductSectionTranslate>,
+    @InjectRepository(Post)
+    private postRepo: Repository<Post>
   ) {}
 
   async searchByTitle(
@@ -237,10 +232,9 @@ export class ProductService {
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
         'average_rating'
       )
-      .where('product.start_at >= NOW()')
+      .where('product.show_on_main_page = :showOnMainPage', { showOnMainPage: true })
       .andWhere('product.is_hidden = :isHidden', { isHidden: false })
       .orderBy('product.start_at', 'ASC')
-      .take(3)
       .getRawAndEntities()
 
     const products = result.entities.map((entity, index) => {
@@ -434,7 +428,8 @@ export class ProductService {
     startAt?: string,
     endAt?: string,
     seoFilterId?: number | string,
-    is_popular?: boolean
+    is_popular?: boolean,
+    show_in_popular_on_main_page?: boolean
   ) {
     const mappedCategories = categories?.trim().length ? categories.split(',').map((item) => String(item)) : []
 
@@ -464,6 +459,15 @@ export class ProductService {
       if (isPopularBool) {
         queryBuilder.andWhere('product.is_popular = :isPopular', {
           isPopular: true,
+        })
+      }
+    }
+
+    if (show_in_popular_on_main_page !== undefined) {
+      const showInPopularBool = String(show_in_popular_on_main_page) === 'true'
+      if (showInPopularBool) {
+        queryBuilder.andWhere('product.show_in_popular_on_main_page = :showInPopular', {
+          showInPopular: true,
         })
       }
     }
@@ -876,14 +880,17 @@ export class ProductService {
         'translates',
         'format_groups',
         'format_groups.translates',
+        'sections',
+        'sections.translates',
+        'parameters',
+        'parameters.translates',
         'seo_filters',
       ],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-    // Run roadmaps, programs, reviews, children, and faqs queries in parallel
-    const [roadmaps, programs, reviews, children, faqs] = await Promise.all([
+    const [roadmaps, programs, reviews, children, faqs, productSections] = await Promise.all([
       // Query 2: Load roadmaps with city data
       this.productRepo.manager
         .getRepository(Roadmap)
@@ -918,11 +925,18 @@ export class ProductService {
       }),
       // Query 6: Load FAQs
       this.productRepo.createQueryBuilder().relation(Product, 'faqs').of(product.id).loadMany(),
+      // Query 7: Load Product Sections
+      this.productSectionRepo.find({
+        where: { product_id: { id: product.id } },
+        relations: ['translates'],
+        order: { order: 'ASC' },
+      }),
     ])
 
     product.roadmaps = roadmaps
     product.programs = programs
     product.faqs = faqs
+    product.productSections = productSections
 
     // Track viewed products in session
     if (req?.session) {
@@ -1146,6 +1160,9 @@ export class ProductService {
     const recommendedIds = Array.isArray(dto.recommended_ids) ? dto.recommended_ids : undefined
     if (recommendedIds) delete productPayload.recommended_ids
 
+    const blogIds = Array.isArray(dto.blog_ids) ? dto.blog_ids : undefined
+    if (blogIds) delete productPayload.blog_ids
+
     const product = this.productRepo.create(productPayload as DeepPartial<Product>)
 
     try {
@@ -1216,6 +1233,14 @@ export class ProductService {
 
       if (translations.length > 0) {
         await this.createTranslates(translations)
+      }
+
+      if (blogIds && blogIds.length) {
+        const posts = await this.postRepo.findBy({
+          id: In(blogIds),
+        })
+        saved.posts = posts
+        await this.productRepo.save(saved)
       }
 
       if (sectionsIds && sectionsIds.length) {
@@ -1313,6 +1338,7 @@ export class ProductService {
         seo_filters,
         faq_ids,
         recommended_ids,
+        blog_ids,
 
         productSections,
         parameters: rawParams,
@@ -1390,6 +1416,12 @@ export class ProductService {
           ? await this.productRepo.findBy({ id: In(recommendedIds) })
           : []
         product.recommendedProducts = recommendedProducts
+      }
+
+      const blogIds: number[] | undefined = Array.isArray(blog_ids) ? blog_ids : undefined
+      if (blogIds !== undefined) {
+        const posts = blogIds.length ? await this.postRepo.findBy({ id: In(blogIds) }) : []
+        product.posts = posts
       }
 
       const sectionObjectsToProcess =

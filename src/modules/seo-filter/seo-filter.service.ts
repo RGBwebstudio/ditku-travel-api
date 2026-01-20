@@ -6,6 +6,7 @@ import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { City } from 'src/modules/city/entities/city.entity'
 import { Country } from 'src/modules/country/entities/country.entity'
+import { Product } from 'src/modules/product/entities/product.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
 import { Repository, In } from 'typeorm'
 
@@ -21,6 +22,7 @@ type SeoFilterRel = Omit<SeoFilter, 'category_id' | 'city_id' | 'country_id' | '
   city_id?: City | null
   country_id?: Country | null
   parent?: SeoFilter | null
+  popular_tours?: Product[]
 }
 
 @Injectable()
@@ -78,7 +80,15 @@ export class SeoFilterService {
     const enrichedEntities = collectedIds.length
       ? await this.seoFilterRepository.find({
           where: { id: In(collectedIds) },
-          relations: ['sections', 'category_id', 'city_id', 'country_id', 'translates'],
+          relations: [
+            'sections',
+            'category_id',
+            'city_id',
+            'country_id',
+            'translates',
+            'popular_tours',
+            'popular_tours.category_id',
+          ],
         })
       : []
 
@@ -133,7 +143,15 @@ export class SeoFilterService {
     const enrichedEntities = collectedIds.length
       ? await this.seoFilterRepository.find({
           where: { id: In(collectedIds) },
-          relations: ['sections', 'category_id', 'city_id', 'country_id', 'translates'],
+          relations: [
+            'sections',
+            'category_id',
+            'city_id',
+            'country_id',
+            'translates',
+            'popular_tours',
+            'popular_tours.category_id',
+          ],
         })
       : []
 
@@ -219,6 +237,10 @@ export class SeoFilterService {
       } as SeoFilter
     }
 
+    if (createDto.popular_tours_ids) {
+      seoFilterData.popular_tours = createDto.popular_tours_ids.map((id) => ({ id }) as Product)
+    }
+
     try {
       const savedEntity = await this.seoFilterRepository.save(seoFilterData)
 
@@ -226,7 +248,7 @@ export class SeoFilterService {
       const translations: SeoFilterCreateTranslateDto[] = []
       const langFields = ['title', 'seo_title', 'seo_description', 'seo_text']
 
-      const payload: any = createDto
+      const payload = createDto as unknown as Record<string, unknown>
 
       for (const field of langFields) {
         if (payload[`${field}_ua`]) {
@@ -234,7 +256,7 @@ export class SeoFilterService {
             entity_id: savedEntity,
             lang: LANG.UA,
             field: field,
-            value: payload[`${field}_ua`],
+            value: payload[`${field}_ua`] as string,
           })
         }
         if (payload[`${field}_en`]) {
@@ -242,7 +264,7 @@ export class SeoFilterService {
             entity_id: savedEntity,
             lang: LANG.EN,
             field: field,
-            value: payload[`${field}_en`],
+            value: payload[`${field}_en`] as string,
           })
         }
       }
@@ -263,6 +285,7 @@ export class SeoFilterService {
       where: {
         id,
       },
+      relations: ['popular_tours', 'popular_tours.category_id'],
     })
     if (!existingEntity) throw new NotFoundException('seo_filter is NOT_FOUND')
 
@@ -333,6 +356,10 @@ export class SeoFilterService {
       }
     }
 
+    if (updateDto.popular_tours_ids !== undefined) {
+      relEntity.popular_tours = updateDto.popular_tours_ids.map((id) => ({ id }) as Product)
+    }
+
     try {
       await this.seoFilterRepository.save(relEntity as SeoFilter)
 
@@ -340,7 +367,7 @@ export class SeoFilterService {
       const translations: SeoFilterCreateTranslateDto[] = []
       const langFields = ['title', 'seo_title', 'seo_description', 'seo_text']
 
-      const payload: any = updateDto
+      const payload = updateDto as unknown as Record<string, unknown>
 
       for (const field of langFields) {
         if (payload[`${field}_ua`]) {
@@ -348,7 +375,7 @@ export class SeoFilterService {
             entity_id: existingEntity,
             lang: LANG.UA,
             field: field,
-            value: payload[`${field}_ua`],
+            value: payload[`${field}_ua`] as string,
           })
         }
         if (payload[`${field}_en`]) {
@@ -356,7 +383,7 @@ export class SeoFilterService {
             entity_id: existingEntity,
             lang: LANG.EN,
             field: field,
-            value: payload[`${field}_en`],
+            value: payload[`${field}_en`] as string,
           })
         }
       }

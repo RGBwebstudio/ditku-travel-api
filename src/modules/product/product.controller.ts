@@ -203,6 +203,7 @@ export class ProductController {
       endAt,
       seo_filter,
       is_popular,
+      show_in_popular_on_main_page,
     } = query
 
     return this.productService.filter(
@@ -217,7 +218,8 @@ export class ProductController {
       startAt,
       endAt,
       seo_filter,
-      is_popular
+      is_popular,
+      show_in_popular_on_main_page
     )
   }
 

@@ -53,6 +53,12 @@ export class CategoryCreateDto {
   @ApiPropertyOptional()
   @IsOptional()
   structure?: any
+
+  @ApiPropertyOptional({ type: [Number] })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  popular_tours_ids?: number[]
 }
 
 export class CategoryCreateResponseDto {

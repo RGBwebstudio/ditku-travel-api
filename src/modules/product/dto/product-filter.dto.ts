@@ -71,4 +71,8 @@ export class ProductFilterDto {
   @ApiPropertyOptional({ example: true })
   @IsOptional()
   is_popular?: boolean
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  show_in_popular_on_main_page?: boolean
 }

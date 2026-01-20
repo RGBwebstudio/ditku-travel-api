@@ -10,9 +10,11 @@ import { AdminModule } from '../modules/admin/admin.module'
 import { BannerModule } from '../modules/banners/brand.module'
 import { CategoryModule } from '../modules/category/category.module'
 import { CityModule } from '../modules/city/city.module'
+import { ContactsModule } from '../modules/contacts/contacts.module'
 import { CookieModule } from '../modules/cookie/cookie.module'
 import { CountryModule } from '../modules/country/country.module'
 import { FaqModule } from '../modules/faq/faq.module'
+import { FilesModule } from '../modules/files/files.module'
 import { FormatGroupModule } from '../modules/format-group/format-group.module'
 import { GalleryModule } from '../modules/gallery/gallery.module'
 import { GlobalSettingsModule } from '../modules/global-settings/global-settings.module'
@@ -40,7 +42,6 @@ import { TermsOfUseModule } from '../modules/terms-of-use/terms-of-use.module'
 import { ToursPageModule } from '../modules/tours-page/tours-page.module'
 import { UserModule } from '../modules/user/user.module'
 import { VideoModule } from '../modules/video/video.module'
-import { ContactsModule } from '../modules/сontacts/contacts.module'
 
 const config = configuration()
 
@@ -87,6 +88,7 @@ const config = configuration()
     GlobalSettingsModule,
     ToursPageModule,
     SafeWithUsModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

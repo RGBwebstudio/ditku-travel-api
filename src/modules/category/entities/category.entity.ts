@@ -1,7 +1,4 @@
 import { Exclude } from 'class-transformer'
-import { Menu } from 'src/modules/menu/entities/menu.entity'
-import { Product } from 'src/modules/product/entities/product.entity'
-import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import {
   Column,
   Entity,
@@ -13,10 +10,15 @@ import {
   TreeChildren,
   TreeParent,
   Index,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm'
 
 import { CategoryImage } from './category-image.entity'
 import { CategoryTranslate } from './category-translate.entity'
+import { Menu } from '../../menu/entities/menu.entity'
+import { Product } from '../../product/entities/product.entity'
+import { SeoFilter } from '../../seo-filter/entities/seo-filter.entity'
 
 @Entity()
 @Tree('closure-table', {
@@ -60,6 +62,14 @@ export class Category {
 
   @OneToMany(() => SeoFilter, (filter) => filter.category_id)
   seo_filters: SeoFilter[]
+
+  @ManyToMany(() => Product)
+  @JoinTable({
+    name: 'category_popular_tours',
+    joinColumn: { name: 'category_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' },
+  })
+  popular_tours: Product[]
 
   @Column({ default: 0 })
   order_in_list: number

@@ -1,7 +1,7 @@
-import { LANG } from 'src/common/enums/translation.enum'
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 
 import { ProductSection } from './product-section.entity'
+import { LANG } from '../../../common/enums/translation.enum'
 
 @Entity('product_content_section_translate')
 export class ProductSectionTranslate {

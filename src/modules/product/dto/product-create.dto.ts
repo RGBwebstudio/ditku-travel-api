@@ -12,6 +12,11 @@ export class ProductCreateDto {
   @IsBoolean()
   show_on_main_page: boolean
 
+  @ApiProperty({ example: false, description: 'Show product in popular block on main page' })
+  @IsBoolean()
+  @IsOptional()
+  show_in_popular_on_main_page: boolean
+
   @ApiProperty({ example: false })
   @IsBoolean()
   is_top: boolean
@@ -212,6 +217,12 @@ export class ProductCreateDto {
   @IsInt({ each: true })
   recommended_ids?: number[]
 
+  @ApiPropertyOptional({ type: [Number], description: 'Array of Blog (Post) IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  blog_ids?: number[]
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -232,7 +243,6 @@ export class ProductCreateDto {
   @IsString()
   faq_header_black_en?: string
 
-  // Flattened translations (optional, for convenience)
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

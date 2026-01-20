@@ -1,11 +1,3 @@
-import { Category } from 'src/modules/category/entities/category.entity'
-import { Faq } from 'src/modules/faq/entities/faq.entity'
-import { FormatGroup } from 'src/modules/format-group/entities/format-group.entity'
-import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
-import { Rating } from 'src/modules/product-rating/entities/rating.entity'
-import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
-import { Section } from 'src/modules/section/entities/section.entity'
-import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import {
   Entity,
   Column,
@@ -24,6 +16,15 @@ import { ProductImage } from './product-image.entity'
 import { ProductProgram } from './product-program.entity'
 import { ProductSection } from './product-section.entity'
 import { ProductTranslate } from './product-translate.entity'
+import { Category } from '../../category/entities/category.entity'
+import { Faq } from '../../faq/entities/faq.entity'
+import { FormatGroup } from '../../format-group/entities/format-group.entity'
+import { Parameter } from '../../parameter/entities/parameter.entity'
+import { Post } from '../../posts/entities/post.entity'
+import { Rating } from '../../product-rating/entities/rating.entity'
+import { Roadmap } from '../../roadmap/entities/roadmap.entity'
+import { Section } from '../../section/entities/section.entity'
+import { SeoFilter } from '../../seo-filter/entities/seo-filter.entity'
 
 @Entity()
 @Index(['category_id', 'show_on_main_page', 'created_at'])
@@ -111,6 +112,9 @@ export class Product {
 
   @Column({ default: false })
   show_on_main_page: boolean
+
+  @Column({ default: false })
+  show_in_popular_on_main_page: boolean
 
   @Column({ default: 0 })
   popular_count: number
@@ -217,6 +221,14 @@ export class Product {
     inverseJoinColumn: { name: 'faq_id', referencedColumnName: 'id' },
   })
   faqs: Faq[]
+
+  @ManyToMany(() => Post, { cascade: true })
+  @JoinTable({
+    name: 'product_posts',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'post_id', referencedColumnName: 'id' },
+  })
+  posts: Post[]
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date

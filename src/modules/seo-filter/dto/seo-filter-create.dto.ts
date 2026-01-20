@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsString, IsOptional, IsArray, IsInt, IsNotEmpty } from 'class-validator'
+import { IsString, IsOptional, IsArray, IsInt, IsNotEmpty, IsNumber } from 'class-validator'
 
 export class SeoFilterCreateDto {
   @ApiProperty({ example: 'З Харкова' })
@@ -95,4 +95,10 @@ export class SeoFilterCreateDto {
   @ApiPropertyOptional()
   @IsOptional()
   structure?: any
+
+  @ApiPropertyOptional({ type: [Number] })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  popular_tours_ids?: number[]
 }
