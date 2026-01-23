@@ -7,6 +7,66 @@ import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 
 import { Product } from '../entities/product.entity'
 
+export class SafeCarouselSlideDto {
+  @IsString()
+  id: string
+
+  @IsString()
+  image: string
+
+  @IsString()
+  title_ua: string
+
+  @IsString()
+  title_en: string
+
+  @IsString()
+  text_ua: string
+
+  @IsString()
+  text_en: string
+}
+
+export class SafeCarouselSectionDto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SafeCarouselSlideDto)
+  slides?: SafeCarouselSlideDto[]
+
+  @IsOptional()
+  @IsString()
+  title_part_1_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_part_1_en?: string
+
+  @IsOptional()
+  @IsString()
+  title_highlight_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_highlight_en?: string
+
+  @IsOptional()
+  @IsString()
+  title_part_2_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_part_2_en?: string
+
+  @IsOptional()
+  @IsString()
+  title_suffix_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_suffix_en?: string
+}
+
 export class ProductCreateDto {
   @ApiProperty({ example: false, description: 'Show product on main page' })
   @IsBoolean()
@@ -128,6 +188,20 @@ export class ProductCreateDto {
   })
   @IsOptional()
   why_travel_section?: any
+
+  @ApiPropertyOptional({
+    description: 'Photo report data',
+  })
+  @IsOptional()
+  photo_report?: any
+
+  @ApiPropertyOptional({
+    description: 'Safe carousel data',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SafeCarouselSectionDto)
+  safe_carousel?: SafeCarouselSectionDto
 
   @ApiPropertyOptional({ description: 'Global section IDs (numbers) OR product section objects' })
   @IsOptional()
@@ -282,13 +356,6 @@ export class ProductCreateDto {
   @IsOptional()
   @IsString()
   seo_description_en?: string
-
-  @ApiPropertyOptional({ description: 'Array of product sections (content blocks)' })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProductSectionDto)
-  productSections?: ProductSectionDto[]
 }
 
 export class ProductSectionDto {

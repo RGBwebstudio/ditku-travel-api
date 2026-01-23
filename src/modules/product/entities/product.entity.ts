@@ -14,7 +14,6 @@ import {
 
 import { ProductImage } from './product-image.entity'
 import { ProductProgram } from './product-program.entity'
-import { ProductSection } from './product-section.entity'
 import { ProductTranslate } from './product-translate.entity'
 import { Category } from '../../category/entities/category.entity'
 import { Faq } from '../../faq/entities/faq.entity'
@@ -25,6 +24,27 @@ import { Rating } from '../../product-rating/entities/rating.entity'
 import { Roadmap } from '../../roadmap/entities/roadmap.entity'
 import { Section } from '../../section/entities/section.entity'
 import { SeoFilter } from '../../seo-filter/entities/seo-filter.entity'
+
+export interface SafeCarouselSlide {
+  id: string
+  image: string
+  title_ua: string
+  title_en: string
+  text_ua: string
+  text_en: string
+}
+
+export interface SafeCarouselSection {
+  slides?: SafeCarouselSlide[]
+  title_part_1_ua?: string
+  title_part_1_en?: string
+  title_highlight_ua?: string
+  title_highlight_en?: string
+  title_part_2_ua?: string
+  title_part_2_en?: string
+  title_suffix_ua?: string
+  title_suffix_en?: string
+}
 
 @Entity()
 @Index(['category_id', 'show_on_main_page', 'created_at'])
@@ -97,6 +117,15 @@ export class Product {
   @Column({ type: 'jsonb', nullable: true })
   why_travel_section: any
 
+  @Column({ type: 'jsonb', nullable: true })
+  photo_report: any
+
+  @Column({ type: 'jsonb', nullable: true, default: {} })
+  safe_carousel: SafeCarouselSection
+
+  @ManyToMany(() => SeoFilter, (seoFilter: SeoFilter) => seoFilter.products, {
+    onDelete: 'CASCADE',
+  })
   @ManyToMany(() => SeoFilter, (seoFilter: SeoFilter) => seoFilter.products, {
     onDelete: 'CASCADE',
   })
@@ -175,6 +204,22 @@ export class Product {
   @ManyToMany(() => Product, (product: Product) => product.recommendedProducts)
   recommendedBy: Product[]
 
+  @ManyToMany(() => Product, (product: Product) => product.topTourBy, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable({
+    name: 'product_top_tours',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: {
+      name: 'top_tour_product_id',
+      referencedColumnName: 'id',
+    },
+  })
+  topTourProducts: Product[]
+
+  @ManyToMany(() => Product, (product: Product) => product.topTourProducts)
+  topTourBy: Product[]
+
   @OneToMany(() => ProductTranslate, (translate: ProductTranslate) => translate.entity_id)
   translates: ProductTranslate[]
 
@@ -189,9 +234,6 @@ export class Product {
 
   @OneToMany(() => ProductProgram, (program: ProductProgram) => program.product_id)
   programs: ProductProgram[]
-
-  @OneToMany(() => ProductSection, (section: ProductSection) => section.product_id)
-  productSections: ProductSection[]
 
   @Column({ type: 'timestamptz', nullable: true })
   start_at: Date

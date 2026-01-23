@@ -53,7 +53,7 @@ export class ProductSection {
   @Column({ type: 'varchar', length: 500, nullable: true })
   banner2_link: string
 
-  @ManyToOne(() => Product, (product) => product.productSections, {
+  @ManyToOne(() => Product, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'product_id' })
