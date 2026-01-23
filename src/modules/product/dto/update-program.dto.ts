@@ -1,10 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { ApiPropertyOptional } from '@nestjs/swagger'
 
 import { Type } from 'class-transformer'
-import { IsNumber, IsOptional, IsString, IsArray, ValidateNested, Min } from 'class-validator'
+import { IsNumber, IsOptional, IsString, IsArray, ValidateNested, Min, IsEnum } from 'class-validator'
 
 import { ProgramImageDto } from './program-image.dto'
 import { ProgramTranslateDto } from './program-translate.dto'
+import { ProductProgramType } from '../entities/product-program.entity'
 
 export class UpdateProgramDto {
   @ApiPropertyOptional({ description: 'Program ID (required for updates)' })
@@ -30,6 +31,74 @@ export class UpdateProgramDto {
   @IsOptional()
   @IsString()
   description?: string
+
+  @ApiPropertyOptional({
+    description: 'Block type: day or banners',
+    enum: ProductProgramType,
+  })
+  @IsOptional()
+  @IsEnum(ProductProgramType)
+  type?: ProductProgramType
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_button_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_button_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_link_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner1_link_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_button_text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_button_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_link_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  banner2_link_en?: string
 
   @ApiPropertyOptional({ description: 'Display order', example: 1 })
   @IsOptional()

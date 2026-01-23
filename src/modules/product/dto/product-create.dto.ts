@@ -7,10 +7,75 @@ import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 
 import { Product } from '../entities/product.entity'
 
+export class SafeCarouselSlideDto {
+  @IsString()
+  id: string
+
+  @IsString()
+  image: string
+
+  @IsString()
+  title_ua: string
+
+  @IsString()
+  title_en: string
+
+  @IsString()
+  text_ua: string
+
+  @IsString()
+  text_en: string
+}
+
+export class SafeCarouselSectionDto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SafeCarouselSlideDto)
+  slides?: SafeCarouselSlideDto[]
+
+  @IsOptional()
+  @IsString()
+  title_part_1_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_part_1_en?: string
+
+  @IsOptional()
+  @IsString()
+  title_highlight_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_highlight_en?: string
+
+  @IsOptional()
+  @IsString()
+  title_part_2_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_part_2_en?: string
+
+  @IsOptional()
+  @IsString()
+  title_suffix_ua?: string
+
+  @IsOptional()
+  @IsString()
+  title_suffix_en?: string
+}
+
 export class ProductCreateDto {
   @ApiProperty({ example: false, description: 'Show product on main page' })
   @IsBoolean()
   show_on_main_page: boolean
+
+  @ApiProperty({ example: false, description: 'Show product in popular block on main page' })
+  @IsBoolean()
+  @IsOptional()
+  show_in_popular_on_main_page: boolean
 
   @ApiProperty({ example: false })
   @IsBoolean()
@@ -124,6 +189,20 @@ export class ProductCreateDto {
   @IsOptional()
   why_travel_section?: any
 
+  @ApiPropertyOptional({
+    description: 'Photo report data',
+  })
+  @IsOptional()
+  photo_report?: any
+
+  @ApiPropertyOptional({
+    description: 'Safe carousel data',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SafeCarouselSectionDto)
+  safe_carousel?: SafeCarouselSectionDto
+
   @ApiPropertyOptional({ description: 'Global section IDs (numbers) OR product section objects' })
   @IsOptional()
   @IsArray()
@@ -200,12 +279,6 @@ export class ProductCreateDto {
   @IsInt({ each: true })
   seo_filters?: number[]
 
-  @ApiPropertyOptional({ type: [Number], description: 'Array of Blog Post IDs' })
-  @IsOptional()
-  @IsArray()
-  @IsInt({ each: true })
-  blog_ids?: number[]
-
   @ApiPropertyOptional({ type: [Number], description: 'Array of FAQ IDs' })
   @IsOptional()
   @IsArray()
@@ -217,6 +290,12 @@ export class ProductCreateDto {
   @IsArray()
   @IsInt({ each: true })
   recommended_ids?: number[]
+
+  @ApiPropertyOptional({ type: [Number], description: 'Array of Blog (Post) IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  blog_ids?: number[]
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -238,12 +317,6 @@ export class ProductCreateDto {
   @IsString()
   faq_header_black_en?: string
 
-  @ApiPropertyOptional({ description: 'Array of blog objects' })
-  @IsOptional()
-  @IsArray()
-  blogs?: any[]
-
-  // Flattened translations (optional, for convenience)
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -283,49 +356,6 @@ export class ProductCreateDto {
   @IsOptional()
   @IsString()
   seo_description_en?: string
-
-  @ApiPropertyOptional({ description: 'Array of product sections (content blocks)' })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProductSectionDto)
-  productSections?: ProductSectionDto[]
-}
-
-export class ProductBlogDto {
-  @IsOptional()
-  id?: string | number
-
-  @IsString()
-  @IsOptional()
-  title?: string
-
-  @IsString()
-  @IsOptional()
-  content?: string
-
-  @IsOptional()
-  @IsArray()
-  images?: any[]
-
-  @IsString()
-  @IsOptional()
-  title_ua?: string
-
-  @IsString()
-  @IsOptional()
-  title_en?: string
-
-  @IsString()
-  @IsOptional()
-  content_ua?: string
-
-  @IsString()
-  @IsOptional()
-  content_en?: string;
-
-  // Allow any extra properties from Post entity
-  [key: string]: any
 }
 
 export class ProductSectionDto {
@@ -353,6 +383,15 @@ export class ProductSectionDto {
   @IsOptional()
   @IsString({ each: true })
   images?: string[]
+
+  // Badge fields
+  @IsString()
+  @IsOptional()
+  badge_ua?: string
+
+  @IsString()
+  @IsOptional()
+  badge_en?: string
 
   // Localized fields
   @IsString()

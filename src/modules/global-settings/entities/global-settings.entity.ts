@@ -18,6 +18,12 @@ export class GlobalSettings {
   @Column({ default: '' })
   cta_text: string
 
+  @Column({ nullable: true })
+  cta_text_ua: string
+
+  @Column({ nullable: true })
+  cta_text_en: string
+
   @Column({ default: 'Learn More' })
   cta_button_text: string
 

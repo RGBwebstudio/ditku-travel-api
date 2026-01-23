@@ -29,6 +29,7 @@ import { ProductDeleteImagesDto } from './dto/product-delete-images.dto'
 import { ProductFilterDto } from './dto/product-filter.dto'
 import { ProductParametersDto } from './dto/product-parameters.dto'
 import { ProductRecommendedDto } from './dto/product-recommended.dto'
+import { ProductTopToursDto } from './dto/product-top-tours.dto'
 import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
 import { ProductUpdateDto } from './dto/product-update.dto'
 import { UpdateProductReviewDto } from './dto/update-product-review.dto'
@@ -150,6 +151,13 @@ export class ProductController {
     return this.productService.searchByTitle(q, req.lang)
   }
 
+  @Get('top-filtered')
+  @ApiOperation({ summary: 'Отримати топ тури' })
+  @ApiResponse({ status: 200, description: 'SUCCESS' })
+  async getTopFiltered(@Req() req: Request) {
+    return this.productService.findTopFiltered(req.lang)
+  }
+
   @Get('closest-tours')
   @ApiOperation({ summary: 'Отримати 3 найближчі тури (по даті початку)' })
   @ApiResponse({ status: 200, description: 'SUCCESS - Знайдено тури' })
@@ -184,7 +192,20 @@ export class ProductController {
   })
   @ApiOperation({ summary: 'Отримати список фільтрованих товарів' })
   filter(@Query() query: ProductFilterDto, @Req() req: Request) {
-    const { categories, parameters, sections, take, skip, start_point, end_point, startAt, endAt, seo_filter } = query
+    const {
+      categories,
+      parameters,
+      sections,
+      take,
+      skip,
+      start_point,
+      end_point,
+      startAt,
+      endAt,
+      seo_filter,
+      is_popular,
+      show_in_popular_on_main_page,
+    } = query
 
     return this.productService.filter(
       categories,
@@ -197,7 +218,9 @@ export class ProductController {
       end_point,
       startAt,
       endAt,
-      seo_filter
+      seo_filter,
+      is_popular,
+      show_in_popular_on_main_page
     )
   }
 
@@ -344,6 +367,25 @@ export class ProductController {
   async updateRecommendations(@Param('id', ParseIntPipe) id: number, @Body() dto: ProductRecommendedDto) {
     const ids = Array.isArray(dto?.productIds) ? dto.productIds : []
     return this.productService.updateRecommendedProducts(id, ids)
+  }
+
+  @Get(':id/top-tours')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Отримати топ тури для товару' })
+  async getTopTours(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    return this.productService.getTopToursOfProduct(id, req.lang)
+  }
+
+  @Patch(':id/top-tours')
+  @UseGuards(AuthAdminGuard)
+  @ApiOperation({ summary: 'Оновити список топ турів для товару' })
+  @ApiBody({
+    description: 'Масив id топ турів',
+    type: ProductTopToursDto,
+  })
+  async updateTopTours(@Param('id', ParseIntPipe) id: number, @Body() dto: ProductTopToursDto) {
+    const ids = Array.isArray(dto?.productIds) ? dto.productIds : []
+    return this.productService.updateTopTourProducts(id, ids)
   }
 
   @Post('/translates')

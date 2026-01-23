@@ -1,10 +1,4 @@
 import { Exclude } from 'class-transformer'
-import { Category } from 'src/modules/category/entities/category.entity'
-import { City } from 'src/modules/city/entities/city.entity'
-import { Country } from 'src/modules/country/entities/country.entity'
-import { Menu } from 'src/modules/menu/entities/menu.entity'
-import { Product } from 'src/modules/product/entities/product.entity'
-import { Section } from 'src/modules/section/entities/section.entity'
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -22,6 +16,12 @@ import {
 } from 'typeorm'
 
 import { SeoFilterTranslate } from './seo-filter-translate.entity'
+import { Category } from '../../category/entities/category.entity'
+import { City } from '../../city/entities/city.entity'
+import { Country } from '../../country/entities/country.entity'
+import { Menu } from '../../menu/entities/menu.entity'
+import { Product } from '../../product/entities/product.entity'
+import { Section } from '../../section/entities/section.entity'
 
 @Entity()
 @Tree('closure-table')
@@ -44,9 +44,12 @@ export class SeoFilter {
   @Column({ type: 'text', nullable: true })
   seo_text: string
 
+  @Column({ type: 'jsonb', default: {} })
+  structure: any
+
   @ManyToOne(() => Category, (category) => category.id, {
-    nullable: true,
-    onDelete: 'SET NULL',
+    nullable: false,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category
@@ -81,6 +84,14 @@ export class SeoFilter {
   @Exclude()
   @ManyToMany(() => Product, (product) => product.seo_filters)
   products: Product[]
+
+  @ManyToMany(() => Product)
+  @JoinTable({
+    name: 'seo_filter_popular_tours',
+    joinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' },
+  })
+  popular_tours: Product[]
 
   @OneToMany(() => SeoFilterTranslate, (translate) => translate.entity_id)
   translates: SeoFilterTranslate[]

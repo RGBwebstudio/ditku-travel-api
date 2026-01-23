@@ -571,11 +571,6 @@ export class ChooseTourItem {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  description?: string
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
   link_slug?: string
 
   @ApiPropertyOptional()
@@ -591,12 +586,27 @@ export class ChooseTourItem {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  text_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   description_ua?: string
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   description_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  parameters?: number[]
 }
 
 export class ChooseTourTab {
@@ -608,6 +618,10 @@ export class ChooseTourTab {
   @IsOptional()
   @IsString()
   title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  categoryId?: number
 
   @ApiPropertyOptional()
   @IsOptional()

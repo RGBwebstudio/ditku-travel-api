@@ -1,5 +1,15 @@
 import { LANG } from 'src/common/enums/translation.enum'
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
+
+import { PageConstructorCategory } from '../../page-constructor-category/entities/page-constructor-category.entity'
 
 export enum PageType {
   FOR_PARENT = 'for-parent',
@@ -34,6 +44,13 @@ export class PageConstructor {
 
   @Column({ enum: PageType, nullable: true })
   page_type: PageType
+
+  @Column({ nullable: true })
+  category_id: number
+
+  @ManyToOne(() => PageConstructorCategory, (category) => category.pages, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'category_id' })
+  category: PageConstructorCategory
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date

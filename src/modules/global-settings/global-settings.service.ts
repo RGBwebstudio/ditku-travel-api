@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
-import { LANG } from 'src/common/enums/translation.enum'
 import { Repository } from 'typeorm'
 
 import { CreateGlobalSettingsDto } from './dto/create-global-settings.dto'
@@ -23,13 +22,9 @@ export class GlobalSettingsService {
     return await this.repo.find()
   }
 
-  async findOne(lang: LANG = LANG.UA) {
-    const settings = await this.repo.findOne({ where: { lang } })
-    if (settings) return settings
-
-    // If not found for specific lang, try to find any to return structure, or return empty
-    const [anySettings] = await this.repo.find({ order: { id: 'ASC' }, take: 1 })
-    return anySettings || {}
+  async findOne() {
+    const [settings] = await this.repo.find({ order: { id: 'ASC' }, take: 1 })
+    return settings || {}
   }
 
   async update(id: number, dto: UpdateGlobalSettingsDto) {

@@ -25,4 +25,8 @@ export class CategoryUpdateDto extends PartialType(CategoryCreateDto) {
   @IsOptional()
   @IsString()
   seo_text_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  structure?: any
 }

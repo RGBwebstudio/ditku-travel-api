@@ -5,7 +5,8 @@ import { LANG } from 'src/common/enums/translation.enum'
 import { FineOneWhereType } from 'src/common/types/category.types'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
-import { Repository, TreeRepository, IsNull } from 'typeorm'
+import { Product } from 'src/modules/product/entities/product.entity'
+import { Repository, TreeRepository, IsNull, FindOptionsWhere } from 'typeorm'
 
 import { AddCategoryImageDto } from './dto/add-category-image.dto'
 import { CategoryCreateImageDto } from './dto/category-create-image.dto'
@@ -15,6 +16,18 @@ import { CategoryUpdateTranslateDto } from './dto/category-update-translate.dto'
 import { CategoryUpdateDto } from './dto/category-update.dto'
 import { CategoryImage } from './entities/category-image.entity'
 import { CategoryTranslate } from './entities/category-translate.entity'
+
+export interface AdditionalFilterItem {
+  roadmap_id: number
+  product_id: number
+  product_title: string
+  product_url: string
+  city_id: number | null
+  city_title: string | null
+  time: string
+  description: string
+  order: number
+}
 
 @Injectable()
 export class CategoryService {
@@ -30,7 +43,7 @@ export class CategoryService {
   ) {}
 
   async findOne(value: FineOneWhereType, lang: LANG): Promise<Category | null> {
-    let where: any
+    let where: FindOptionsWhere<Category>
 
     if (typeof value === 'number') {
       where = {
@@ -44,7 +57,7 @@ export class CategoryService {
 
     const entity = await this.categoryRepo.findOne({
       where,
-      relations: ['parent', 'parent.translates', 'images', 'translates'],
+      relations: ['parent', 'parent.translates', 'images', 'translates', 'popular_tours', 'popular_tours.category_id'],
     })
 
     if (!entity) throw new NotFoundException('category is NOT_FOUND')
@@ -93,7 +106,7 @@ export class CategoryService {
       }
     }
 
-    const { title_ua, title_en, seo_text_ua, seo_text_en, ...categoryData } = dto
+    const { title_ua, title_en, seo_text_ua, seo_text_en, structure, popular_tours_ids, ...categoryData } = dto
     const translationsData: { lang: LANG; field: string; value: string }[] = []
 
     if (title_ua) translationsData.push({ lang: LANG.UA, field: 'title', value: title_ua })
@@ -105,6 +118,8 @@ export class CategoryService {
       ...categoryData,
       parent,
       ...(url ? { url } : {}),
+      ...(structure ? { structure } : {}),
+      popular_tours: popular_tours_ids ? popular_tours_ids.map((id) => ({ id }) as Product) : [],
     })
 
     try {
@@ -411,7 +426,7 @@ export class CategoryService {
 
       const url = dto.url && String(dto.url).trim() !== '' ? dto.url : undefined
 
-      const { title_ua, title_en, seo_text_ua, seo_text_en, ...categoryData } = dto
+      const { title_ua, title_en, seo_text_ua, seo_text_en, structure, popular_tours_ids, ...categoryData } = dto
       const translations: { lang: LANG; field: string; value: string }[] = []
 
       if (title_ua !== undefined) translations.push({ lang: LANG.UA, field: 'title', value: title_ua })
@@ -419,7 +434,22 @@ export class CategoryService {
       if (seo_text_ua !== undefined) translations.push({ lang: LANG.UA, field: 'seo_text', value: seo_text_ua })
       if (seo_text_en !== undefined) translations.push({ lang: LANG.EN, field: 'seo_text', value: seo_text_en })
 
-      await this.categoryRepo.update(id, { ...categoryData, ...(url ? { url } : {}) })
+      await this.categoryRepo.update(id, {
+        ...categoryData,
+        ...(url ? { url } : {}),
+        ...(structure ? { structure } : {}),
+      })
+
+      if (popular_tours_ids !== undefined) {
+        const categoryToUpdate = await this.categoryRepo.findOne({
+          where: { id },
+          relations: ['popular_tours', 'popular_tours.category_id'],
+        })
+        if (categoryToUpdate) {
+          categoryToUpdate.popular_tours = popular_tours_ids.map((pid) => ({ id: pid }) as Product)
+          await this.categoryRepo.save(categoryToUpdate)
+        }
+      }
 
       // Update translations
       if (translations.length) {
@@ -474,6 +504,21 @@ export class CategoryService {
           await this.categoryRepo.save(child)
         }
       }
+
+      const hasProducts = await this.categoryRepo.manager.getRepository('Product').count({
+        where: { category_id: { id: id } },
+      })
+      if (hasProducts > 0) throw new BadRequestException('HAS_CHILDS')
+
+      const hasMenus = await this.categoryRepo.manager.getRepository('Menu').count({
+        where: { category_id: { id: id } },
+      })
+      if (hasMenus > 0) throw new BadRequestException('HAS_CHILDS')
+
+      const hasSeoFilters = await this.categoryRepo.manager.getRepository('SeoFilter').count({
+        where: { category_id: { id: id } },
+      })
+      if (hasSeoFilters > 0) throw new BadRequestException('HAS_CHILDS')
 
       const result = await this.categoryRepo.delete(id)
       if (result.affected === 0) {
@@ -590,7 +635,7 @@ export class CategoryService {
   }
 
   async findSubtree(value: FineOneWhereType, depth: number): Promise<Category | null> {
-    let where: any
+    let where: FindOptionsWhere<Category>
 
     if (typeof value === 'number') {
       where = { id: value }
@@ -658,7 +703,9 @@ export class CategoryService {
     return tree as Category | null
   }
 
-  async getAdditionalFilters(categoryId: number): Promise<{ start_points: any[]; end_points: any[] }> {
+  async getAdditionalFilters(
+    categoryId: number
+  ): Promise<{ start_points: AdditionalFilterItem[]; end_points: AdditionalFilterItem[] }> {
     if (typeof categoryId !== 'number' || Number.isNaN(categoryId)) {
       throw new BadRequestException('category id is required and must be a number')
     }

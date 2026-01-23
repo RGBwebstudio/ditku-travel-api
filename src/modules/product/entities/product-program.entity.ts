@@ -13,6 +13,11 @@ import { ProductProgramImage } from './product-program-image.entity'
 import { ProductProgramTranslate } from './product-program-translate.entity'
 import { Product } from './product.entity'
 
+export enum ProductProgramType {
+  Day = 'day',
+  Banners = 'banners',
+}
+
 @Entity()
 export class ProductProgram {
   @PrimaryGeneratedColumn()
@@ -21,11 +26,54 @@ export class ProductProgram {
   @Column()
   day: number
 
+  @Column({
+    type: 'enum',
+    enum: ProductProgramType,
+    default: ProductProgramType.Day,
+  })
+  type: ProductProgramType
+
   @Column({ type: 'varchar', length: 255, default: '' })
   title: string
 
   @Column({ type: 'text', default: '' })
   description: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner1_title_ua: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner1_title_en: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner1_button_text_ua: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner1_button_text_en: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner1_link_ua: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner1_link_en: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner2_title_ua: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner2_title_en: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner2_button_text_ua: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner2_button_text_en: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner2_link_ua: string
+
+  @Column({ type: 'varchar', nullable: true })
+  banner2_link_en: string
 
   @Column({ name: 'order_in_list', default: 0 })
   order: number

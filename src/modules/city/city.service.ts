@@ -225,4 +225,44 @@ export class CityService {
     if (result.affected === 0) throw new NotFoundException('city is NOT_FOUND')
     return { message: 'SUCCESS' }
   }
+
+  async findStartPoints(lang: LANG = LANG.UA) {
+    const qb = this.repo
+      .createQueryBuilder('city')
+      .innerJoin('city.roadmaps', 'roadmap', 'roadmap.start_point = :isStart', {
+        isStart: true,
+      })
+      .leftJoinAndSelect('city.translates', 'translates')
+      .leftJoinAndSelect('city.country_id', 'country_id')
+      .leftJoinAndSelect('country_id.translates', 'country_translates')
+      .orderBy('city.order', 'ASC')
+
+    const entities = await qb.getMany()
+
+    const uniqueMap = new Map<number, City>()
+    entities.forEach((e) => uniqueMap.set(e.id, e))
+    const uniqueEntities = Array.from(uniqueMap.values())
+
+    return { entities: applyTranslations(uniqueEntities, lang) }
+  }
+
+  async findEndPoints(lang: LANG = LANG.UA) {
+    const qb = this.repo
+      .createQueryBuilder('city')
+      .innerJoin('city.roadmaps', 'roadmap', 'roadmap.end_point = :isEnd', {
+        isEnd: true,
+      })
+      .leftJoinAndSelect('city.translates', 'translates')
+      .leftJoinAndSelect('city.country_id', 'country_id')
+      .leftJoinAndSelect('country_id.translates', 'country_translates')
+      .orderBy('city.order', 'ASC')
+
+    const entities = await qb.getMany()
+
+    const uniqueMap = new Map<number, City>()
+    entities.forEach((e) => uniqueMap.set(e.id, e))
+    const uniqueEntities = Array.from(uniqueMap.values())
+
+    return { entities: applyTranslations(uniqueEntities, lang) }
+  }
 }

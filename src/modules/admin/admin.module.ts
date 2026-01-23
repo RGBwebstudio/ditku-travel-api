@@ -4,9 +4,9 @@ import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
 import { BannerModule } from 'src/modules/banners/brand.module'
 import { CategoryModule } from 'src/modules/category/category.module'
 import { CityModule } from 'src/modules/city/city.module'
+import { ContactsModule } from 'src/modules/contacts/contacts.module'
 import { CookieModule } from 'src/modules/cookie/cookie.module'
 import { CountryModule } from 'src/modules/country/country.module'
-import { DAPModule } from 'src/modules/delivery-and-payment/faq.module'
 import { FaqModule } from 'src/modules/faq/faq.module'
 import { MainPageModule } from 'src/modules/main-page/main-page.module'
 import { MenuModule } from 'src/modules/menu/menu.module'
@@ -23,7 +23,6 @@ import { SeoFilterModule } from 'src/modules/seo-filter/seo-filter.module'
 import { TermsOfUseModule } from 'src/modules/terms-of-use/terms-of-use.module'
 import { UserModule } from 'src/modules/user/user.module'
 import { VideoModule } from 'src/modules/video/video.module'
-import { ContactsModule } from 'src/modules/сontacts/contacts.module'
 
 import { AdminBannerController } from './banner.controller'
 import { AdminCategoryController } from './category.controller'
@@ -31,7 +30,6 @@ import { AdminCityController } from './city.controller'
 import { AdminContactsController } from './contacts.controller'
 import { AdminCookieController } from './cookie.controller'
 import { AdminCountryController } from './country.controller'
-import { AdminDapController } from './dap.controller'
 import { AdminFaqController } from './faq.controller'
 import { AdminMainPageController } from './main-page.controller'
 import { AdminMenuController } from './menu.controller'
@@ -60,7 +58,7 @@ import { AdminVideoController } from './video.controller'
     FaqModule,
     CookieModule,
     ContactsModule,
-    DAPModule,
+
     UserModule,
     ParameterModule,
     ParameterCategoryModule,
@@ -84,7 +82,7 @@ import { AdminVideoController } from './video.controller'
     AdminProductController,
     AdminFaqController,
     AdminCookieController,
-    AdminDapController,
+
     AdminTermsOfUseController,
     AdminContactsController,
     AdminPrivacyPolicyController,

@@ -73,17 +73,14 @@ async function bootstrap() {
       cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        // Secure cookies require HTTPS. Auto-detect via 'trust proxy' or explicit env.
         secure: process.env.NODE_ENV === 'production' || process.env.MAIL_SECURE === 'true',
-        // 'none' + secure:true is required for cross-site cookies if domains differ completely.
-        // If subdomains share root, 'lax' is usually fine, but 'none' is safest for cross-site fetch with credentials.
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
       },
     })
   )
 
-  app.useStaticAssets(join(__dirname, '../..', 'uploads'), {
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   })
 
@@ -143,7 +140,7 @@ async function bootstrap() {
           'Групи банерів',
           'Про нас',
           'SEO (контентні сторінки)',
-          'Доставка та оплата',
+
           'Запитання та відповіді',
           'Контакти',
           'Private Policy',

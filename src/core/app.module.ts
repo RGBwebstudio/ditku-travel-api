@@ -10,10 +10,11 @@ import { AdminModule } from '../modules/admin/admin.module'
 import { BannerModule } from '../modules/banners/brand.module'
 import { CategoryModule } from '../modules/category/category.module'
 import { CityModule } from '../modules/city/city.module'
+import { ContactsModule } from '../modules/contacts/contacts.module'
 import { CookieModule } from '../modules/cookie/cookie.module'
 import { CountryModule } from '../modules/country/country.module'
-import { DAPModule } from '../modules/delivery-and-payment/faq.module'
 import { FaqModule } from '../modules/faq/faq.module'
+import { FilesModule } from '../modules/files/files.module'
 import { FormatGroupModule } from '../modules/format-group/format-group.module'
 import { GalleryModule } from '../modules/gallery/gallery.module'
 import { GlobalSettingsModule } from '../modules/global-settings/global-settings.module'
@@ -22,6 +23,7 @@ import { MailSenderModule } from '../modules/mail-sender/mail-sernder.module'
 import { MainPageModule } from '../modules/main-page/main-page.module'
 import { MenuModule } from '../modules/menu/menu.module'
 import { PageConstructorModule } from '../modules/page-constructor/page-constructor.module'
+import { PageConstructorCategoryModule } from '../modules/page-constructor-category/page-constructor-category.module'
 import { ParameterModule } from '../modules/parameter/parameter.module'
 import { ParameterCategoryModule } from '../modules/parameter-category/parameter-category.module'
 import { PostCategoryModule } from '../modules/post-category/post-category.module'
@@ -40,7 +42,6 @@ import { TermsOfUseModule } from '../modules/terms-of-use/terms-of-use.module'
 import { ToursPageModule } from '../modules/tours-page/tours-page.module'
 import { UserModule } from '../modules/user/user.module'
 import { VideoModule } from '../modules/video/video.module'
-import { ContactsModule } from '../modules/сontacts/contacts.module'
 
 const config = configuration()
 
@@ -63,11 +64,9 @@ const config = configuration()
     RoadmapModule,
     CityModule,
     UserModule,
-    UserModule,
     CountryModule,
     RatingModule,
     MainPageModule,
-    DAPModule,
     ContactsModule,
     PrivacyPolicyModule,
     TermsOfUseModule,
@@ -82,12 +81,14 @@ const config = configuration()
     PromocodeModule,
     AdminModule,
     PageConstructorModule,
+    PageConstructorCategoryModule,
     VideoModule,
     SessionModule,
     GalleryModule,
     GlobalSettingsModule,
     ToursPageModule,
     SafeWithUsModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

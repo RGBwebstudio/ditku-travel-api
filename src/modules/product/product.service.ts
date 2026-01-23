@@ -12,12 +12,11 @@ import { FormatGroup } from 'src/modules/format-group/entities/format-group.enti
 import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
-import { ProductUpdateDto } from 'src/modules/product/dto/product-update.dto'
 import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
-import { In, Repository, DeepPartial } from 'typeorm'
+import { Repository, In, DeepPartial } from 'typeorm'
 
 import { AddProductImageDto } from './dto/add-product-image.dto'
 import { CreateProgramDto } from './dto/create-program.dto'
@@ -25,25 +24,18 @@ import { ProductCreateImageDto } from './dto/product-create-image.dto'
 import { ProductCreateTranslateDto } from './dto/product-create-translate.dto'
 import { ProductParametersDto } from './dto/product-parameters.dto'
 import { ProductUpdateTranslateDto } from './dto/product-update-translate.dto'
+import { ProductUpdateDto } from './dto/product-update.dto'
 import { UpdateProgramDto } from './dto/update-program.dto'
 import { ProductImage } from './entities/product-image.entity'
 import { ProductProgramImage } from './entities/product-program-image.entity'
 import { ProductProgramTranslate } from './entities/product-program-translate.entity'
-import { ProductProgram } from './entities/product-program.entity'
+import { ProductProgramType, ProductProgram } from './entities/product-program.entity'
 import { ProductSectionTranslate } from './entities/product-section-translate.entity'
 import { ProductSection } from './entities/product-section.entity'
 import { ProductTranslate } from './entities/product-translate.entity'
 import { Product } from './entities/product.entity'
 
-type RawRoadmap = {
-  id: number
-  start_point: boolean
-  end_point: boolean
-  city_id?: number | { id: number } | null
-  time?: string
-  description?: string
-  order?: number | string | null
-}
+type RawRoadmap = Roadmap
 
 @Injectable()
 export class ProductService {
@@ -71,12 +63,13 @@ export class ProductService {
     private programTranslateRepo: Repository<ProductProgramTranslate>,
     @InjectRepository(Rating)
     private ratingRepo: Repository<Rating>,
-    @InjectRepository(Post)
-    private postRepo: Repository<Post>,
+
     @InjectRepository(ProductSection)
     private productSectionRepo: Repository<ProductSection>,
     @InjectRepository(ProductSectionTranslate)
-    private productSectionTranslateRepo: Repository<ProductSectionTranslate>
+    private productSectionTranslateRepo: Repository<ProductSectionTranslate>,
+    @InjectRepository(Post)
+    private postRepo: Repository<Post>
   ) {}
 
   async searchByTitle(
@@ -239,10 +232,9 @@ export class ProductService {
           subQuery.select('COALESCE(AVG(r.rating), 0)').from('rating', 'r').where('r.productIdId = product.id'),
         'average_rating'
       )
-      .where('product.start_at >= NOW()')
+      .where('product.show_on_main_page = :showOnMainPage', { showOnMainPage: true })
       .andWhere('product.is_hidden = :isHidden', { isHidden: false })
       .orderBy('product.start_at', 'ASC')
-      .take(3)
       .getRawAndEntities()
 
     const products = result.entities.map((entity, index) => {
@@ -252,6 +244,29 @@ export class ProductService {
       }
       return entity
     })
+
+    const mappedEntities = applyTranslations(products, lang)
+
+    for (const product of mappedEntities) {
+      if (product.category_id && product.category_id.translates) {
+        product.category_id = applyTranslations([product.category_id], lang)[0]
+      }
+    }
+
+    return mappedEntities
+  }
+
+  async findTopFiltered(lang: LANG): Promise<ProductWithoutRatings[]> {
+    const queryBuilder = this.productRepo
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category_id', 'category_id')
+      .leftJoinAndSelect('category_id.translates', 'category_translates')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.translates', 'translates')
+      .where('product.is_hidden = :isHidden', { isHidden: false })
+      .andWhere('product.is_top = :isTop', { isTop: true })
+
+    const products = await queryBuilder.orderBy('product.created_at', 'DESC').take(20).getMany()
 
     const mappedEntities = applyTranslations(products, lang)
 
@@ -412,7 +427,9 @@ export class ProductService {
     end_point?: number,
     startAt?: string,
     endAt?: string,
-    seoFilterId?: number
+    seoFilterId?: number | string,
+    is_popular?: boolean,
+    show_in_popular_on_main_page?: boolean
   ) {
     const mappedCategories = categories?.trim().length ? categories.split(',').map((item) => String(item)) : []
 
@@ -437,17 +454,44 @@ export class ProductService {
       .leftJoinAndSelect('category_id.translates', 'category_translates')
       .where('product.is_hidden = :isHidden', { isHidden: false })
 
+    if (is_popular !== undefined) {
+      const isPopularBool = String(is_popular) === 'true'
+      if (isPopularBool) {
+        queryBuilder.andWhere('product.is_popular = :isPopular', {
+          isPopular: true,
+        })
+      }
+    }
+
+    if (show_in_popular_on_main_page !== undefined) {
+      const showInPopularBool = String(show_in_popular_on_main_page) === 'true'
+      if (showInPopularBool) {
+        queryBuilder.andWhere('product.show_in_popular_on_main_page = :showInPopular', {
+          showInPopular: true,
+        })
+      }
+    }
+
     // SEO Filter support
-    if (seoFilterId && typeof seoFilterId === 'number') {
-      queryBuilder.andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('psf.product_id')
-          .from('product_seo_filters', 'psf')
-          .where('psf.seo_filter_id = :seoFilterId', { seoFilterId })
-          .getQuery()
-        return 'product.id IN ' + subQuery
-      })
+    if (seoFilterId) {
+      if (typeof seoFilterId === 'number' || (typeof seoFilterId === 'string' && !isNaN(Number(seoFilterId)))) {
+        const id = Number(seoFilterId)
+        queryBuilder.andWhere((qb) => {
+          const subQuery = qb
+            .subQuery()
+            .select('psf.product_id')
+            .from('product_seo_filters', 'psf')
+            .where('psf.seo_filter_id = :seoFilterId', { seoFilterId: id })
+            .getQuery()
+          return 'product.id IN ' + subQuery
+        })
+      } else if (typeof seoFilterId === 'string') {
+        const slug = seoFilterId
+        queryBuilder.innerJoin('product.seo_filters', 'filter_join')
+        queryBuilder.andWhere('filter_join.url = :seoFilterUrl', {
+          seoFilterUrl: slug,
+        })
+      }
     }
 
     if (allCategoryUrls.length > 0) {
@@ -644,13 +688,17 @@ export class ProductService {
         'parameters',
         'parameters.translates',
         'seo_filters',
+        'topTourProducts',
+        'topTourProducts.images',
+        'topTourProducts.translates',
+        'topTourProducts.category_id',
       ],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
     // Query 2: Load heavy relations in parallel (roadmaps, programs, reviews, blogs, sections, faqs)
-    const [roadmaps, programs, reviews, linkedBlogs, productSections, faqs] = await Promise.all([
+    const [roadmaps, programs, reviews, faqs] = await Promise.all([
       this.productRepo.manager
         .getRepository(Roadmap)
         .createQueryBuilder('r')
@@ -675,23 +723,14 @@ export class ProductService {
         .andWhere('r.approved = :approved', { approved: true })
         .orderBy('r.created_at', 'DESC')
         .getMany(),
-      this.postRepo.find({
-        where: { products: { id: product.id } },
-        relations: ['translates', 'images'],
-      }),
-      this.productSectionRepo.find({
-        where: { product_id: { id: product.id } },
-        relations: ['translates'],
-        order: { order: 'ASC' },
-      }),
+
       this.productRepo.createQueryBuilder().relation(Product, 'faqs').of(product.id).loadMany(),
     ])
 
     product.roadmaps = roadmaps
     product.programs = programs
     product.ratings = reviews
-    product.linkedBlogs = linkedBlogs
-    product.productSections = productSections
+
     product.faqs = faqs
 
     if (req?.session) {
@@ -729,6 +768,16 @@ export class ProductService {
         )
       }
 
+      if (productDto.topTourProducts && Array.isArray(productDto.topTourProducts)) {
+        productDto.topTourProducts = productDto.topTourProducts.map((topTour: Product) => {
+          const translatedTour = topTour && topTour.translates ? applyTranslations([topTour], lang)[0] : topTour
+          if (translatedTour.category_id && translatedTour.category_id.translates) {
+            translatedTour.category_id = applyTranslations([translatedTour.category_id], lang)[0]
+          }
+          return translatedTour
+        })
+      }
+
       return productDto
     })
 
@@ -763,6 +812,19 @@ export class ProductService {
       title: program.title,
       description: program.description,
       order: program.order,
+      type: program.type,
+      banner1_title_ua: program.banner1_title_ua,
+      banner1_title_en: program.banner1_title_en,
+      banner1_button_text_ua: program.banner1_button_text_ua,
+      banner1_button_text_en: program.banner1_button_text_en,
+      banner1_link_ua: program.banner1_link_ua,
+      banner1_link_en: program.banner1_link_en,
+      banner2_title_ua: program.banner2_title_ua,
+      banner2_title_en: program.banner2_title_en,
+      banner2_button_text_ua: program.banner2_button_text_ua,
+      banner2_button_text_en: program.banner2_button_text_en,
+      banner2_link_ua: program.banner2_link_ua,
+      banner2_link_en: program.banner2_link_en,
       images: (program.images || [])
         .sort((a, b) => (a.order || 0) - (b.order || 0))
         .map((img) => ({
@@ -792,37 +854,6 @@ export class ProductService {
       total_count: reviews.length,
     }
 
-    // Map linkedBlogs to blogs field for frontend compatibility
-    if (product.linkedBlogs && product.linkedBlogs.length) {
-      const mappedBlogs = applyTranslations(product.linkedBlogs, lang)
-      ;(mappedProductDto as any).blogs = mappedBlogs
-    } else {
-      ;(mappedProductDto as any).blogs = []
-    }
-
-    // Map productSections to sections field for frontend (product content sections)
-    if (product.productSections && product.productSections.length) {
-      const mappedSections = applyTranslations(product.productSections, lang)
-      // Sort by order and include all fields
-      ;(mappedProductDto as any).sections = mappedSections
-        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-        .map((s: any) => ({
-          id: s.id,
-          type: s.type,
-          order: s.order,
-          title: s.title,
-          description: s.description,
-          images: s.images || [],
-          banner1_title: s.banner1_title,
-          banner1_button_text: s.banner1_button_text,
-          banner1_link: s.banner1_link,
-          banner2_title: s.banner2_title,
-          banner2_button_text: s.banner2_button_text,
-          banner2_link: s.banner2_link,
-          translates: s.translates,
-        }))
-    }
-
     return mappedProducts[0]
   }
 
@@ -845,14 +876,18 @@ export class ProductService {
         'translates',
         'format_groups',
         'format_groups.translates',
+        'sections',
+        'sections.translates',
+        'parameters',
+        'parameters.translates',
+        'seo_filters',
         'seo_filters',
       ],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-    // Run roadmaps, programs, reviews, children, and faqs queries in parallel
-    const [roadmaps, programs, reviews, children, faqs] = await Promise.all([
+    const [roadmaps, programs, reviews, children, faqs, recommendedProducts, topTourProducts] = await Promise.all([
       // Query 2: Load roadmaps with city data
       this.productRepo.manager
         .getRepository(Roadmap)
@@ -887,11 +922,40 @@ export class ProductService {
       }),
       // Query 6: Load FAQs
       this.productRepo.createQueryBuilder().relation(Product, 'faqs').of(product.id).loadMany(),
+      // Query 7: Load Recommended (optimized)
+      this.productRepo
+        .createQueryBuilder()
+        .relation(Product, 'recommendedProducts')
+        .of(product.id)
+        .loadMany()
+        .then(async (products) => {
+          if (!products || products.length === 0) return []
+          // Manually load relations for recommended products to avoid deep nesting issues
+          return this.productRepo.find({
+            where: { id: In(products.map((p) => p.id)) },
+            relations: ['images', 'translates', 'category_id', 'category_id.translates'],
+          })
+        }),
+      // Query 8: Load Top Tours (optimized)
+      this.productRepo
+        .createQueryBuilder()
+        .relation(Product, 'topTourProducts')
+        .of(product.id)
+        .loadMany()
+        .then(async (products) => {
+          if (!products || products.length === 0) return []
+          return this.productRepo.find({
+            where: { id: In(products.map((p) => p.id)) },
+            relations: ['images', 'translates', 'category_id', 'category_id.translates'],
+          })
+        }),
     ])
 
     product.roadmaps = roadmaps
     product.programs = programs
     product.faqs = faqs
+    product.recommendedProducts = recommendedProducts
+    product.topTourProducts = topTourProducts
 
     // Track viewed products in session
     if (req?.session) {
@@ -915,6 +979,25 @@ export class ProductService {
         prod.format_groups = prod.format_groups.map((item) =>
           item && item.translates ? flattenTranslations([item], lang)[0] : item
         )
+      }
+      if (prod.recommendedProducts && Array.isArray(prod.recommendedProducts)) {
+        prod.recommendedProducts = prod.recommendedProducts.map((rec: Product) => {
+          const translatedRec = rec && rec.translates ? applyTranslations([rec], lang)[0] : rec
+          if (translatedRec.category_id && translatedRec.category_id.translates) {
+            translatedRec.category_id = applyTranslations([translatedRec.category_id], lang)[0]
+          }
+          return translatedRec
+        })
+      }
+
+      if (prod.topTourProducts && Array.isArray(prod.topTourProducts)) {
+        prod.topTourProducts = prod.topTourProducts.map((topTour: Product) => {
+          const translatedTour = topTour && topTour.translates ? applyTranslations([topTour], lang)[0] : topTour
+          if (translatedTour.category_id && translatedTour.category_id.translates) {
+            translatedTour.category_id = applyTranslations([translatedTour.category_id], lang)[0]
+          }
+          return translatedTour
+        })
       }
       return prod
     })
@@ -947,6 +1030,19 @@ export class ProductService {
       title: program.title,
       description: program.description,
       order: program.order,
+      type: program.type,
+      banner1_title_ua: program.banner1_title_ua,
+      banner1_title_en: program.banner1_title_en,
+      banner1_button_text_ua: program.banner1_button_text_ua,
+      banner1_button_text_en: program.banner1_button_text_en,
+      banner1_link_ua: program.banner1_link_ua,
+      banner1_link_en: program.banner1_link_en,
+      banner2_title_ua: program.banner2_title_ua,
+      banner2_title_en: program.banner2_title_en,
+      banner2_button_text_ua: program.banner2_button_text_ua,
+      banner2_button_text_en: program.banner2_button_text_en,
+      banner2_link_ua: program.banner2_link_ua,
+      banner2_link_en: program.banner2_link_en,
       images: (program.images || [])
         .sort((a, b) => (a.order || 0) - (b.order || 0))
         .map((img) => ({
@@ -1094,13 +1190,7 @@ export class ProductService {
       }
     }
 
-    // Also check for explicit productSections field
-    if (!productSectionObjects && Array.isArray(dto.productSections) && dto.productSections.length > 0) {
-      productSectionObjects = dto.productSections
-    }
-
     if (dto.sections) delete productPayload.sections
-    if ((productPayload as any).productSections) delete (productPayload as any).productSections
 
     const formatGroupIds: number[] | undefined =
       Array.isArray(dto.format_group) && dto.format_group.length ? dto.format_group : undefined
@@ -1109,22 +1199,14 @@ export class ProductService {
     const seoFiltersIds = Array.isArray(dto.seo_filters) ? dto.seo_filters : undefined
     if (seoFiltersIds) delete productPayload.seo_filters
 
-    // Get blog IDs from blog_ids OR extract from blogs array (full Post objects)
-    let blogIds: number[] | undefined = Array.isArray(dto.blog_ids) ? dto.blog_ids : undefined
-    if (!blogIds && Array.isArray(dto.blogs) && dto.blogs.length > 0) {
-      blogIds = dto.blogs
-        .map((b: unknown): number | undefined => (typeof b === 'number' ? b : (b as { id?: number })?.id))
-        .filter((id): id is number => typeof id === 'number')
-    }
-    if (blogIds) delete productPayload.blog_ids
-    // Remove old blogs jsonb field from payload since we use linkedBlogs relation now
-    delete productPayload.blogs
-
     const faqIds = Array.isArray(dto.faq_ids) ? dto.faq_ids : undefined
     if (faqIds) delete productPayload.faq_ids
 
     const recommendedIds = Array.isArray(dto.recommended_ids) ? dto.recommended_ids : undefined
     if (recommendedIds) delete productPayload.recommended_ids
+
+    const blogIds = Array.isArray(dto.blog_ids) ? dto.blog_ids : undefined
+    if (blogIds) delete productPayload.blog_ids
 
     const product = this.productRepo.create(productPayload as DeepPartial<Product>)
 
@@ -1150,13 +1232,6 @@ export class ProductService {
           throw new BadRequestException('seo_filters is NOT_FOUND')
         }
         saved.seo_filters = seoFilters
-        await this.productRepo.save(saved)
-      }
-      if (blogIds && blogIds.length) {
-        const blogs = await this.postRepo.findBy({
-          id: In(blogIds),
-        })
-        saved.linkedBlogs = blogs
         await this.productRepo.save(saved)
       }
 
@@ -1205,6 +1280,14 @@ export class ProductService {
         await this.createTranslates(translations)
       }
 
+      if (blogIds && blogIds.length) {
+        const posts = await this.postRepo.findBy({
+          id: In(blogIds),
+        })
+        saved.posts = posts
+        await this.productRepo.save(saved)
+      }
+
       if (sectionsIds && sectionsIds.length) {
         const sectionEntities = await this.sectionRepo.findBy({
           id: In(sectionsIds),
@@ -1228,6 +1311,8 @@ export class ProductService {
             banner2_title: sectionDto.banner2_title_ua,
             banner2_button_text: sectionDto.banner2_button_text_ua,
             banner2_link: sectionDto.banner2_link_ua,
+
+            badge: sectionDto.badge_ua,
             product_id: saved,
           })
 
@@ -1243,6 +1328,7 @@ export class ProductService {
             'banner2_title',
             'banner2_button_text',
             'banner2_link',
+            'badge',
           ]
 
           // Create translations
@@ -1284,7 +1370,7 @@ export class ProductService {
   async update(id: number, dto: ProductUpdateDto): Promise<Product | null> {
     const product = await this.productRepo.findOne({
       where: { id },
-      relations: ['sections', 'seo_filters', 'parameters', 'format_groups', 'linkedBlogs', 'faqs'],
+      relations: ['sections', 'seo_filters', 'parameters', 'format_groups', 'faqs'],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
@@ -1295,11 +1381,9 @@ export class ProductService {
         sections,
         format_group,
         seo_filters,
-        blog_ids,
         faq_ids,
         recommended_ids,
-        blogs,
-        productSections,
+        blog_ids,
         parameters: rawParams,
         start_date,
         end_date,
@@ -1315,29 +1399,26 @@ export class ProductService {
         updatePayload.end_at = end_date
       }
 
-      // Apply scalar updates
+      if (updatePayload.banners && Array.isArray(updatePayload.banners)) {
+        updatePayload.banners = updatePayload.banners.map((b: unknown) => (Array.isArray(b) ? {} : b))
+      }
+
       Object.assign(product, updatePayload)
 
-      // Handle Relations
-      // Check if sections contains objects (product sections) or numbers (global section IDs)
       const sectionsFromDto = dto.sections
       let globalSectionIds: number[] | undefined = undefined
       let productSectionObjects: any[] | undefined = undefined
 
       if (sectionsFromDto !== undefined && Array.isArray(sectionsFromDto)) {
-        // Empty array means clear all product sections
         if (sectionsFromDto.length === 0) {
           productSectionObjects = []
         } else if (typeof sectionsFromDto[0] === 'object') {
-          // These are product sections (objects with type, title, etc.)
           productSectionObjects = sectionsFromDto
         } else {
-          // These are global section IDs
           globalSectionIds = sectionsFromDto.filter((id): id is number => typeof id === 'number')
         }
       }
 
-      // Handle global sections (IDs)
       if (globalSectionIds !== undefined) {
         const sectionEntities =
           globalSectionIds.length > 0 ? await this.sectionRepo.findBy({ id: In(globalSectionIds) }) : []
@@ -1384,116 +1465,10 @@ export class ProductService {
         product.recommendedProducts = recommendedProducts
       }
 
-      const blogIdsToUpdate: number[] | undefined =
-        dto.blog_ids !== undefined && Array.isArray(dto.blog_ids) ? dto.blog_ids : undefined
-      if (blogIdsToUpdate !== undefined) {
-        const blogEntities = blogIdsToUpdate.length ? await this.postRepo.findBy({ id: In(blogIdsToUpdate) }) : []
-        product.linkedBlogs = blogEntities
-      }
-
-      // Handle productSections CRUD (from productSections field OR from sections field containing objects)
-      const sectionObjectsToProcess =
-        productSectionObjects ||
-        (productSections !== undefined && Array.isArray(productSections) ? productSections : undefined)
-
-      if (sectionObjectsToProcess && sectionObjectsToProcess.length >= 0) {
-        // Get existing sections for this product
-        const existingSections = await this.productSectionRepo.find({
-          where: { product_id: { id: product.id } },
-          relations: ['translates'],
-        })
-
-        const incomingIds = sectionObjectsToProcess.filter((s) => s.id).map((s) => s.id as number)
-
-        // Delete sections not in incoming array
-        const sectionsToDelete = existingSections.filter((es) => !incomingIds.includes(es.id))
-        if (sectionsToDelete.length > 0) {
-          await this.productSectionRepo.remove(sectionsToDelete)
-        }
-
-        // Create/update sections
-        for (const sectionDto of sectionObjectsToProcess) {
-          let sectionEntity: ProductSection
-
-          if (sectionDto.id) {
-            // Update existing
-            sectionEntity = existingSections.find((es) => es.id === sectionDto.id) || new ProductSection()
-            sectionEntity.type = sectionDto.type || sectionEntity.type || 'content'
-            sectionEntity.order = sectionDto.order ?? sectionEntity.order ?? 0
-            sectionEntity.title = sectionDto.title || sectionEntity.title || ''
-            sectionEntity.description = sectionDto.description || sectionEntity.description || ''
-            sectionEntity.images = sectionDto.images || sectionEntity.images || []
-            sectionEntity.banner1_title = sectionDto.banner1_title_ua || sectionEntity.banner1_title
-            sectionEntity.banner1_button_text = sectionDto.banner1_button_text_ua || sectionEntity.banner1_button_text
-            sectionEntity.banner1_link = sectionDto.banner1_link_ua || sectionEntity.banner1_link
-            sectionEntity.banner2_title = sectionDto.banner2_title_ua || sectionEntity.banner2_title
-            sectionEntity.banner2_button_text = sectionDto.banner2_button_text_ua || sectionEntity.banner2_button_text
-            sectionEntity.banner2_link = sectionDto.banner2_link_ua || sectionEntity.banner2_link
-
-            await this.productSectionRepo.save(sectionEntity)
-          } else {
-            // Create new
-            sectionEntity = this.productSectionRepo.create({
-              type: sectionDto.type || 'content',
-              order: sectionDto.order ?? 0,
-              title: sectionDto.title || sectionDto.title_ua || '',
-              description: sectionDto.description || sectionDto.description_ua || '',
-              images: sectionDto.images || [],
-              banner1_title: sectionDto.banner1_title_ua,
-              banner1_button_text: sectionDto.banner1_button_text_ua,
-              banner1_link: sectionDto.banner1_link_ua,
-              banner2_title: sectionDto.banner2_title_ua,
-              banner2_button_text: sectionDto.banner2_button_text_ua,
-              banner2_link: sectionDto.banner2_link_ua,
-              product_id: product,
-            })
-
-            sectionEntity = await this.productSectionRepo.save(sectionEntity)
-          }
-
-          // Handle translations for this section
-          const sectionTranslateFields = [
-            'title',
-            'description',
-            'banner1_title',
-            'banner1_button_text',
-            'banner1_link',
-            'banner2_title',
-            'banner2_button_text',
-            'banner2_link',
-          ]
-
-          // Delete existing translations for this section
-          if (sectionEntity.id) {
-            await this.productSectionTranslateRepo.delete({ entity_id: { id: sectionEntity.id } })
-          }
-
-          // Create new translations
-          for (const field of sectionTranslateFields) {
-            const uaValue = sectionDto[`${field}_ua`]
-            const enValue = sectionDto[`${field}_en`]
-
-            if (uaValue) {
-              const translateUA = this.productSectionTranslateRepo.create({
-                field,
-                value: uaValue,
-                lang: LANG.UA,
-                entity_id: sectionEntity,
-              })
-              await this.productSectionTranslateRepo.save(translateUA)
-            }
-
-            if (enValue) {
-              const translateEN = this.productSectionTranslateRepo.create({
-                field,
-                value: enValue,
-                lang: LANG.EN,
-                entity_id: sectionEntity,
-              })
-              await this.productSectionTranslateRepo.save(translateEN)
-            }
-          }
-        }
+      const blogIds: number[] | undefined = Array.isArray(blog_ids) ? blog_ids : undefined
+      if (blogIds !== undefined) {
+        const posts = blogIds.length ? await this.postRepo.findBy({ id: In(blogIds) }) : []
+        product.posts = posts
       }
 
       this.logger.log(
@@ -1778,6 +1753,67 @@ export class ProductService {
     return mapped
   }
 
+  async updateTopTourProducts(id: number, productIds: number[]): Promise<Product> {
+    const product = await this.productRepo.findOne({
+      where: { id },
+      relations: ['topTourProducts'],
+    })
+
+    if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    const topTours =
+      Array.isArray(productIds) && productIds.length ? await this.productRepo.findBy({ id: In(productIds) }) : []
+
+    product.topTourProducts = topTours
+
+    try {
+      await this.productRepo.save(product)
+    } catch (err) {
+      this.logger.error(`Error while updating top tour products \n ${err}`)
+      throw new BadRequestException('product is NOT_UPDATED')
+    }
+
+    const updated = await this.productRepo.findOne({
+      where: { id },
+      relations: [
+        'topTourProducts',
+        'topTourProducts.images',
+        'topTourProducts.translates',
+        'topTourProducts.category_id',
+      ],
+    })
+
+    return updated as Product
+  }
+
+  async getTopToursOfProduct(id: number, lang: LANG): Promise<Product[]> {
+    const product = await this.productRepo.findOne({
+      where: { id },
+      relations: [
+        'topTourProducts',
+        'topTourProducts.images',
+        'topTourProducts.translates',
+        'topTourProducts.category_id',
+        'topTourProducts.category_id.translates',
+      ],
+    })
+
+    if (!product) throw new NotFoundException('product is NOT_FOUND')
+
+    const topTours = product.topTourProducts || []
+
+    let mapped = applyTranslations(topTours, lang)
+
+    mapped = mapped.map((p) => {
+      if (p.category_id && p.category_id.translates) {
+        p.category_id = applyTranslations([p.category_id], lang)[0]
+      }
+      return p
+    })
+
+    return mapped
+  }
+
   // ==================== PROGRAM CRUD METHODS ====================
 
   async getProductPrograms(productId: number, lang: LANG): Promise<any[]> {
@@ -1801,6 +1837,19 @@ export class ProductService {
       title: program.title,
       description: program.description,
       order: program.order,
+      type: program.type,
+      banner1_title_ua: program.banner1_title_ua,
+      banner1_title_en: program.banner1_title_en,
+      banner1_button_text_ua: program.banner1_button_text_ua,
+      banner1_button_text_en: program.banner1_button_text_en,
+      banner1_link_ua: program.banner1_link_ua,
+      banner1_link_en: program.banner1_link_en,
+      banner2_title_ua: program.banner2_title_ua,
+      banner2_title_en: program.banner2_title_en,
+      banner2_button_text_ua: program.banner2_button_text_ua,
+      banner2_button_text_en: program.banner2_button_text_en,
+      banner2_link_ua: program.banner2_link_ua,
+      banner2_link_en: program.banner2_link_en,
       images: (program.images || [])
         .sort((a, b) => (a.order || 0) - (b.order || 0))
         .map((img) => ({
@@ -1823,6 +1872,19 @@ export class ProductService {
         title: dto.title,
         description: dto.description || '',
         order: dto.order || 0,
+        type: dto.type || ProductProgramType.Day,
+        banner1_title_ua: dto.banner1_title_ua,
+        banner1_title_en: dto.banner1_title_en,
+        banner1_button_text_ua: dto.banner1_button_text_ua,
+        banner1_button_text_en: dto.banner1_button_text_en,
+        banner1_link_ua: dto.banner1_link_ua,
+        banner1_link_en: dto.banner1_link_en,
+        banner2_title_ua: dto.banner2_title_ua,
+        banner2_title_en: dto.banner2_title_en,
+        banner2_button_text_ua: dto.banner2_button_text_ua,
+        banner2_button_text_en: dto.banner2_button_text_en,
+        banner2_link_ua: dto.banner2_link_ua,
+        banner2_link_en: dto.banner2_link_en,
         product_id: product,
       })
 
@@ -1879,6 +1941,20 @@ export class ProductService {
       if (dto.title !== undefined) program.title = dto.title
       if (dto.description !== undefined) program.description = dto.description
       if (dto.order !== undefined) program.order = dto.order
+
+      if (dto.type !== undefined) program.type = dto.type
+      if (dto.banner1_title_ua !== undefined) program.banner1_title_ua = dto.banner1_title_ua
+      if (dto.banner1_title_en !== undefined) program.banner1_title_en = dto.banner1_title_en
+      if (dto.banner1_button_text_ua !== undefined) program.banner1_button_text_ua = dto.banner1_button_text_ua
+      if (dto.banner1_button_text_en !== undefined) program.banner1_button_text_en = dto.banner1_button_text_en
+      if (dto.banner1_link_ua !== undefined) program.banner1_link_ua = dto.banner1_link_ua
+      if (dto.banner1_link_en !== undefined) program.banner1_link_en = dto.banner1_link_en
+      if (dto.banner2_title_ua !== undefined) program.banner2_title_ua = dto.banner2_title_ua
+      if (dto.banner2_title_en !== undefined) program.banner2_title_en = dto.banner2_title_en
+      if (dto.banner2_button_text_ua !== undefined) program.banner2_button_text_ua = dto.banner2_button_text_ua
+      if (dto.banner2_button_text_en !== undefined) program.banner2_button_text_en = dto.banner2_button_text_en
+      if (dto.banner2_link_ua !== undefined) program.banner2_link_ua = dto.banner2_link_ua
+      if (dto.banner2_link_en !== undefined) program.banner2_link_en = dto.banner2_link_en
 
       await this.programRepo.save(program)
 

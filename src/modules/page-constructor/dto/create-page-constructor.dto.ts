@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsEnum, IsString, IsOptional } from 'class-validator'
+import { IsEnum, IsString, IsOptional, IsNumber } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
 
 import { PageType } from '../entities/page-constructor.entity'
@@ -42,4 +42,9 @@ export class CreatePageConstructorDto {
   @ApiProperty({ example: '/some-url' })
   @IsString()
   url: string
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @IsNumber()
+  category_id?: number
 }
