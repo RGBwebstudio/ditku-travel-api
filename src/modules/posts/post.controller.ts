@@ -41,14 +41,7 @@ export class PostController {
   })
   @ApiOperation({ summary: 'Отримати частину постів' })
   find(@Query() query: PostQueryDto, @Req() req: Request) {
-    const { take, skip, filter } = query
-    const filterDto: Partial<PostFilterDto> = {
-      ...filter,
-      take,
-      skip,
-    }
-
-    return this.postService.findAll(filterDto as PostFilterDto, req.lang)
+    return this.postService.findAll(query as PostFilterDto, req.lang)
   }
 
   @Get('filter')

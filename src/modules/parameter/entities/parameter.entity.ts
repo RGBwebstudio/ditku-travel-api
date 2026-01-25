@@ -1,6 +1,4 @@
 import { Exclude } from 'class-transformer'
-import { ParameterCategory } from 'src/modules/parameter-category/entities/parameter-category.entity'
-import { Product } from 'src/modules/product/entities/product.entity'
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -13,6 +11,8 @@ import {
 } from 'typeorm'
 
 import { ParameterTranslate } from './category-translate.entity'
+import { ParameterCategory } from '../../parameter-category/entities/parameter-category.entity'
+import { Product } from '../../product/entities/product.entity'
 
 @Entity()
 export class Parameter {

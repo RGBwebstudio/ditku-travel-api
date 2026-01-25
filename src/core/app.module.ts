@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module'
 import configuration from '../../config/configuration'
 import { AdminModule } from '../modules/admin/admin.module'
 import { BannerModule } from '../modules/banners/brand.module'
+import { BlogModule } from '../modules/blog/blog.module'
 import { CategoryModule } from '../modules/category/category.module'
 import { CityModule } from '../modules/city/city.module'
 import { ContactsModule } from '../modules/contacts/contacts.module'
@@ -89,6 +90,7 @@ const config = configuration()
     ToursPageModule,
     SafeWithUsModule,
     FilesModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

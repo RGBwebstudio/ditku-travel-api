@@ -52,13 +52,9 @@ export class PostService {
       .leftJoinAndSelect('post.category_id', 'category')
       .leftJoinAndSelect('post.translates', 'translates')
       .leftJoinAndSelect('post.images', 'images')
-      .leftJoinAndSelect('post.sections', 'sections')
-      .leftJoinAndSelect('post.socials', 'socials')
-      .leftJoinAndSelect('sections.translates', 'sectionTranslates')
-      .leftJoinAndSelect('sections.images', 'sectionImages')
 
     if (filter.category_id) {
-      queryBuilder.andWhere('post.category_id = :categoryId', {
+      queryBuilder.andWhere('category.id = :categoryId', {
         categoryId: filter.category_id,
       })
     }
@@ -66,18 +62,6 @@ export class PostService {
     if (filter.is_hidden !== undefined) {
       queryBuilder.andWhere('post.is_hidden = :isHidden', {
         isHidden: filter.is_hidden,
-      })
-    }
-
-    if (filter.is_top_main !== undefined) {
-      queryBuilder.andWhere('post.is_top_main = :isTopMain', {
-        isTopMain: filter.is_top_main,
-      })
-    }
-
-    if (filter.is_top_side !== undefined) {
-      queryBuilder.andWhere('post.is_top_side = :isTopSide', {
-        isTopSide: filter.is_top_side,
       })
     }
 
@@ -101,14 +85,12 @@ export class PostService {
 
     if (lang) {
       applyTranslations(entities, lang)
-      for (const entity of entities) {
-        if (entity.sections) {
-          applyTranslations(entity.sections, lang)
-        }
-      }
     }
 
-    return { entities, count }
+    return {
+      entities,
+      count,
+    }
   }
 
   async findOne(id: number, lang?: LANG): Promise<Post> {
@@ -122,6 +104,10 @@ export class PostService {
         'sections.translates',
         'sections.images',
         'socials',
+        'recommended_posts',
+        'recommended_posts.category_id',
+        'recommended_posts.translates',
+        'recommended_posts.images',
       ],
     })
 
@@ -150,6 +136,10 @@ export class PostService {
         'sections.translates',
         'sections.images',
         'socials',
+        'recommended_posts',
+        'recommended_posts.category_id',
+        'recommended_posts.translates',
+        'recommended_posts.images',
       ],
     })
 
@@ -168,7 +158,7 @@ export class PostService {
   }
 
   async create(createDto: PostCreateDto): Promise<Post> {
-    const { sections, title_ua, title_en, content_ua, content_en, ...rest } = createDto
+    const { sections, title_ua, title_en, content_ua, content_en, recommended_posts, ...rest } = createDto
 
     const translationFields = { title_ua, title_en, content_ua, content_en }
 
@@ -191,6 +181,9 @@ export class PostService {
     }
 
     const post = this.postRepo.create(rest)
+    if (recommended_posts) {
+      post.recommended_posts = recommended_posts.map((id) => ({ id }) as Post)
+    }
     const savedPost = await this.postRepo.save(post)
 
     if (sections && sections.length > 0) {
@@ -207,7 +200,7 @@ export class PostService {
   }
 
   async update(id: number, updateDto: PostUpdateDto): Promise<Post> {
-    const { sections, title_ua, title_en, content_ua, content_en, ...rest } = updateDto
+    const { sections, title_ua, title_en, content_ua, content_en, recommended_posts, ...rest } = updateDto
     const translationFields = { title_ua, title_en, content_ua, content_en }
     const existingPost = await this.findOne(id)
 
@@ -232,6 +225,10 @@ export class PostService {
       if (existingUrlPost) {
         throw new BadRequestException('Post with this URL ALREADY_EXISTS')
       }
+    }
+
+    if (recommended_posts) {
+      existingPost.recommended_posts = recommended_posts.map((id) => ({ id }) as Post)
     }
 
     Object.assign(existingPost, rest)

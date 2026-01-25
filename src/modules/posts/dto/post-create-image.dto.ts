@@ -16,9 +16,4 @@ export class PostCreateImageDto {
   @IsInt()
   @Min(0)
   order: number
-
-  @ApiPropertyOptional({ example: false })
-  @IsOptional()
-  @IsBoolean()
-  is_top_main?: boolean
 }

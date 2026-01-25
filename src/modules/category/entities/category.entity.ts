@@ -17,6 +17,7 @@ import {
 import { CategoryImage } from './category-image.entity'
 import { CategoryTranslate } from './category-translate.entity'
 import { Menu } from '../../menu/entities/menu.entity'
+import { Post } from '../../posts/entities/post.entity'
 import { Product } from '../../product/entities/product.entity'
 import { SeoFilter } from '../../seo-filter/entities/seo-filter.entity'
 
@@ -70,6 +71,13 @@ export class Category {
     inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' },
   })
   popular_tours: Product[]
+  @ManyToMany(() => Post)
+  @JoinTable({
+    name: 'category_recommended_posts',
+    joinColumn: { name: 'category_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'post_id', referencedColumnName: 'id' },
+  })
+  recommended_posts: Post[]
 
   @Column({ default: 0 })
   order_in_list: number

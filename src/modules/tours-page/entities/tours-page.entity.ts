@@ -1,4 +1,3 @@
-import { LANG } from 'src/common/enums/translation.enum'
 import {
   Column,
   CreateDateColumn,
@@ -9,6 +8,8 @@ import {
   JoinTable,
 } from 'typeorm'
 
+import { LANG } from '../../../common/enums/translation.enum'
+import { Post } from '../../posts/entities/post.entity'
 import { Product } from '../../product/entities/product.entity'
 import { ToursPageStructureDto } from '../dto/tours-page-structure.dto'
 
@@ -27,6 +28,14 @@ export class ToursPage {
     inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' },
   })
   popular_tours: Product[]
+
+  @ManyToMany(() => Post)
+  @JoinTable({
+    name: 'tours_page_recommended_posts',
+    joinColumn: { name: 'tours_page_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'post_id', referencedColumnName: 'id' },
+  })
+  recommended_posts: Post[]
 
   @Column({ enum: LANG, default: LANG.UA, unique: true })
   lang: LANG
