@@ -1,5 +1,6 @@
-import { LANG } from '../../../common/enums/translation.enum'
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+
+import { LANG } from '../../../common/enums/translation.enum'
 
 @Entity()
 export class Contacts {

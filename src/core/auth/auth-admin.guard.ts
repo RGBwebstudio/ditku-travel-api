@@ -10,7 +10,7 @@ export class AuthAdminGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest()
+    const request = context.switchToHttp().getRequest<Request>()
     const token = this.extractTokenFromHeader(request)
 
     if (!token) throw new UnauthorizedException()

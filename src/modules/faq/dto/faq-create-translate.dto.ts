@@ -1,6 +1,6 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger'
 
-import { IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
+import { IsEnum, IsInt, IsPositive, IsString } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
 
 import { Faq } from '../entities/faq.entity'

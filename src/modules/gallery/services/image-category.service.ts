@@ -1,7 +1,7 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
-import { IsNull, Repository } from 'typeorm'
+import { FindOptionsWhere, IsNull, Repository } from 'typeorm'
 
 import { ImageService } from './image.service'
 import { CreateImageCategoryDto } from '../dto/create-image-category.dto'
@@ -21,7 +21,6 @@ export class ImageCategoryService {
 
   async create(dto: CreateImageCategoryDto): Promise<ImageCategory> {
     try {
-      // Validate parentId if provided
       if (dto.parentId) {
         const parent = await this.categoryRepo.findOne({
           where: { id: dto.parentId },
@@ -43,7 +42,7 @@ export class ImageCategoryService {
   }
 
   async findAll(query?: ImageCategoryQueryDto): Promise<ImageCategory[]> {
-    const where: any = {}
+    const where: FindOptionsWhere<ImageCategory> = {}
 
     if (query?.parentId !== undefined) {
       if (query.parentId === null) {
@@ -76,7 +75,6 @@ export class ImageCategoryService {
       throw new NotFoundException('NOT_FOUND')
     }
 
-    // Validate parentId if provided
     if (dto.parentId !== undefined) {
       if (dto.parentId === id) {
         throw new BadRequestException('CANNOT_SET_SELF_AS_PARENT')
@@ -90,7 +88,6 @@ export class ImageCategoryService {
           throw new NotFoundException('PARENT_NOT_FOUND')
         }
 
-        // Check for circular reference (prevent setting a descendant as parent)
         const isDescendant = await this.isDescendant(id, dto.parentId)
         if (isDescendant) {
           throw new BadRequestException('CANNOT_SET_DESCENDANT_AS_PARENT')
@@ -102,10 +99,6 @@ export class ImageCategoryService {
     return await this.categoryRepo.save(updated)
   }
 
-  /**
-   * Check if potentialDescendantId is a descendant of ancestorId
-   * (i.e., if potentialDescendantId is somewhere in the tree below ancestorId)
-   */
   private async isDescendant(ancestorId: number, potentialDescendantId: number): Promise<boolean> {
     const category = await this.categoryRepo.findOne({
       where: { id: potentialDescendantId },
@@ -129,34 +122,18 @@ export class ImageCategoryService {
       throw new NotFoundException('NOT_FOUND')
     }
 
-    // 1. Recursively delete all child categories
     if (category.children && category.children.length > 0) {
       for (const child of category.children) {
         await this.delete(child.id)
       }
     }
 
-    // 2. Delete all images in this category (removes from S3 and DB)
-    // We need to fetch images specifically if not fully loaded, but relations=['images'] should catch them.
-    // However, if there are many, we might need pagination or batching. For now assuming reasonable count.
-    // Wait, the findOne above might not get ALL images if pagination was involved?
-    // Relation loading fetches all. Safe for normal usage.
-
-    // We strictly use find with where just in case Relation didn't fetch deep or to be sure.
-    // Re-fetching images to be absolutely safe (and simpler logic than relying on relation array state)
-    // Actually, we can just use the service to find by category.
-    const images = await this.imageService.findAll({ categoryId: id } as any) // Assuming findAll supports filtering by categoryId
-
-    // Actually ImageService.findAll returns { data, total ... }
-    // Let's rely on the relation we fetched or use the service carefully.
-    // The relation `category.images` is available.
     if (category.images && category.images.length > 0) {
       for (const image of category.images) {
         await this.imageService.delete(image.id)
       }
     }
 
-    // 3. Delete the category itself
     await this.categoryRepo.delete(id)
     return { success: true }
   }

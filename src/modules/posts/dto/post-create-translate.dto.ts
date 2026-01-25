@@ -1,6 +1,6 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger'
 
-import { IsString, IsOptional, IsBoolean } from 'class-validator'
+import { IsString } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
 
 export class PostCreateTranslateDto {

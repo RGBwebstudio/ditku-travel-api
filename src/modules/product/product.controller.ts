@@ -18,6 +18,8 @@ import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/s
 import { Request } from 'express'
 import { TakeAndSkipDto } from 'src/common/dto/TakeAndSkipDto.dto'
 import { AuthAdminGuard } from 'src/core/auth/auth-admin.guard'
+import { RatingCreateDto } from 'src/modules/product-rating/dto/rating-create.dto'
+import { RatingUpdateDto } from 'src/modules/product-rating/dto/rating-update.dto'
 import { RatingService } from 'src/modules/product-rating/rating.service'
 
 import { AddProductImageDto } from './dto/add-product-image.dto'
@@ -76,14 +78,14 @@ export class ProductController {
     description: 'NOT_CREATED - Відгук не створено',
   })
   async createProductReview(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateProductReviewDto) {
-    const payload = {
+    const payload: RatingCreateDto = {
       name: dto.name || dto.author || 'Anonymous',
       review: dto.review || dto.text || dto.text_ua || dto.text_en || '',
       text_ua: dto.text_ua,
       text_en: dto.text_en,
       rating: dto.rating,
       approved: dto.approved ?? false,
-      product_id: id as any,
+      product_id: id as unknown as Product,
     }
     return this.ratingService.setRating(payload)
   }
@@ -113,7 +115,7 @@ export class ProductController {
     description: 'NOT_FOUND - Відгук не знайдено',
   })
   async updateProductReview(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductReviewDto) {
-    const payload: any = {}
+    const payload: RatingUpdateDto = {}
     if (dto.name || dto.author) payload.name = dto.name || dto.author
     if (dto.review || dto.text || dto.text_ua || dto.text_en) {
       payload.review = dto.review || dto.text || dto.text_ua || dto.text_en
@@ -122,7 +124,7 @@ export class ProductController {
     if (dto.text_en) payload.text_en = dto.text_en
 
     if (typeof dto.rating !== 'undefined') payload.rating = dto.rating
-    if (dto.created_at) payload.created_at = new Date(dto.created_at)
+    if (dto.created_at) payload.created_at = new Date(dto.created_at as string)
     if (typeof dto.approved !== 'undefined') payload.approved = dto.approved
 
     return this.ratingService.update(id, payload)
