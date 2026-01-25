@@ -127,7 +127,7 @@ export class ProductService {
     const entities = result.entities.map((entity, index) => {
       const rawRow = result.raw[index]
       if (rawRow.average_rating !== undefined) {
-        entity.rating = parseFloat(rawRow.average_rating) || 0
+        entity.rating = parseFloat(rawRow.average_rating as string) || 0
       }
       return entity
     })
@@ -198,7 +198,7 @@ export class ProductService {
     const products = result.entities.map((entity, index) => {
       const raw = result.raw[index]
       if (raw.average_rating !== undefined) {
-        entity.rating = parseFloat(raw.average_rating) || 0
+        entity.rating = parseFloat(raw.average_rating as string) || 0
       }
       return entity
     })
@@ -240,7 +240,7 @@ export class ProductService {
     const products = result.entities.map((entity, index) => {
       const raw = result.raw[index]
       if (raw.average_rating !== undefined) {
-        entity.rating = parseFloat(raw.average_rating) || 0
+        entity.rating = parseFloat(raw.average_rating as string) || 0
       }
       return entity
     })
@@ -392,7 +392,7 @@ export class ProductService {
     const products = result.entities.map((entity, index) => {
       const raw = result.raw[index]
       if (raw.average_rating !== undefined) {
-        entity.rating = parseFloat(raw.average_rating) || 0
+        entity.rating = parseFloat(raw.average_rating as string) || 0
       }
       return entity
     })
@@ -928,9 +928,8 @@ export class ProductService {
         .relation(Product, 'recommendedProducts')
         .of(product.id)
         .loadMany()
-        .then(async (products) => {
+        .then(async (products: Product[]) => {
           if (!products || products.length === 0) return []
-          // Manually load relations for recommended products to avoid deep nesting issues
           return this.productRepo.find({
             where: { id: In(products.map((p) => p.id)) },
             relations: ['images', 'translates', 'category_id', 'category_id.translates'],
@@ -942,7 +941,7 @@ export class ProductService {
         .relation(Product, 'topTourProducts')
         .of(product.id)
         .loadMany()
-        .then(async (products) => {
+        .then(async (products: Product[]) => {
           if (!products || products.length === 0) return []
           return this.productRepo.find({
             where: { id: In(products.map((p) => p.id)) },
@@ -1087,7 +1086,7 @@ export class ProductService {
 
       const ratingsMap = new Map<number, number>()
       for (const r of ratingsResult) {
-        ratingsMap.set(Number(r.productId), parseFloat(r.averageRating) || 0)
+        ratingsMap.set(Number(r.productId), parseFloat(r.averageRating as string) || 0)
       }
 
       for (const child of children) {
@@ -1142,7 +1141,7 @@ export class ProductService {
     const recommendedProducts = result.entities.map((entity, index) => {
       const raw = result.raw[index]
       if (raw.average_rating !== undefined) {
-        entity.rating = Math.round(parseFloat(raw.average_rating) * 10) / 10 || 0
+        entity.rating = Math.round(parseFloat(raw.average_rating as string) * 10) / 10 || 0
       }
       return entity
     })

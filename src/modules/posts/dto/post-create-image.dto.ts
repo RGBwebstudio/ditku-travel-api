@@ -1,6 +1,6 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger'
 
-import { IsString, IsOptional, IsInt, Min, IsBoolean, IsNotEmpty } from 'class-validator'
+import { IsString, IsInt, Min, IsNotEmpty } from 'class-validator'
 
 export class PostCreateImageDto {
   @ApiProperty({ example: 'post-image.jpg' })

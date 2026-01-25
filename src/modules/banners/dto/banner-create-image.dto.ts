@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
+import { IsInt, IsPositive, IsString } from 'class-validator'
 
 import { BannerGroup } from '../entities/banners.entity'
 

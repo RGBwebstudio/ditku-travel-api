@@ -106,7 +106,7 @@ export class SeoFilterService {
     }
 
     const rootNode = Array.isArray(descendantTree) ? descendantTree[0] : descendantTree
-    const enrichedRoot = enrichNode(rootNode)
+    const enrichedRoot = enrichNode(rootNode as SeoFilter)
 
     // Apply translations recursively
     const applyToTree = (nodes: SeoFilter[]) => {
@@ -169,7 +169,7 @@ export class SeoFilterService {
     }
 
     const rootNode = Array.isArray(descendantTree) ? descendantTree[0] : descendantTree
-    const enrichedRoot = enrichNode(rootNode)
+    const enrichedRoot = enrichNode(rootNode as SeoFilter)
 
     // Apply translations recursively
     const applyToTree = (nodes: SeoFilter[]) => {

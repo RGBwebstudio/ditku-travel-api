@@ -54,4 +54,4 @@ async function createAdmin() {
   }
 }
 
-createAdmin()
+void createAdmin()

@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { LANG } from 'src/common/enums/translation.enum'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Repository } from 'typeorm'
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 
 import { RatingCreateDto } from './dto/rating-create.dto'
 import { RatingUpdateDto } from './dto/rating-update.dto'
@@ -120,16 +121,19 @@ export class RatingService {
 
   async update(id: number, dto: RatingUpdateDto): Promise<Rating | null> {
     const { text_ua, text_en, ...rest } = dto
-    // Initial payload from 'rest' (excludes text_ua, text_en)
-    const payload: any = { ...rest }
-    if (typeof dto.rating !== 'undefined') payload.rating = String(dto.rating)
 
-    // Remove unknown properties that might come from dto
-    delete payload.author
-    delete payload.text
-    delete payload.translates
+    const updateData: QueryDeepPartialEntity<Rating> = {
+      name: rest.name,
+      review: rest.review,
+      approved: rest.approved,
+      created_at: rest.created_at,
+    }
 
-    const result = await this.ratingRepo.update(id, payload)
+    if (rest.rating !== undefined) {
+      updateData.rating = String(rest.rating)
+    }
+
+    const result = await this.ratingRepo.update(id, updateData)
 
     if (result.affected === 0) throw new NotFoundException('rating is NOT_FOUND')
 

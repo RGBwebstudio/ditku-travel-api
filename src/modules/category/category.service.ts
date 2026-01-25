@@ -370,7 +370,7 @@ export class CategoryService {
       }
 
       if (translated.children?.length) {
-        translated.children = translated.children.map((c) => applyTranslationsRecursively(c))
+        translated.children = translated.children.map((c: Category) => applyTranslationsRecursively(c))
       }
 
       return translated

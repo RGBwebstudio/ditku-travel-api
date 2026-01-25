@@ -1,5 +1,4 @@
-import { Optional } from '@nestjs/common'
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger'
 
 import { Type } from 'class-transformer'
 import { IsEnum, ValidateNested } from 'class-validator'

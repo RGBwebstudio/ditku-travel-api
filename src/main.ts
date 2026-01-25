@@ -114,7 +114,7 @@ async function bootstrap() {
 
   SwaggerModule.setup('api', app, documentFactory, {
     swaggerOptions: {
-      tagsSorter: (a, b) => {
+      tagsSorter: (a: string, b: string) => {
         const order = [
           'Авторизація',
           'Користувачі',
@@ -157,4 +157,4 @@ async function bootstrap() {
   await app.listen(configService.get<string>('PORT') ?? 4200, '0.0.0.0')
 }
 
-bootstrap()
+void bootstrap()

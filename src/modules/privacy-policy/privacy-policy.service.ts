@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 
 import { LANG } from 'src/common/enums/translation.enum'
 import { Repository } from 'typeorm'
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 
 import { CreatePrivacyPolicyDto } from './dto/create-privacy-policy.dto'
 import { UpdatePrivacyPolicyDto } from './dto/update-privacy-policy.dto'
@@ -52,11 +53,16 @@ export class PrivacyPolicyService {
   async update(dto: UpdatePrivacyPolicyDto): Promise<PrivacyPolicy | null> {
     const { lang } = dto
 
-    if (dto.structure && typeof dto.structure === 'string') {
-      dto.structure = JSON.parse(dto.structure)
+    const updateData: QueryDeepPartialEntity<PrivacyPolicy> = {}
+    if (dto.structure) {
+      if (typeof dto.structure === 'string') {
+        updateData.structure = JSON.parse(dto.structure)
+      } else {
+        updateData.structure = dto.structure
+      }
     }
 
-    const result = await this.repo.update({ lang }, dto as unknown as any)
+    const result = await this.repo.update({ lang }, updateData)
 
     if (result.affected === 0) {
       const created = this.repo.create(dto)
