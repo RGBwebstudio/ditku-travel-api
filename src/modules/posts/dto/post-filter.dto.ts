@@ -16,19 +16,7 @@ export class PostFilterDto {
   @Type(() => Boolean)
   is_hidden?: boolean
 
-  @ApiPropertyOptional({ example: true })
-  @IsOptional()
-  @IsBoolean()
-  @Type(() => Boolean)
-  is_top_main?: boolean
-
-  @ApiPropertyOptional({ example: true })
-  @IsOptional()
-  @IsBoolean()
-  @Type(() => Boolean)
-  is_top_side?: boolean
-
-  @ApiPropertyOptional({ example: 'заголовок' })
+  @ApiPropertyOptional({ example: '' })
   @IsOptional()
   @IsString()
   search?: string

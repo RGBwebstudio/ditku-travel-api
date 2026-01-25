@@ -1,5 +1,3 @@
-import { Exclude } from 'class-transformer'
-import { PostCategory } from 'src/modules/post-category/entities/post-category.entity'
 import {
   Entity,
   Column,
@@ -10,17 +8,17 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm'
 
 import { PostImage } from './post-image.entity'
 import { PostSection } from './post-section.entity'
 import { PostSocial } from './post-social.entity'
 import { PostTranslate } from './post-translate.entity'
+import { PostCategory } from '../../post-category/entities/post-category.entity'
 
 @Entity()
-@Index(['category_id', 'is_top_main', 'created_at'])
-@Index(['is_top_main', 'created_at'])
-@Index(['is_top_side', 'created_at'])
 @Index(['category_id'])
 @Index(['url'])
 export class Post {
@@ -29,12 +27,6 @@ export class Post {
 
   @Column({ default: false })
   is_hidden: boolean
-
-  @Column({ default: false })
-  is_top_main: boolean
-
-  @Column({ default: false })
-  is_top_side: boolean
 
   @Column({ nullable: true })
   badge_text: string
@@ -60,7 +52,7 @@ export class Post {
   @Column({ type: 'text', nullable: true })
   content: string
 
-  @ManyToOne(() => PostCategory, (category: PostCategory) => category.id, {
+  @ManyToOne(() => PostCategory, (category: PostCategory) => category.posts, {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'category_id' })
@@ -80,6 +72,14 @@ export class Post {
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date
+
+  @ManyToMany(() => Post)
+  @JoinTable({
+    name: 'post_recommended_posts',
+    joinColumn: { name: 'post_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'recommended_post_id', referencedColumnName: 'id' },
+  })
+  recommended_posts: Post[]
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date

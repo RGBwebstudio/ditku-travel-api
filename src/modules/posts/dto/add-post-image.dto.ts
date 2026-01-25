@@ -10,9 +10,4 @@ export class AddPostImageDto {
   @IsString()
   @IsNotEmpty()
   path: string
-
-  @ApiPropertyOptional({ example: false })
-  @IsOptional()
-  @IsBoolean()
-  is_top_main?: boolean
 }

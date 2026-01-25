@@ -1,12 +1,29 @@
 import { ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsOptional, IsString } from 'class-validator'
+import { IsOptional, IsString, IsInt, IsArray } from 'class-validator'
 
 export class PostCategoryUpdateDto {
   @ApiPropertyOptional({ example: 'Новини' })
   @IsOptional()
   @IsString()
   title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  top_post_id?: number
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  side_post_ids?: number[]
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  recommended_post_ids?: number[]
 
   @ApiPropertyOptional()
   @IsOptional()

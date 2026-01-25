@@ -14,9 +14,4 @@ export class PostCreateTranslateDto {
 
   @ApiProperty({ example: LANG.UA, enum: LANG })
   lang: LANG
-
-  @ApiPropertyOptional({ example: false })
-  @IsOptional()
-  @IsBoolean()
-  is_top_main?: boolean
 }

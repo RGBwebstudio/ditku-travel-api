@@ -12,14 +12,6 @@ export class PostCreateDto {
   @IsBoolean()
   is_hidden: boolean
 
-  @ApiProperty({ example: false })
-  @IsBoolean()
-  is_top_main: boolean
-
-  @ApiProperty({ example: false })
-  @IsBoolean()
-  is_top_side: boolean
-
   @ApiPropertyOptional({ example: 'Новинка' })
   @IsString()
   @IsOptional()
@@ -95,4 +87,10 @@ export class PostCreateDto {
   @IsOptional()
   @IsString()
   content_en?: string
+
+  @ApiPropertyOptional({ type: [Number], description: 'List of recommended post IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  recommended_posts?: number[]
 }

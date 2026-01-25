@@ -20,6 +20,7 @@ import { Category } from '../../category/entities/category.entity'
 import { City } from '../../city/entities/city.entity'
 import { Country } from '../../country/entities/country.entity'
 import { Menu } from '../../menu/entities/menu.entity'
+import { Post } from '../../posts/entities/post.entity'
 import { Product } from '../../product/entities/product.entity'
 import { Section } from '../../section/entities/section.entity'
 
@@ -92,6 +93,14 @@ export class SeoFilter {
     inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' },
   })
   popular_tours: Product[]
+
+  @ManyToMany(() => Post)
+  @JoinTable({
+    name: 'seo_filter_recommended_posts',
+    joinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'post_id', referencedColumnName: 'id' },
+  })
+  recommended_posts: Post[]
 
   @OneToMany(() => SeoFilterTranslate, (translate) => translate.entity_id)
   translates: SeoFilterTranslate[]
