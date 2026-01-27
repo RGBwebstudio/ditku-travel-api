@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { LANG } from 'src/common/enums/translation.enum'
+import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
 import { Repository } from 'typeorm'
 
@@ -20,7 +21,16 @@ export class ToursPageService {
   async get(lang: LANG): Promise<ToursPage> {
     const entity = await this.repo.findOne({
       where: { lang },
-      relations: ['popular_tours', 'popular_tours.category_id'],
+      relations: [
+        'popular_tours',
+        'popular_tours.category_id',
+        'popular_tours.images',
+        'popular_tours.translates',
+        'recommended_posts',
+        'recommended_posts.category_id',
+        'recommended_posts.images',
+        'recommended_posts.translates',
+      ],
     })
 
     if (!entity) throw new NotFoundException('tours-page not found')
@@ -48,15 +58,33 @@ export class ToursPageService {
         }
       }
 
+      if (dto.recommended_post_ids !== undefined) {
+        const entity = await this.repo.findOne({ where: { id: exist.id }, relations: ['recommended_posts'] })
+        if (entity) {
+          entity.recommended_posts = dto.recommended_post_ids.map((id) => ({ id }) as Post)
+          await this.repo.save(entity)
+        }
+      }
+
       return this.repo.findOne({
         where: { id: exist.id },
-        relations: ['popular_tours', 'popular_tours.category_id'],
+        relations: [
+          'popular_tours',
+          'popular_tours.category_id',
+          'popular_tours.images',
+          'popular_tours.translates',
+          'recommended_posts',
+          'recommended_posts.category_id',
+          'recommended_posts.images',
+          'recommended_posts.translates',
+        ],
       }) as Promise<ToursPage>
     }
 
     const created = this.repo.create({
       ...dto,
       popular_tours: dto.popular_tours_ids ? dto.popular_tours_ids.map((id) => ({ id }) as Product) : [],
+      recommended_posts: dto.recommended_post_ids ? dto.recommended_post_ids.map((id) => ({ id }) as Post) : [],
     })
     return this.repo.save(created)
   }

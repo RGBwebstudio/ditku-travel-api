@@ -692,6 +692,8 @@ export class ProductService {
         'topTourProducts.images',
         'topTourProducts.translates',
         'topTourProducts.category_id',
+        'posts',
+        'posts.category_id',
       ],
     })
 

@@ -6,6 +6,7 @@ import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { City } from 'src/modules/city/entities/city.entity'
 import { Country } from 'src/modules/country/entities/country.entity'
+import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
 import { Section } from 'src/modules/section/entities/section.entity'
 import { Repository, In } from 'typeorm'
@@ -23,6 +24,7 @@ type SeoFilterRel = Omit<SeoFilter, 'category_id' | 'city_id' | 'country_id' | '
   country_id?: Country | null
   parent?: SeoFilter | null
   popular_tours?: Product[]
+  recommended_posts?: Post[]
 }
 
 @Injectable()
@@ -88,6 +90,10 @@ export class SeoFilterService {
             'translates',
             'popular_tours',
             'popular_tours.category_id',
+            'popular_tours.images',
+            'popular_tours.translates',
+            'recommended_posts',
+            'recommended_posts.category_id',
           ],
         })
       : []
@@ -151,6 +157,10 @@ export class SeoFilterService {
             'translates',
             'popular_tours',
             'popular_tours.category_id',
+            'popular_tours.images',
+            'popular_tours.translates',
+            'recommended_posts',
+            'recommended_posts.category_id',
           ],
         })
       : []
@@ -241,6 +251,10 @@ export class SeoFilterService {
       seoFilterData.popular_tours = createDto.popular_tours_ids.map((id) => ({ id }) as Product)
     }
 
+    if (createDto.recommended_post_ids) {
+      seoFilterData.recommended_posts = createDto.recommended_post_ids.map((id) => ({ id }) as unknown as Post)
+    }
+
     try {
       const savedEntity = await this.seoFilterRepository.save(seoFilterData)
 
@@ -285,7 +299,7 @@ export class SeoFilterService {
       where: {
         id,
       },
-      relations: ['popular_tours', 'popular_tours.category_id'],
+      relations: ['popular_tours', 'popular_tours.category_id', 'recommended_posts', 'recommended_posts.category_id'],
     })
     if (!existingEntity) throw new NotFoundException('seo_filter is NOT_FOUND')
 
@@ -358,6 +372,10 @@ export class SeoFilterService {
 
     if (updateDto.popular_tours_ids !== undefined) {
       relEntity.popular_tours = updateDto.popular_tours_ids.map((id) => ({ id }) as Product)
+    }
+
+    if (updateDto.recommended_post_ids !== undefined) {
+      relEntity.recommended_posts = updateDto.recommended_post_ids.map((id) => ({ id }) as unknown as Post)
     }
 
     try {
@@ -464,7 +482,6 @@ export class SeoFilterService {
   async findByCategory(id: number, lang: LANG = LANG.UA): Promise<SeoFilter[]> {
     const treeRepository = this.seoFilterRepository.manager.getTreeRepository(SeoFilter)
 
-    // find filters directly attached to category
     const roots = await this.seoFilterRepository.find({
       where: { category_id: { id } },
       relations: ['translates'],
@@ -477,19 +494,6 @@ export class SeoFilterService {
       const tree = await treeRepository.findDescendantsTree(root)
       resultTrees.push(tree)
     }
-
-    // Note: For full recursive translation in a tree structure returned here,
-    // we should ideally fetch the whole tree with translations or enrich it similarly to findOne.
-    // However, findDescendantsTree doesn't easily support relations in subsequent levels without manual handling or loading.
-    // For now, let's at least translate the roots.
-    // If deep translation is needed, we'd need a similar enrichment strategy as findOne.
-    // Given the complexity, let's apply partial solution for now and assume the frontend might not need deep tree here or will fetch individually.
-    // IMPROVEMENT: We can actually apply the same recursion if we had the data.
-    // Let's just translate what we have. `findDescendantsTree` loads children but not their relations (translates).
-
-    // To do it properly, we might need to rely on `findOne` logic if we want deep tree with translations.
-    // But since this returns an array of trees, let's just map the roots.
-    // Assuming the user wants at least the top level translated.
 
     return applyTranslations(resultTrees, lang)
   }
