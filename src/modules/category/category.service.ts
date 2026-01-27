@@ -5,6 +5,7 @@ import { LANG } from 'src/common/enums/translation.enum'
 import { FineOneWhereType } from 'src/common/types/category.types'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
+import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
 import { Repository, TreeRepository, IsNull, FindOptionsWhere } from 'typeorm'
 
@@ -57,7 +58,18 @@ export class CategoryService {
 
     const entity = await this.categoryRepo.findOne({
       where,
-      relations: ['parent', 'parent.translates', 'images', 'translates', 'popular_tours', 'popular_tours.category_id'],
+      relations: [
+        'parent',
+        'parent.translates',
+        'images',
+        'translates',
+        'popular_tours',
+        'popular_tours.category_id',
+        'popular_tours.images',
+        'popular_tours.translates',
+        'recommended_posts',
+        'recommended_posts.category_id',
+      ],
     })
 
     if (!entity) throw new NotFoundException('category is NOT_FOUND')
@@ -106,7 +118,16 @@ export class CategoryService {
       }
     }
 
-    const { title_ua, title_en, seo_text_ua, seo_text_en, structure, popular_tours_ids, ...categoryData } = dto
+    const {
+      title_ua,
+      title_en,
+      seo_text_ua,
+      seo_text_en,
+      structure,
+      popular_tours_ids,
+      recommended_post_ids,
+      ...categoryData
+    } = dto
     const translationsData: { lang: LANG; field: string; value: string }[] = []
 
     if (title_ua) translationsData.push({ lang: LANG.UA, field: 'title', value: title_ua })
@@ -120,6 +141,7 @@ export class CategoryService {
       ...(url ? { url } : {}),
       ...(structure ? { structure } : {}),
       popular_tours: popular_tours_ids ? popular_tours_ids.map((id) => ({ id }) as Product) : [],
+      recommended_posts: recommended_post_ids ? recommended_post_ids.map((id) => ({ id }) as unknown as Post) : [],
     })
 
     try {
@@ -426,7 +448,16 @@ export class CategoryService {
 
       const url = dto.url && String(dto.url).trim() !== '' ? dto.url : undefined
 
-      const { title_ua, title_en, seo_text_ua, seo_text_en, structure, popular_tours_ids, ...categoryData } = dto
+      const {
+        title_ua,
+        title_en,
+        seo_text_ua,
+        seo_text_en,
+        structure,
+        popular_tours_ids,
+        recommended_post_ids,
+        ...categoryData
+      } = dto
       const translations: { lang: LANG; field: string; value: string }[] = []
 
       if (title_ua !== undefined) translations.push({ lang: LANG.UA, field: 'title', value: title_ua })
@@ -447,6 +478,17 @@ export class CategoryService {
         })
         if (categoryToUpdate) {
           categoryToUpdate.popular_tours = popular_tours_ids.map((pid) => ({ id: pid }) as Product)
+          await this.categoryRepo.save(categoryToUpdate)
+        }
+      }
+
+      if (recommended_post_ids !== undefined) {
+        const categoryToUpdate = await this.categoryRepo.findOne({
+          where: { id },
+          relations: ['recommended_posts'],
+        })
+        if (categoryToUpdate) {
+          categoryToUpdate.recommended_posts = recommended_post_ids.map((pid) => ({ id: pid }) as unknown as Post)
           await this.categoryRepo.save(categoryToUpdate)
         }
       }

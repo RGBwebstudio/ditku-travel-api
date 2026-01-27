@@ -2,11 +2,12 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { LANG } from 'src/common/enums/translation.enum'
-import { Repository } from 'typeorm'
+import { Repository, In } from 'typeorm'
 
 import { CreateMainPageDto } from './dto/create-main-page.dto'
 import { UpdateMainPageDto } from './dto/update-main-page.dto'
 import { MainPage } from './entities/main-page.entity'
+import { Post } from '../posts/entities/post.entity'
 
 @Injectable()
 export class MainPageService {
@@ -14,7 +15,9 @@ export class MainPageService {
 
   constructor(
     @InjectRepository(MainPage)
-    private readonly countryRepo: Repository<MainPage>
+    private readonly countryRepo: Repository<MainPage>,
+    @InjectRepository(Post)
+    private readonly postRepo: Repository<Post>
   ) {}
 
   async create(dto: CreateMainPageDto): Promise<MainPage> {
@@ -43,6 +46,13 @@ export class MainPageService {
   async findOne(lang: LANG): Promise<MainPage> {
     const entity = await this.countryRepo.findOne({
       where: { lang },
+      relations: {
+        recommended_posts: {
+          category_id: true,
+          images: true,
+          translates: true,
+        },
+      },
     })
 
     if (!entity) throw new NotFoundException('entity of main-page NOT_FOUND')
@@ -51,22 +61,51 @@ export class MainPageService {
   }
 
   async update(dto: UpdateMainPageDto): Promise<MainPage | null> {
-    const { lang } = dto
+    const { lang, recommended_post_ids, ...rest } = dto
 
-    if (dto.structure && (dto.structure as any).cta_section) {
-      delete (dto.structure as any).cta_section
+    if (rest.structure && 'cta_section' in rest.structure) {
+      delete (rest.structure as Record<string, unknown>).cta_section
     }
 
-    const result = await this.countryRepo.update({ lang }, dto)
+    const entity = await this.countryRepo.findOne({
+      where: { lang },
+      relations: {
+        recommended_posts: {
+          category_id: true,
+          images: true,
+        },
+      },
+    })
 
-    if (result.affected === 0) {
-      const created = this.countryRepo.create(dto)
+    if (!entity) {
+      const created = this.countryRepo.create({ ...rest, lang })
+      if (recommended_post_ids) {
+        created.recommended_posts = await this.postRepo.find({
+          where: { id: In(recommended_post_ids) },
+          relations: {
+            category_id: true,
+            images: true,
+            translates: true,
+          },
+        })
+      }
       return await this.countryRepo.save(created)
     }
 
-    const entity = await this.countryRepo.findOne({ where: { lang } })
+    Object.assign(entity, rest)
 
-    return entity
+    if (recommended_post_ids) {
+      entity.recommended_posts = await this.postRepo.find({
+        where: { id: In(recommended_post_ids) },
+        relations: {
+          category_id: true,
+          images: true,
+          translates: true,
+        },
+      })
+    }
+
+    return await this.countryRepo.save(entity)
   }
 
   async delete(id: number): Promise<{ message: string }> {

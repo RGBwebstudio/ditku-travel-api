@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger'
 
 import { Type } from 'class-transformer'
-import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator'
+import { IsEnum, IsOptional, IsString, ValidateNested, IsArray, IsNumber } from 'class-validator'
 import { LANG } from 'src/common/enums/translation.enum'
 
 import { MainPageStructureDto } from './main-page-structure.dto'
@@ -27,4 +27,10 @@ export class UpdateMainPageDto {
   @IsOptional()
   @IsString()
   title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  recommended_post_ids?: number[]
 }

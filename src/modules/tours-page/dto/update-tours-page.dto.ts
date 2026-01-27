@@ -22,5 +22,10 @@ export class UpdateToursPageDto {
   popular_tours_ids?: number[]
 
   @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  recommended_post_ids?: number[]
+
+  @IsOptional()
   id?: number
 }
