@@ -40,4 +40,4 @@ RUN mkdir -p /usr/src/app/uploads
 EXPOSE 4200
 
 # Start command (run migrations then start app)
-CMD ["sh", "-c", "npm run migration:run && npm run start:prod"]
+CMD ["sh", "-c", "npm run migration:prod && npm run start:prod"]
