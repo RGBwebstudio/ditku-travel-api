@@ -9,6 +9,14 @@ export class ProductCreateImageDto {
   @IsString()
   path: string
 
+  @IsString()
+  @IsOptional()
+  path_md?: string
+
+  @IsString()
+  @IsOptional()
+  path_sm?: string
+
   @IsOptional()
   @IsInt()
   order?: number

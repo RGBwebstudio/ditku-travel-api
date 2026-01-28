@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 
-import { IsString, IsInt, Min, IsNotEmpty } from 'class-validator'
+import { IsString, IsInt, Min, IsNotEmpty, IsOptional } from 'class-validator'
 
 export class PostCreateImageDto {
   @ApiProperty({ example: 'post-image.jpg' })
@@ -11,6 +11,16 @@ export class PostCreateImageDto {
   @IsString()
   @IsNotEmpty()
   path: string
+
+  @ApiProperty({ example: '/uploads/posts/post-image-md.jpg', required: false })
+  @IsString()
+  @IsOptional()
+  path_md?: string
+
+  @ApiProperty({ example: '/uploads/posts/post-image-sm.jpg', required: false })
+  @IsString()
+  @IsOptional()
+  path_sm?: string
 
   @ApiProperty({ example: 0 })
   @IsInt()

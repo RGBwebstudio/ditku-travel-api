@@ -13,4 +13,10 @@ export class PostSectionImage {
 
   @Column()
   url: string
+
+  @Column({ nullable: true })
+  url_md: string
+
+  @Column({ nullable: true })
+  url_sm: string
 }

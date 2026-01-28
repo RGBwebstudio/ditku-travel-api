@@ -646,6 +646,8 @@ export class CategoryService {
 
     const image = this.entityImageRepo.create({
       path: dto.path,
+      path_md: dto.path_md,
+      path_sm: dto.path_sm,
       entity_id: category,
       name: dto.path.split('/').pop() || 'image',
     })

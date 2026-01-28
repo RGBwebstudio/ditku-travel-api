@@ -1,4 +1,4 @@
-import { IsInt, IsPositive, IsString } from 'class-validator'
+import { IsInt, IsOptional, IsPositive, IsString } from 'class-validator'
 
 import { BannerGroup } from '../entities/banners.entity'
 
@@ -11,6 +11,14 @@ export class BannerCreateImageDto {
 
   @IsString()
   path: string
+
+  @IsString()
+  @IsOptional()
+  path_md?: string
+
+  @IsString()
+  @IsOptional()
+  path_sm?: string
 
   @IsInt()
   @IsPositive()

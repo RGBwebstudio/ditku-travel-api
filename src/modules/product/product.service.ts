@@ -1608,6 +1608,8 @@ export class ProductService {
     const newImage = this.entityImageRepo.create({
       entity_id: product,
       path: dto.path,
+      path_md: dto.path_md,
+      path_sm: dto.path_sm,
       name: dto.path.split('/').pop() || 'image',
     })
 
@@ -1897,6 +1899,8 @@ export class ProductService {
           this.programImageRepo.create({
             url: img.url,
             path: img.path,
+            path_md: img.path_md,
+            path_sm: img.path_sm,
             order: img.order ?? index,
             program_id: saved,
           })
@@ -1970,6 +1974,8 @@ export class ProductService {
             this.programImageRepo.create({
               url: img.url,
               path: img.path,
+              path_md: img.path_md,
+              path_sm: img.path_sm,
               order: img.order ?? index,
               program_id: program,
             })
@@ -2062,7 +2068,7 @@ export class ProductService {
 
   async addProgramImage(
     programId: number,
-    dto: { url?: string; path?: string; order?: number }
+    dto: { url?: string; path?: string; path_md?: string; path_sm?: string; order?: number }
   ): Promise<{ message: string }> {
     const program = await this.programRepo.findOne({ where: { id: programId } })
     if (!program) throw new NotFoundException('program is NOT_FOUND')
@@ -2071,6 +2077,8 @@ export class ProductService {
       const image = this.programImageRepo.create({
         url: dto.url,
         path: dto.path,
+        path_md: dto.path_md,
+        path_sm: dto.path_sm,
         order: dto.order || 0,
         program_id: program,
       })

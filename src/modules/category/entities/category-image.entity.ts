@@ -12,6 +12,12 @@ export class CategoryImage {
   @Column()
   path: string
 
+  @Column({ nullable: true })
+  path_md: string
+
+  @Column({ nullable: true })
+  path_sm: string
+
   @ManyToOne(() => Category, (category: Category) => category.images, {
     onDelete: 'CASCADE',
   })

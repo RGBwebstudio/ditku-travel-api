@@ -11,6 +11,16 @@ export class AddBannerImageDto {
   @IsNotEmpty()
   path: string
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  path_md?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  path_sm?: string
+
   @ApiPropertyOptional({
     description: 'Click-through link for the banner',
     example: 'https://myshop.com/promo',

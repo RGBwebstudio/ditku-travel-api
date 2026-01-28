@@ -153,6 +153,8 @@ export class BannerService {
     const newImage = this.entityImageRepo.create({
       entity_id: banner,
       path: dto.path,
+      path_md: dto.path_md,
+      path_sm: dto.path_sm,
       link: dto.link || '',
       name: dto.path.split('/').pop() || 'image',
     })

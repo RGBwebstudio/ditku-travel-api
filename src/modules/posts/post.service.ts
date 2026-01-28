@@ -307,6 +307,8 @@ export class PostService {
 
     const image = this.postImageRepo.create({
       path: dto.path,
+      path_md: dto.path_md,
+      path_sm: dto.path_sm,
       entity_id: post,
       name: dto.path.split('/').pop() || 'image',
       order: 0,
@@ -427,11 +429,20 @@ export class PostService {
 
       // Images
       if (sectionDto.images && sectionDto.images.length > 0) {
-        for (const url of sectionDto.images) {
-          await this.postSectionImageRepo.save({
-            section_id: savedSection,
-            url,
-          })
+        for (const imgOrUrl of sectionDto.images) {
+          if (typeof imgOrUrl === 'string') {
+            await this.postSectionImageRepo.save({
+              section_id: savedSection,
+              url: imgOrUrl,
+            })
+          } else {
+            await this.postSectionImageRepo.save({
+              section_id: savedSection,
+              url: imgOrUrl.url,
+              url_md: imgOrUrl.url_md,
+              url_sm: imgOrUrl.url_sm,
+            })
+          }
         }
       }
     }
