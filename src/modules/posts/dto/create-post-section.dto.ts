@@ -28,11 +28,10 @@ export class CreatePostSectionDto {
   @IsString()
   description_en?: string
 
-  @ApiPropertyOptional({ type: [String] })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  images?: string[]
+  images?: (string | { url: string; url_md?: string; url_sm?: string })[]
 
   @ApiPropertyOptional()
   @IsOptional()

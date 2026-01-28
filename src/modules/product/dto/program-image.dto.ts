@@ -18,6 +18,16 @@ export class ProgramImageDto {
   @IsString()
   path?: string
 
+  @ApiPropertyOptional({ description: 'Relative path to md image' })
+  @IsOptional()
+  @IsString()
+  path_md?: string
+
+  @ApiPropertyOptional({ description: 'Relative path to sm image' })
+  @IsOptional()
+  @IsString()
+  path_sm?: string
+
   @ApiPropertyOptional({ description: 'Display order' })
   @IsOptional()
   @IsNumber()

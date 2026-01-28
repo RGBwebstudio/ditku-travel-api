@@ -65,6 +65,21 @@ export class SeoFilterCreateDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  navigator_title?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  navigator_title_ua?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  navigator_title_en?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   seo_title_ua?: string
 
   @ApiPropertyOptional()

@@ -79,6 +79,14 @@ export class Category {
   })
   recommended_posts: Post[]
 
+  @ManyToMany(() => SeoFilter)
+  @JoinTable({
+    name: 'category_navigator_subcategories',
+    joinColumn: { name: 'category_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
+  })
+  navigator_subcategories: SeoFilter[]
+
   @Column({ default: 0 })
   order_in_list: number
 

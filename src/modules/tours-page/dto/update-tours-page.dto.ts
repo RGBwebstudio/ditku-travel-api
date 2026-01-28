@@ -27,5 +27,10 @@ export class UpdateToursPageDto {
   recommended_post_ids?: number[]
 
   @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  navigator_subcategory_ids?: number[]
+
+  @IsOptional()
   id?: number
 }

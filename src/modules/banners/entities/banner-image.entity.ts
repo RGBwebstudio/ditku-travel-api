@@ -15,6 +15,12 @@ export class BannerImage {
   @Column()
   path: string
 
+  @Column({ nullable: true })
+  path_md: string
+
+  @Column({ nullable: true })
+  path_sm: string
+
   @Column({ default: 0 })
   order: number
 

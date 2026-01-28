@@ -65,6 +65,12 @@ export class CategoryCreateDto {
   @IsArray()
   @IsNumber({}, { each: true })
   recommended_post_ids?: number[]
+
+  @ApiPropertyOptional({ type: [Number] })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  navigator_subcategory_ids?: number[]
 }
 
 export class CategoryCreateResponseDto {

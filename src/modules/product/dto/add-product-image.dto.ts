@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsNotEmpty, IsString } from 'class-validator'
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class AddProductImageDto {
   @ApiProperty({
@@ -10,4 +10,14 @@ export class AddProductImageDto {
   @IsString()
   @IsNotEmpty()
   path: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  path_md?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  path_sm?: string
 }

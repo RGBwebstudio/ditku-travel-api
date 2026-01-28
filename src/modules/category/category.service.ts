@@ -7,6 +7,7 @@ import { applyTranslations } from 'src/common/utils/apply-translates.util'
 import { Category } from 'src/modules/category/entities/category.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
+import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import { Repository, TreeRepository, IsNull, FindOptionsWhere } from 'typeorm'
 
 import { AddCategoryImageDto } from './dto/add-category-image.dto'
@@ -69,6 +70,9 @@ export class CategoryService {
         'popular_tours.translates',
         'recommended_posts',
         'recommended_posts.category_id',
+        'navigator_subcategories',
+        'navigator_subcategories.category_id',
+        'navigator_subcategories.translates',
       ],
     })
 
@@ -126,6 +130,7 @@ export class CategoryService {
       structure,
       popular_tours_ids,
       recommended_post_ids,
+      navigator_subcategory_ids,
       ...categoryData
     } = dto
     const translationsData: { lang: LANG; field: string; value: string }[] = []
@@ -142,6 +147,9 @@ export class CategoryService {
       ...(structure ? { structure } : {}),
       popular_tours: popular_tours_ids ? popular_tours_ids.map((id) => ({ id }) as Product) : [],
       recommended_posts: recommended_post_ids ? recommended_post_ids.map((id) => ({ id }) as unknown as Post) : [],
+      navigator_subcategories: navigator_subcategory_ids
+        ? navigator_subcategory_ids.map((id) => ({ id }) as SeoFilter)
+        : [],
     })
 
     try {
@@ -174,6 +182,9 @@ export class CategoryService {
         'images',
         'translates',
         'seo_filters',
+        'navigator_subcategories',
+        'navigator_subcategories.category_id',
+        'navigator_subcategories.translates',
       ],
     })
 
@@ -308,7 +319,13 @@ export class CategoryService {
       take,
       skip,
       order: { created_at: 'DESC' },
-      relations: ['translates', 'images'],
+      relations: [
+        'translates',
+        'images',
+        'navigator_subcategories',
+        'navigator_subcategories.category_id',
+        'navigator_subcategories.translates',
+      ],
     })
 
     const entities: Category[] = []
@@ -321,8 +338,16 @@ export class CategoryService {
           'children',
           'children.images',
           'children.translates',
+          'children.seo_filters',
+          'children.navigator_subcategories',
+          'children.navigator_subcategories.category_id',
+          'children.navigator_subcategories.translates',
           'translates',
           'images',
+          'seo_filters',
+          'navigator_subcategories',
+          'navigator_subcategories.category_id',
+          'navigator_subcategories.translates',
         ],
       })
       entities.push(tree)
@@ -335,6 +360,10 @@ export class CategoryService {
         if (category.parent) {
           const [translatedParentCategory] = applyTranslations([category.parent], lang)
           category.parent = translatedParentCategory
+        }
+
+        if (category.navigator_subcategories?.length) {
+          category.navigator_subcategories = applyTranslations(category.navigator_subcategories, lang)
         }
 
         if (category.seo_filters?.length) {
@@ -357,7 +386,16 @@ export class CategoryService {
   }
 
   async findAllSubtree(depth: number, lang: LANG): Promise<{ entities: Category[] }> {
-    const rootRelations = ['parent', 'parent.translates', 'translates', 'images', 'seo_filters']
+    const rootRelations = [
+      'parent',
+      'parent.translates',
+      'translates',
+      'images',
+      'seo_filters',
+      'navigator_subcategories',
+      'navigator_subcategories.category_id',
+      'navigator_subcategories.translates',
+    ]
 
     const relationsSet = new Set<string>(rootRelations)
 
@@ -367,6 +405,9 @@ export class CategoryService {
       relationsSet.add(`${chain}.images`)
       relationsSet.add(`${chain}.translates`)
       relationsSet.add(`${chain}.seo_filters`)
+      relationsSet.add(`${chain}.navigator_subcategories`)
+      relationsSet.add(`${chain}.navigator_subcategories.category_id`)
+      relationsSet.add(`${chain}.navigator_subcategories.translates`)
     }
 
     const relations = Array.from(relationsSet)
@@ -456,6 +497,7 @@ export class CategoryService {
         structure,
         popular_tours_ids,
         recommended_post_ids,
+        navigator_subcategory_ids,
         ...categoryData
       } = dto
       const translations: { lang: LANG; field: string; value: string }[] = []
@@ -489,6 +531,17 @@ export class CategoryService {
         })
         if (categoryToUpdate) {
           categoryToUpdate.recommended_posts = recommended_post_ids.map((pid) => ({ id: pid }) as unknown as Post)
+          await this.categoryRepo.save(categoryToUpdate)
+        }
+      }
+
+      if (navigator_subcategory_ids !== undefined) {
+        const categoryToUpdate = await this.categoryRepo.findOne({
+          where: { id },
+          relations: ['navigator_subcategories'],
+        })
+        if (categoryToUpdate) {
+          categoryToUpdate.navigator_subcategories = navigator_subcategory_ids.map((id) => ({ id }) as SeoFilter)
           await this.categoryRepo.save(categoryToUpdate)
         }
       }
@@ -646,6 +699,8 @@ export class CategoryService {
 
     const image = this.entityImageRepo.create({
       path: dto.path,
+      path_md: dto.path_md,
+      path_sm: dto.path_sm,
       entity_id: category,
       name: dto.path.split('/').pop() || 'image',
     })
@@ -684,7 +739,15 @@ export class CategoryService {
     } else {
       where = { url: value }
     }
-    const rootRelations = ['parent', 'parent.translates', 'translates', 'images']
+    const rootRelations = [
+      'parent',
+      'parent.translates',
+      'translates',
+      'images',
+      'navigator_subcategories',
+      'navigator_subcategories.category_id',
+      'navigator_subcategories.translates',
+    ]
 
     const relationsSet = new Set<string>(rootRelations)
 
@@ -693,6 +756,10 @@ export class CategoryService {
       relationsSet.add(chain)
       relationsSet.add(`${chain}.images`)
       relationsSet.add(`${chain}.translates`)
+      relationsSet.add(`${chain}.seo_filters`)
+      relationsSet.add(`${chain}.navigator_subcategories`)
+      relationsSet.add(`${chain}.navigator_subcategories.category_id`)
+      relationsSet.add(`${chain}.navigator_subcategories.translates`)
     }
 
     const relations = Array.from(relationsSet)

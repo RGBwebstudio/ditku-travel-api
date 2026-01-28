@@ -13,6 +13,12 @@ export class ProductProgramImage {
   @Column({ type: 'varchar', length: 500, nullable: true })
   path: string
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  path_md: string
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  path_sm: string
+
   @Column({ name: 'order_in_list', default: 0 })
   order: number
 

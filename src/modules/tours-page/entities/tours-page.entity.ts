@@ -11,6 +11,7 @@ import {
 import { LANG } from '../../../common/enums/translation.enum'
 import { Post } from '../../posts/entities/post.entity'
 import { Product } from '../../product/entities/product.entity'
+import { SeoFilter } from '../../seo-filter/entities/seo-filter.entity'
 import { ToursPageStructureDto } from '../dto/tours-page-structure.dto'
 
 @Entity()
@@ -28,6 +29,14 @@ export class ToursPage {
     inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' },
   })
   popular_tours: Product[]
+
+  @ManyToMany(() => SeoFilter)
+  @JoinTable({
+    name: 'tours_page_navigator_subcategories',
+    joinColumn: { name: 'tours_page_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
+  })
+  navigator_subcategories: SeoFilter[]
 
   @ManyToMany(() => Post)
   @JoinTable({

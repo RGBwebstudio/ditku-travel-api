@@ -215,6 +215,9 @@ export class SeoFilterService {
     if (createDto.structure !== undefined) {
       seoFilterData.structure = createDto.structure
     }
+    if (createDto.navigator_title !== undefined) {
+      seoFilterData.navigator_title = createDto.navigator_title
+    }
 
     if (createDto.category_id) {
       seoFilterData.category_id = {
@@ -260,7 +263,7 @@ export class SeoFilterService {
 
       // Handle flattened translations
       const translations: SeoFilterCreateTranslateDto[] = []
-      const langFields = ['title', 'seo_title', 'seo_description', 'seo_text']
+      const langFields = ['title', 'navigator_title', 'seo_title', 'seo_description', 'seo_text']
 
       const payload = createDto as unknown as Record<string, unknown>
 
@@ -320,6 +323,9 @@ export class SeoFilterService {
     }
     if (updateDto.structure !== undefined) {
       existingEntity.structure = updateDto.structure
+    }
+    if (updateDto.navigator_title !== undefined) {
+      existingEntity.navigator_title = updateDto.navigator_title
     }
 
     const relEntity = existingEntity as SeoFilterRel
@@ -383,7 +389,7 @@ export class SeoFilterService {
 
       // Handle flattened translations
       const translations: SeoFilterCreateTranslateDto[] = []
-      const langFields = ['title', 'seo_title', 'seo_description', 'seo_text']
+      const langFields = ['title', 'navigator_title', 'seo_title', 'seo_description', 'seo_text']
 
       const payload = updateDto as unknown as Record<string, unknown>
 
