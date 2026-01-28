@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:all": "ts-node -r tsconfig-paths/register src/common/database/seeds/create-admin.ts",
     "typeorm": "typeorm-ts-node-commonjs",
-    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts",
+    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
