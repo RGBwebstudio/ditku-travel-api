@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { LANG } from 'src/common/enums/translation.enum'
 import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
+import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import { Repository } from 'typeorm'
 
 import { UpdateToursPageDto } from './dto/update-tours-page.dto'
@@ -26,6 +27,9 @@ export class ToursPageService {
         'popular_tours.category_id',
         'popular_tours.images',
         'popular_tours.translates',
+        'navigator_subcategories',
+        'navigator_subcategories.category_id',
+        'navigator_subcategories.translates',
         'recommended_posts',
         'recommended_posts.category_id',
         'recommended_posts.images',
@@ -53,7 +57,11 @@ export class ToursPageService {
       if (dto.popular_tours_ids !== undefined) {
         const entity = await this.repo.findOne({ where: { id: exist.id }, relations: ['popular_tours'] })
         if (entity) {
-          entity.popular_tours = dto.popular_tours_ids.map((id) => ({ id }) as Product)
+          entity.popular_tours = dto.popular_tours_ids.map((id) => {
+            const product = new Product()
+            product.id = id
+            return product
+          })
           await this.repo.save(entity)
         }
       }
@@ -61,7 +69,23 @@ export class ToursPageService {
       if (dto.recommended_post_ids !== undefined) {
         const entity = await this.repo.findOne({ where: { id: exist.id }, relations: ['recommended_posts'] })
         if (entity) {
-          entity.recommended_posts = dto.recommended_post_ids.map((id) => ({ id }) as Post)
+          entity.recommended_posts = dto.recommended_post_ids.map((id) => {
+            const post = new Post()
+            post.id = id
+            return post
+          })
+          await this.repo.save(entity)
+        }
+      }
+
+      if (dto.navigator_subcategory_ids !== undefined) {
+        const entity = await this.repo.findOne({ where: { id: exist.id }, relations: ['navigator_subcategories'] })
+        if (entity) {
+          entity.navigator_subcategories = dto.navigator_subcategory_ids.map((id) => {
+            const filter = new SeoFilter()
+            filter.id = id
+            return filter
+          })
           await this.repo.save(entity)
         }
       }
@@ -73,6 +97,9 @@ export class ToursPageService {
           'popular_tours.category_id',
           'popular_tours.images',
           'popular_tours.translates',
+          'navigator_subcategories',
+          'navigator_subcategories.category_id',
+          'navigator_subcategories.translates',
           'recommended_posts',
           'recommended_posts.category_id',
           'recommended_posts.images',
@@ -83,8 +110,27 @@ export class ToursPageService {
 
     const created = this.repo.create({
       ...dto,
-      popular_tours: dto.popular_tours_ids ? dto.popular_tours_ids.map((id) => ({ id }) as Product) : [],
-      recommended_posts: dto.recommended_post_ids ? dto.recommended_post_ids.map((id) => ({ id }) as Post) : [],
+      popular_tours: dto.popular_tours_ids
+        ? dto.popular_tours_ids.map((id) => {
+            const product = new Product()
+            product.id = id
+            return product
+          })
+        : [],
+      navigator_subcategories: dto.navigator_subcategory_ids
+        ? dto.navigator_subcategory_ids.map((id) => {
+            const filter = new SeoFilter()
+            filter.id = id
+            return filter
+          })
+        : [],
+      recommended_posts: dto.recommended_post_ids
+        ? dto.recommended_post_ids.map((id) => {
+            const post = new Post()
+            post.id = id
+            return post
+          })
+        : [],
     })
     return this.repo.save(created)
   }

@@ -37,6 +37,9 @@ export class SeoFilter {
   url: string
 
   @Column({ nullable: true })
+  navigator_title: string
+
+  @Column({ nullable: true })
   seo_title: string
 
   @Column({ nullable: true })
