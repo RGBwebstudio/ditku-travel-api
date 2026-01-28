@@ -21,7 +21,7 @@
     "seed:all": "ts-node -r tsconfig-paths/register src/common/database/seeds/create-admin.ts",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts",
-    "migration:prod": "typeorm migration:run -d dist/data-source.js"
+    "migration:prod": "typeorm migration:run -d dist/src/data-source.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
