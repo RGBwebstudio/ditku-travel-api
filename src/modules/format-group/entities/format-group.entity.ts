@@ -26,6 +26,9 @@ export class FormatGroup {
   @Column({ nullable: true })
   subtitle: string
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  price: string
+
   @Exclude()
   @ManyToMany(() => Product, (product) => product.format_groups)
   products: Product[]
