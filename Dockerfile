@@ -41,4 +41,4 @@ EXPOSE 4200
 
 # Start command (run migrations then start app)
 # CMD ["sh", "-c", "npm run migration:run:prod && npm run start:prod"]
-CMD ["sh", "-c", "npm run dev"]
+CMD ["sh", "-c", "npm run start:dev"]
