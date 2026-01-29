@@ -33,4 +33,9 @@ export class FormatGroupCreateDto {
   @IsString()
   @IsOptional()
   subtitle_en?: string
+
+  @ApiProperty({ example: '400', required: false })
+  @IsString()
+  @IsOptional()
+  price?: string
 }
