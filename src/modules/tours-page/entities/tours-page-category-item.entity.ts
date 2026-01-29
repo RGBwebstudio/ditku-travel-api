@@ -16,6 +16,7 @@ export class ToursPageCategoryItem {
   @Column({
     type: 'enum',
     enum: ToursPageCategoryItemType,
+    enumName: 'tours_page_category_item_type_enum',
   })
   type: ToursPageCategoryItemType
 
