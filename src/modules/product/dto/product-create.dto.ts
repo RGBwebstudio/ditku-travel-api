@@ -206,7 +206,7 @@ export class ProductCreateDto {
   @ApiPropertyOptional({ description: 'Global section IDs (numbers) OR product section objects' })
   @IsOptional()
   @IsArray()
-  sections?: (number | Record<string, any>)[]
+  sections?: (number | ProductSectionDto)[]
 
   @ApiPropertyOptional({ example: '6-17 років' })
   @IsOptional()
@@ -356,6 +356,11 @@ export class ProductCreateDto {
   @IsOptional()
   @IsString()
   seo_description_en?: string
+
+  @ApiPropertyOptional({ description: 'Legacy banners array' })
+  @IsOptional()
+  @IsArray()
+  banners?: any[]
 }
 
 export class ProductSectionDto {

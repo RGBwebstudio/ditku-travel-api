@@ -3,13 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm'
 
 import { LANG } from 'src/common/enums/translation.enum'
 import { applyTranslations } from 'src/common/utils/apply-translates.util'
-import { Repository, In } from 'typeorm'
+import { Repository, In, FindOptionsWhere } from 'typeorm'
 
 import { UpdateBlogPageDto } from './dto/update-blog-page.dto'
 import { BlogPage } from './entities/blog-page.entity'
 import { PostCategoryService } from '../post-category/post-category.service'
 import { GetBlogPageDto } from './dto/get-blog-page.dto'
 import { Post } from '../posts/entities/post.entity'
+
+export interface MetaData {
+  title?: string
+  meta_title?: string
+  meta_description?: string
+}
 
 @Injectable()
 export class BlogService {
@@ -92,7 +98,7 @@ export class BlogService {
     // 1. Get Categories (for tabs)
     const { entities: categories } = await this.postCategoryService.findAllList(lang)
 
-    let metaData: any = {}
+    let metaData: MetaData = {}
     let topPost: Post | null = null
     let sidePosts: Post[] = []
     let recommendedPosts: Post[] = []
@@ -102,8 +108,8 @@ export class BlogService {
       const category = await this.postCategoryService.findOne(category_id, lang)
       metaData = {
         title: category.title,
-        meta_title: (category as any).meta_title || category.title,
-        meta_description: (category as any).meta_description || '',
+        meta_title: category.meta_title || category.title,
+        meta_description: category.meta_description || '',
       }
       topPost = category.top_post
       sidePosts = category.side_posts || []
@@ -129,7 +135,7 @@ export class BlogService {
     }
 
     // 3. Fetch Posts (Paginated)
-    const whereCondition: any = {}
+    const whereCondition: FindOptionsWhere<Post> = {}
     if (category_id) {
       whereCondition.category_id = { id: category_id }
     }

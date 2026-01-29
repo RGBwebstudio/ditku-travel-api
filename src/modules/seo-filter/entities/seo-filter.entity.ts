@@ -22,7 +22,6 @@ import { Country } from '../../country/entities/country.entity'
 import { Menu } from '../../menu/entities/menu.entity'
 import { Post } from '../../posts/entities/post.entity'
 import { Product } from '../../product/entities/product.entity'
-import { Section } from '../../section/entities/section.entity'
 
 @Entity()
 @Tree('closure-table')
@@ -71,16 +70,6 @@ export class SeoFilter {
   })
   @JoinColumn({ name: 'country_id' })
   country_id: Country
-
-  @ManyToMany(() => Section, (section) => section.seo_filters, {
-    onDelete: 'CASCADE',
-  })
-  @JoinTable({
-    name: 'seo_filter_section',
-    joinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'section_id', referencedColumnName: 'id' },
-  })
-  sections: Section[]
 
   @ManyToMany(() => Menu, (menu) => menu.seo_filters)
   menus: Menu[]

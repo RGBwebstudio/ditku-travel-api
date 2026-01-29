@@ -8,7 +8,7 @@ import { City } from 'src/modules/city/entities/city.entity'
 import { Country } from 'src/modules/country/entities/country.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
-import { Section } from 'src/modules/section/entities/section.entity'
+
 import { Repository, In } from 'typeorm'
 
 import { SeoFilterCreateTranslateDto } from './dto/seo-filter-create-translate.dto'
@@ -34,8 +34,7 @@ export class SeoFilterService {
   constructor(
     @InjectRepository(SeoFilter)
     private readonly seoFilterRepository: Repository<SeoFilter>,
-    @InjectRepository(Section)
-    private readonly sectionRepository: Repository<Section>,
+
     @InjectRepository(SeoFilterTranslate)
     private readonly entityTranslateRepo: Repository<SeoFilterTranslate>
   ) {}
@@ -83,7 +82,6 @@ export class SeoFilterService {
       ? await this.seoFilterRepository.find({
           where: { id: In(collectedIds) },
           relations: [
-            'sections',
             'category_id',
             'city_id',
             'country_id',
@@ -150,7 +148,6 @@ export class SeoFilterService {
       ? await this.seoFilterRepository.find({
           where: { id: In(collectedIds) },
           relations: [
-            'sections',
             'category_id',
             'city_id',
             'country_id',
@@ -233,15 +230,6 @@ export class SeoFilterService {
       seoFilterData.country_id = {
         id: createDto.country_id,
       } as Country
-    }
-
-    if (createDto.sections?.length) {
-      const sectionEntities = await this.sectionRepository.find({
-        where: {
-          id: In(createDto.sections),
-        },
-      })
-      seoFilterData.sections = sectionEntities
     }
 
     if (createDto.parent_id) {
@@ -355,15 +343,6 @@ export class SeoFilterService {
           id: updateDto.country_id,
         } as Country
       }
-    }
-
-    if (updateDto.sections !== undefined) {
-      const sectionEntities = await this.sectionRepository.find({
-        where: {
-          id: In(updateDto.sections),
-        },
-      })
-      relEntity.sections = sectionEntities
     }
 
     if (updateDto.parent_id !== undefined) {

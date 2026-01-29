@@ -14,7 +14,6 @@ import { Post } from 'src/modules/posts/entities/post.entity'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
 import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { Roadmap } from 'src/modules/roadmap/entities/roadmap.entity'
-import { Section } from 'src/modules/section/entities/section.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 import { Repository, In, DeepPartial } from 'typeorm'
 
@@ -34,7 +33,6 @@ import { ProductSectionTranslate } from './entities/product-section-translate.en
 import { ProductSection } from './entities/product-section.entity'
 import { ProductTranslate } from './entities/product-translate.entity'
 import { Product } from './entities/product.entity'
-
 type RawRoadmap = Roadmap
 
 @Injectable()
@@ -45,7 +43,7 @@ export class ProductService {
     @InjectRepository(Product) private productRepo: Repository<Product>,
     @InjectRepository(Parameter) private parameterRepo: Repository<Parameter>,
     @InjectRepository(Category) private categoryRepo: Repository<Category>,
-    @InjectRepository(Section) private sectionRepo: Repository<Section>,
+
     @InjectRepository(Faq) private faqRepo: Repository<Faq>,
     @InjectRepository(FormatGroup)
     private formatGroupRepo: Repository<FormatGroup>,
@@ -63,11 +61,11 @@ export class ProductService {
     private programTranslateRepo: Repository<ProductProgramTranslate>,
     @InjectRepository(Rating)
     private ratingRepo: Repository<Rating>,
-
     @InjectRepository(ProductSection)
     private productSectionRepo: Repository<ProductSection>,
     @InjectRepository(ProductSectionTranslate)
     private productSectionTranslateRepo: Repository<ProductSectionTranslate>,
+
     @InjectRepository(Post)
     private postRepo: Repository<Post>
   ) {}
@@ -419,7 +417,7 @@ export class ProductService {
   async filter(
     categories: string,
     parameters: string,
-    sections: string,
+
     take: number,
     skip: number,
     lang: LANG,
@@ -436,8 +434,6 @@ export class ProductService {
     const mappedParameters: number[] = parameters?.trim().length
       ? parameters.split(',').map((item) => Number(item))
       : []
-
-    const mappedSections: number[] = sections?.trim().length ? sections.split(',').map((item) => Number(item)) : []
 
     const allCategoryUrls: string[] = mappedCategories.length
       ? await this.getAllChildrenCategoryUrls(mappedCategories)
@@ -512,20 +508,6 @@ export class ProductService {
           .groupBy('pp.product_id')
           .having('COUNT(DISTINCT pp.parameter_id) = :paramCount', {
             paramCount: mappedParameters.length,
-          })
-          .getQuery()
-        return 'product.id IN ' + subQuery
-      })
-    }
-
-    if (mappedSections.length > 0) {
-      queryBuilder.andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('ps.product_id')
-          .from('product_section', 'ps')
-          .where('ps.section_id IN (:...sections)', {
-            sections: mappedSections,
           })
           .getQuery()
         return 'product.id IN ' + subQuery
@@ -683,8 +665,7 @@ export class ProductService {
         'translates',
         'format_groups',
         'format_groups.translates',
-        'sections',
-        'sections.translates',
+
         'parameters',
         'parameters.translates',
         'seo_filters',
@@ -764,12 +745,6 @@ export class ProductService {
         )
       }
 
-      if (productDto.sections && Array.isArray(productDto.sections)) {
-        productDto.sections = productDto.sections.map((section: Section) =>
-          section && section.translates ? applyTranslations([section], lang)[0] : section
-        )
-      }
-
       if (productDto.topTourProducts && Array.isArray(productDto.topTourProducts)) {
         productDto.topTourProducts = productDto.topTourProducts.map((topTour: Product) => {
           const translatedTour = topTour && topTour.translates ? applyTranslations([topTour], lang)[0] : topTour
@@ -783,7 +758,7 @@ export class ProductService {
       return productDto
     })
 
-    const mappedProductDto = mappedProducts[0] as { roadmaps?: RawRoadmap[] }
+    const mappedProductDto = mappedProducts[0]
     const mappedRoadmaps = applyTranslations(product.roadmaps || [], lang)
 
     const roadmapsDto = mappedRoadmaps.map((roadmapEntity: Roadmap) => {
@@ -808,7 +783,7 @@ export class ProductService {
 
     // Apply translations to programs
     const mappedPrograms = applyTranslations(programs || [], lang)
-    ;(mappedProductDto as any).programs = mappedPrograms.map((program: ProductProgram) => ({
+    mappedProductDto.programs = mappedPrograms.map((program: ProductProgram) => ({
       id: program.id,
       day: program.day,
       title: program.title,
@@ -843,7 +818,7 @@ export class ProductService {
     const totalRating = reviews.reduce((sum: number, r: Rating) => sum + Number(r.rating), 0)
     const averageRating = reviews.length > 0 ? Math.round((totalRating / reviews.length) * 10) / 10 : 0
 
-    ;(mappedProductDto as any).reviews = {
+    mappedProductDto.reviews = {
       items: mappedReviews.map((review: Rating) => ({
         id: review.id,
         name: review.name,
@@ -878,8 +853,7 @@ export class ProductService {
         'translates',
         'format_groups',
         'format_groups.translates',
-        'sections',
-        'sections.translates',
+
         'parameters',
         'parameters.translates',
         'seo_filters',
@@ -1025,7 +999,7 @@ export class ProductService {
 
     // Apply translations to programs
     const mappedPrograms = applyTranslations(programs || [], lang)
-    ;(pickedMappedProduct as any).programs = mappedPrograms.map((program: ProductProgram) => ({
+    pickedMappedProduct.programs = mappedPrograms.map((program: ProductProgram) => ({
       id: program.id,
       day: program.day,
       title: program.title,
@@ -1060,7 +1034,7 @@ export class ProductService {
     const totalRating = reviews.reduce((sum: number, r: Rating) => sum + Number(r.rating), 0)
     const averageRating = reviews.length > 0 ? Math.round((totalRating / reviews.length) * 10) / 10 : 0
 
-    ;(pickedMappedProduct as any).reviews = {
+    pickedMappedProduct.reviews = {
       items: mappedReviews.map((review: Rating) => ({
         id: review.id,
         name: review.name,
@@ -1174,25 +1148,6 @@ export class ProductService {
       delete productPayload.end_date
     }
 
-    // Filter sections to separate IDs (numbers) from objects (productSections)
-    let sectionsIds: number[] | undefined = undefined
-    let productSectionObjects: any[] | undefined = undefined
-
-    if (Array.isArray(dto.sections)) {
-      if (dto.sections.length === 0) {
-        // Empty array - no sections
-        sectionsIds = []
-      } else if (typeof dto.sections[0] === 'object') {
-        // These are product section objects
-        productSectionObjects = dto.sections
-      } else {
-        // These are global section IDs
-        sectionsIds = dto.sections.filter((s): s is number => typeof s === 'number')
-      }
-    }
-
-    if (dto.sections) delete productPayload.sections
-
     const formatGroupIds: number[] | undefined =
       Array.isArray(dto.format_group) && dto.format_group.length ? dto.format_group : undefined
     if (formatGroupIds) delete productPayload.format_group
@@ -1208,6 +1163,9 @@ export class ProductService {
 
     const blogIds = Array.isArray(dto.blog_ids) ? dto.blog_ids : undefined
     if (blogIds) delete productPayload.blog_ids
+
+    const productSectionObjects = (dto.sections || []).filter((s) => typeof s !== 'number')
+    if (dto.sections) delete productPayload.sections
 
     const product = this.productRepo.create(productPayload as DeepPartial<Product>)
 
@@ -1289,14 +1247,6 @@ export class ProductService {
         await this.productRepo.save(saved)
       }
 
-      if (sectionsIds && sectionsIds.length) {
-        const sectionEntities = await this.sectionRepo.findBy({
-          id: In(sectionsIds),
-        })
-        saved.sections = sectionEntities.length ? sectionEntities : []
-        await this.productRepo.save(saved)
-      }
-
       // Handle productSections creation (content blocks)
       if (productSectionObjects && productSectionObjects.length > 0) {
         for (const sectionDto of productSectionObjects) {
@@ -1371,7 +1321,7 @@ export class ProductService {
   async update(id: number, dto: ProductUpdateDto): Promise<Product | null> {
     const product = await this.productRepo.findOne({
       where: { id },
-      relations: ['sections', 'seo_filters', 'parameters', 'format_groups', 'faqs'],
+      relations: ['seo_filters', 'parameters', 'format_groups', 'faqs'],
     })
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
@@ -1379,7 +1329,6 @@ export class ProductService {
     try {
       /* eslint-disable @typescript-eslint/no-unused-vars */
       const {
-        sections,
         format_group,
         seo_filters,
         faq_ids,
@@ -1391,7 +1340,7 @@ export class ProductService {
         ...rawUpdatePayload
       } = dto as Partial<ProductCreateDto> & Partial<ProductUpdateDto>
 
-      const updatePayload = rawUpdatePayload as any
+      const updatePayload = rawUpdatePayload
 
       if (start_date !== undefined) {
         updatePayload.start_at = start_date
@@ -1405,26 +1354,6 @@ export class ProductService {
       }
 
       Object.assign(product, updatePayload)
-
-      const sectionsFromDto = dto.sections
-      let globalSectionIds: number[] | undefined = undefined
-      let productSectionObjects: any[] | undefined = undefined
-
-      if (sectionsFromDto !== undefined && Array.isArray(sectionsFromDto)) {
-        if (sectionsFromDto.length === 0) {
-          productSectionObjects = []
-        } else if (typeof sectionsFromDto[0] === 'object') {
-          productSectionObjects = sectionsFromDto
-        } else {
-          globalSectionIds = sectionsFromDto.filter((id): id is number => typeof id === 'number')
-        }
-      }
-
-      if (globalSectionIds !== undefined) {
-        const sectionEntities =
-          globalSectionIds.length > 0 ? await this.sectionRepo.findBy({ id: In(globalSectionIds) }) : []
-        product.sections = sectionEntities
-      }
 
       const seoFiltersIds: number[] | undefined =
         dto.seo_filters !== undefined && Array.isArray(dto.seo_filters) ? dto.seo_filters : undefined
@@ -1470,6 +1399,71 @@ export class ProductService {
       if (blogIds !== undefined) {
         const posts = blogIds.length ? await this.postRepo.findBy({ id: In(blogIds) }) : []
         product.posts = posts
+      }
+
+      if (updatePayload.sections && Array.isArray(updatePayload.sections)) {
+        const productSectionObjects = (updatePayload.sections || []).filter((s) => typeof s !== 'number')
+
+        if (productSectionObjects.length > 0) {
+          await this.productSectionRepo.delete({ product_id: { id: product.id } })
+
+          for (const sectionDto of productSectionObjects) {
+            let sectionEntity = this.productSectionRepo.create({
+              type: sectionDto.type || 'content',
+              order: sectionDto.order ?? 0,
+              title: sectionDto.title || sectionDto.title_ua || '',
+              description: sectionDto.description || sectionDto.description_ua || '',
+              images: sectionDto.images || [],
+              banner1_title: sectionDto.banner1_title_ua,
+              banner1_button_text: sectionDto.banner1_button_text_ua,
+              banner1_link: sectionDto.banner1_link_ua,
+              banner2_title: sectionDto.banner2_title_ua,
+              banner2_button_text: sectionDto.banner2_button_text_ua,
+              banner2_link: sectionDto.banner2_link_ua,
+              badge: sectionDto.badge_ua,
+              product_id: product,
+            })
+
+            sectionEntity = await this.productSectionRepo.save(sectionEntity)
+
+            const sectionTranslateFields = [
+              'title',
+              'description',
+              'banner1_title',
+              'banner1_button_text',
+              'banner1_link',
+              'banner2_title',
+              'banner2_button_text',
+              'banner2_link',
+              'badge',
+            ]
+
+            for (const field of sectionTranslateFields) {
+              const uaValue = sectionDto[`${field}_ua`]
+              const enValue = sectionDto[`${field}_en`]
+
+              if (uaValue) {
+                const translateUA = this.productSectionTranslateRepo.create({
+                  field,
+                  value: uaValue,
+                  lang: LANG.UA,
+                  entity_id: sectionEntity,
+                })
+                await this.productSectionTranslateRepo.save(translateUA)
+              }
+
+              if (enValue) {
+                const translateEN = this.productSectionTranslateRepo.create({
+                  field,
+                  value: enValue,
+                  lang: LANG.EN,
+                  entity_id: sectionEntity,
+                })
+                await this.productSectionTranslateRepo.save(translateEN)
+              }
+            }
+          }
+        }
       }
 
       this.logger.log(
