@@ -697,7 +697,7 @@ export class ProductService {
         .leftJoinAndSelect('p.translates', 'translates')
         .where('p.product_id = :productId', { productId: product.id })
         .orderBy('p.order_in_list', 'ASC')
-        .addOrderBy('p.day', 'ASC')
+        .addOrderBy('p.order', 'ASC')
         .getMany(),
       this.ratingRepo
         .createQueryBuilder('r')
@@ -785,7 +785,7 @@ export class ProductService {
     const mappedPrograms = applyTranslations(programs || [], lang)
     mappedProductDto.programs = mappedPrograms.map((program: ProductProgram) => ({
       id: program.id,
-      day: program.day,
+      badge: program.badge,
       title: program.title,
       description: program.description,
       order: program.order,
@@ -1001,7 +1001,7 @@ export class ProductService {
     const mappedPrograms = applyTranslations(programs || [], lang)
     pickedMappedProduct.programs = mappedPrograms.map((program: ProductProgram) => ({
       id: program.id,
-      day: program.day,
+      badge: program.badge,
       title: program.title,
       description: program.description,
       order: program.order,
@@ -1830,7 +1830,7 @@ export class ProductService {
 
     return mappedPrograms.map((program) => ({
       id: program.id,
-      day: program.day,
+      badge: program.badge,
       title: program.title,
       description: program.description,
       order: program.order,
@@ -1865,7 +1865,7 @@ export class ProductService {
 
     try {
       const program = this.programRepo.create({
-        day: dto.day,
+        badge: dto.badge || '',
         title: dto.title,
         description: dto.description || '',
         order: dto.order || 0,
@@ -1936,7 +1936,7 @@ export class ProductService {
 
     try {
       // Update scalar fields
-      if (dto.day !== undefined) program.day = dto.day
+      if (dto.badge !== undefined) program.badge = dto.badge
       if (dto.title !== undefined) program.title = dto.title
       if (dto.description !== undefined) program.description = dto.description
       if (dto.order !== undefined) program.order = dto.order

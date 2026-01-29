@@ -8,13 +8,13 @@ import { City } from 'src/modules/city/entities/city.entity'
 import { Country } from 'src/modules/country/entities/country.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
-
 import { Repository, In } from 'typeorm'
 
 import { SeoFilterCreateTranslateDto } from './dto/seo-filter-create-translate.dto'
 import { SeoFilterCreateDto } from './dto/seo-filter-create.dto'
 import { SeoFilterUpdateTranslateDto } from './dto/seo-filter-update-translate.dto'
 import { SeoFilterUpdateDto } from './dto/seo-filter-update.dto'
+import { SeoFilterCategoryItem } from './entities/seo-filter-category-item.entity'
 import { SeoFilterTranslate } from './entities/seo-filter-translate.entity'
 import { SeoFilter } from './entities/seo-filter.entity'
 
@@ -25,6 +25,7 @@ type SeoFilterRel = Omit<SeoFilter, 'category_id' | 'city_id' | 'country_id' | '
   parent?: SeoFilter | null
   popular_tours?: Product[]
   recommended_posts?: Post[]
+  category_items?: SeoFilterCategoryItem[]
 }
 
 @Injectable()
@@ -192,6 +193,85 @@ export class SeoFilterService {
     return applyToTree([enrichedRoot])[0]
   }
 
+  async getCategoryItems(id: number, lang: LANG): Promise<SeoFilterCategoryItem[]> {
+    const entity = await this.seoFilterRepository.findOne({
+      where: { id },
+      relations: [
+        'category_items',
+        'category_items.category',
+        'category_items.category.translates',
+        'category_items.seo_filter',
+        'category_items.seo_filter.translates',
+        'category_items.seo_filter.category_id',
+      ],
+      order: {
+        category_items: {
+          order: 'ASC',
+        },
+      },
+    })
+
+    if (!entity || !entity.category_items) return []
+
+    // Apply translations
+    entity.category_items.forEach((item) => {
+      if (item.category) applyTranslations([item.category], lang)
+      if (item.seo_filter) applyTranslations([item.seo_filter], lang)
+    })
+
+    if (entity.category_items.length) {
+      const categoryIds = entity.category_items.map((i) => i.category?.id).filter((id): id is number => !!id)
+      const seoFilterIds = entity.category_items.map((i) => i.seo_filter?.id).filter((id): id is number => !!id)
+
+      if (categoryIds.length > 0) {
+        const counts = await this.seoFilterRepository.manager
+          .getRepository('Product')
+          .createQueryBuilder('product')
+          .select('product.category_id', 'categoryId')
+          .addSelect('COUNT(product.id)', 'count')
+          .where('product.category_id IN (:...ids)', { ids: categoryIds })
+          .groupBy('product.category_id')
+          .getRawMany()
+
+        const countMap = new Map<number, number>()
+        counts.forEach((item) => {
+          countMap.set(Number(item.categoryId), Number(item.count))
+        })
+
+        entity.category_items.forEach((item) => {
+          if (item.category) {
+            item.category.products_count = countMap.get(item.category.id) || 0
+          }
+        })
+      }
+
+      if (seoFilterIds.length > 0) {
+        const counts = await this.seoFilterRepository.manager
+          .getRepository('Product')
+          .createQueryBuilder('product')
+          .innerJoin('product.seo_filters', 'sf')
+          .select('sf.id', 'filterId')
+          .addSelect('COUNT(product.id)', 'count')
+          .where('sf.id IN (:...ids)', { ids: seoFilterIds })
+          .groupBy('sf.id')
+          .getRawMany()
+
+        const countMap = new Map<number, number>()
+        counts.forEach((item) => {
+          countMap.set(Number(item.filterId), Number(item.count))
+        })
+
+        entity.category_items.forEach((item) => {
+          if (item.seo_filter) {
+            item.seo_filter.products_count = countMap.get(item.seo_filter.id) || 0
+          }
+        })
+      }
+    }
+
+    return entity.category_items
+  }
+
   async create(createDto: SeoFilterCreateDto): Promise<SeoFilter> {
     const seoFilterData = this.seoFilterRepository.create()
     if (createDto.title !== undefined) {
@@ -244,6 +324,17 @@ export class SeoFilterService {
 
     if (createDto.recommended_post_ids) {
       seoFilterData.recommended_posts = createDto.recommended_post_ids.map((id) => ({ id }) as unknown as Post)
+    }
+
+    if (createDto.category_items) {
+      seoFilterData.category_items = createDto.category_items.map((item) => {
+        const newItem = new SeoFilterCategoryItem()
+        newItem.order = item.order
+        if (item.type) newItem.type = item.type
+        if (item.category_id) newItem.category = { id: item.category_id } as Category
+        else if (item.seo_filter_id) newItem.seo_filter = { id: item.seo_filter_id } as SeoFilter
+        return newItem
+      })
     }
 
     try {
@@ -361,6 +452,17 @@ export class SeoFilterService {
 
     if (updateDto.recommended_post_ids !== undefined) {
       relEntity.recommended_posts = updateDto.recommended_post_ids.map((id) => ({ id }) as unknown as Post)
+    }
+
+    if (updateDto.category_items !== undefined) {
+      relEntity.category_items = updateDto.category_items.map((item) => {
+        const newItem = new SeoFilterCategoryItem()
+        newItem.order = item.order
+        if (item.type) newItem.type = item.type
+        if (item.category_id) newItem.category = { id: item.category_id } as Category
+        else if (item.seo_filter_id) newItem.seo_filter = { id: item.seo_filter_id } as SeoFilter
+        return newItem
+      })
     }
 
     try {

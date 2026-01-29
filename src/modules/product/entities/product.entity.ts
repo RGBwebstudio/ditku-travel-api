@@ -35,7 +35,7 @@ export interface ProductReview {
 
 export interface MappedProgram {
   id: number
-  day: number
+  badge: string
   title: string
   description: string
   order: number

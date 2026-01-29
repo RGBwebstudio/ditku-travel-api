@@ -35,7 +35,6 @@ import { RatingModule } from '../modules/product-rating/rating.module'
 import { PromocodeModule } from '../modules/promocode/promocode.module'
 import { RoadmapModule } from '../modules/roadmap/roadmap.module'
 import { SafeWithUsModule } from '../modules/safe-with-us/safe-with-us.module'
-import { SectionModule } from '../modules/section/section.module'
 import { SeoBlocksModule } from '../modules/seo-blocks/seo-blocks.module'
 import { SeoFilterModule } from '../modules/seo-filter/seo-filter.module'
 import { SessionModule } from '../modules/session/session.module'
@@ -77,7 +76,7 @@ const config = configuration()
     SeoFilterModule,
     PostModule,
     PostCategoryModule,
-    SectionModule,
+
     MenuModule,
     PromocodeModule,
     AdminModule,

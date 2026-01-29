@@ -1,8 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString } from 'class-validator'
+import { Type } from 'class-transformer'
+import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator'
 import { ProductCreateDto } from 'src/modules/product/dto/product-create.dto'
 
+import { ToursPageCategoryItemDto } from '../../tours-page/dto/update-tours-page.dto'
 import { Category } from '../entities/category.entity'
 
 export class CategoryCreateDto {
@@ -70,7 +72,18 @@ export class CategoryCreateDto {
   @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
+  @ApiPropertyOptional({ type: [Number] })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
   navigator_subcategory_ids?: number[]
+
+  @ApiPropertyOptional({ type: [ToursPageCategoryItemDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ToursPageCategoryItemDto)
+  category_items?: ToursPageCategoryItemDto[]
 }
 
 export class CategoryCreateResponseDto {

@@ -10,7 +10,6 @@ import { Parameter } from 'src/modules/parameter/entities/parameter.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
 import { Rating } from 'src/modules/product-rating/entities/rating.entity'
 import { RatingModule } from 'src/modules/product-rating/rating.module'
-import { Section } from 'src/modules/section/entities/section.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
 
 import { ProductImage } from './entities/product-image.entity'
@@ -38,7 +37,7 @@ import { ProductService } from './product.service'
       ProductSection,
       ProductSectionTranslate,
       Category,
-      Section,
+
       SeoFilter,
       Rating,
       Post,

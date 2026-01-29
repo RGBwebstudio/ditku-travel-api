@@ -6,8 +6,10 @@ import {
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm'
 
+import { ToursPageCategoryItem } from './tours-page-category-item.entity'
 import { LANG } from '../../../common/enums/translation.enum'
 import { Post } from '../../posts/entities/post.entity'
 import { Product } from '../../product/entities/product.entity'
@@ -21,6 +23,12 @@ export class ToursPage {
 
   @Column({ type: 'jsonb', default: {} })
   structure: ToursPageStructureDto
+
+  @OneToMany(() => ToursPageCategoryItem, (item) => item.tours_page, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
+  category_items: ToursPageCategoryItem[]
 
   @ManyToMany(() => Product)
   @JoinTable({

@@ -46,6 +46,12 @@ export class SeoFilterController {
     return this.seoFilterService.findOne(id, req.lang)
   }
 
+  @Get(':id/category-items')
+  @ApiOperation({ summary: 'Отримати items seo-фільтра' })
+  async findCategoryItems(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    return this.seoFilterService.getCategoryItems(id, req.lang)
+  }
+
   @Get('by-category/:id/seo-filter')
   @ApiOperation({ summary: 'Отримати seo-фільтри за категорією' })
   async findByCategory(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {

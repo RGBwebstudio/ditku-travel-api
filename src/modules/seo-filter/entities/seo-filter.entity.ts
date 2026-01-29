@@ -15,6 +15,7 @@ import {
   OneToMany,
 } from 'typeorm'
 
+import { SeoFilterCategoryItem } from './seo-filter-category-item.entity'
 import { SeoFilterTranslate } from './seo-filter-translate.entity'
 import { Category } from '../../category/entities/category.entity'
 import { City } from '../../city/entities/city.entity'
@@ -94,6 +95,12 @@ export class SeoFilter {
   })
   recommended_posts: Post[]
 
+  @OneToMany(() => SeoFilterCategoryItem, (item) => item.seo_filter_owner, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
+  category_items: SeoFilterCategoryItem[]
+
   @OneToMany(() => SeoFilterTranslate, (translate) => translate.entity_id)
   translates: SeoFilterTranslate[]
 
@@ -108,4 +115,6 @@ export class SeoFilter {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
+
+  products_count?: number
 }
