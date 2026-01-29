@@ -22,8 +22,39 @@ import { Parameter } from '../../parameter/entities/parameter.entity'
 import { Post } from '../../posts/entities/post.entity'
 import { Rating } from '../../product-rating/entities/rating.entity'
 import { Roadmap } from '../../roadmap/entities/roadmap.entity'
-import { Section } from '../../section/entities/section.entity'
 import { SeoFilter } from '../../seo-filter/entities/seo-filter.entity'
+
+export interface ProductReview {
+  id: number
+  name: string
+  rating: number
+  review: string
+  created_at: Date
+  translates?: any[]
+}
+
+export interface MappedProgram {
+  id: number
+  badge: string
+  title: string
+  description: string
+  order: number
+  type: any
+  banner1_title_ua: string
+  banner1_title_en: string
+  banner1_button_text_ua: string
+  banner1_button_text_en: string
+  banner1_link_ua: string
+  banner1_link_en: string
+  banner2_title_ua: string
+  banner2_title_en: string
+  banner2_button_text_ua: string
+  banner2_button_text_en: string
+  banner2_link_ua: string
+  banner2_link_en: string
+  images: any[]
+  translates: any[]
+}
 
 export interface SafeCarouselSlide {
   id: string
@@ -183,11 +214,6 @@ export class Product {
   })
   format_groups: FormatGroup[]
 
-  @ManyToMany(() => Section, (section: Section) => section.products, {
-    onDelete: 'CASCADE',
-  })
-  sections: Section[]
-
   @ManyToMany(() => Product, (product: Product) => product.recommendedBy, {
     onDelete: 'CASCADE',
   })
@@ -233,7 +259,7 @@ export class Product {
   roadmaps: Roadmap[]
 
   @OneToMany(() => ProductProgram, (program: ProductProgram) => program.product_id)
-  programs: ProductProgram[]
+  programs: (ProductProgram | MappedProgram)[]
 
   @Column({ type: 'timestamptz', nullable: true })
   start_at: Date
@@ -275,4 +301,9 @@ export class Product {
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
   rating?: number
+  reviews?: {
+    items: ProductReview[]
+    average_rating: number
+    total_count: number
+  }
 }

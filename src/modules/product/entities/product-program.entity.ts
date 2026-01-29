@@ -23,8 +23,8 @@ export class ProductProgram {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
-  day: number
+  @Column({ type: 'varchar', default: '' })
+  badge: string
 
   @Column({
     type: 'enum',

@@ -16,6 +16,11 @@ export class ToursPageController {
     return this.service.get(lang)
   }
 
+  @Get('category-items/:lang')
+  getCategoryItems(@Param('lang') lang: LANG) {
+    return this.service.getCategoryItems(lang)
+  }
+
   @Patch()
   update(@Body() dto: UpdateToursPageDto) {
     return this.service.update(dto)

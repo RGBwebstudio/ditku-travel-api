@@ -16,6 +16,7 @@ import { CategoryCreateTranslateDto } from './dto/category-create-translate.dto'
 import { CategoryCreateDto } from './dto/category-create.dto'
 import { CategoryUpdateTranslateDto } from './dto/category-update-translate.dto'
 import { CategoryUpdateDto } from './dto/category-update.dto'
+import { CategoryCategoryItem } from './entities/category-category-item.entity'
 import { CategoryImage } from './entities/category-image.entity'
 import { CategoryTranslate } from './entities/category-translate.entity'
 
@@ -150,6 +151,16 @@ export class CategoryService {
       navigator_subcategories: navigator_subcategory_ids
         ? navigator_subcategory_ids.map((id) => ({ id }) as SeoFilter)
         : [],
+      category_items: dto.category_items
+        ? dto.category_items.map((item) => {
+            const newItem = new CategoryCategoryItem()
+            newItem.order = item.order
+            if (item.type) newItem.type = item.type
+            if (item.category_id) newItem.category = { id: item.category_id } as Category
+            else if (item.seo_filter_id) newItem.seo_filter = { id: item.seo_filter_id } as SeoFilter
+            return newItem
+          })
+        : [],
     })
 
     try {
@@ -185,6 +196,12 @@ export class CategoryService {
         'navigator_subcategories',
         'navigator_subcategories.category_id',
         'navigator_subcategories.translates',
+        'category_items',
+        'category_items.category',
+        'category_items.category.translates',
+        'category_items.seo_filter',
+        'category_items.seo_filter.translates',
+        'category_items.seo_filter.category_id',
       ],
     })
 
@@ -466,6 +483,85 @@ export class CategoryService {
     return { entities: mappedEntities }
   }
 
+  async getCategoryItems(id: number, lang: LANG): Promise<CategoryCategoryItem[]> {
+    const entity = await this.categoryRepo.findOne({
+      where: { id },
+      relations: [
+        'category_items',
+        'category_items.category',
+        'category_items.category.translates',
+        'category_items.seo_filter',
+        'category_items.seo_filter.translates',
+        'category_items.seo_filter.category_id',
+      ],
+      order: {
+        category_items: {
+          order: 'ASC',
+        },
+      },
+    })
+
+    if (!entity || !entity.category_items) return []
+
+    // Apply translations to items
+    if (entity.category_items.length) {
+      entity.category_items.forEach((item) => {
+        if (item.category) applyTranslations([item.category], lang)
+        if (item.seo_filter) applyTranslations([item.seo_filter], lang)
+      })
+
+      const categoryIds = entity.category_items.map((i) => i.category?.id).filter((id): id is number => !!id)
+      const seoFilterIds = entity.category_items.map((i) => i.seo_filter?.id).filter((id): id is number => !!id)
+
+      if (categoryIds.length > 0) {
+        const counts = await this.categoryRepo.manager
+          .getRepository('Product')
+          .createQueryBuilder('product')
+          .select('product.category_id', 'categoryId')
+          .addSelect('COUNT(product.id)', 'count')
+          .where('product.category_id IN (:...ids)', { ids: categoryIds })
+          .groupBy('product.category_id')
+          .getRawMany()
+
+        const countMap = new Map<number, number>()
+        counts.forEach((item) => {
+          countMap.set(Number(item.categoryId), Number(item.count))
+        })
+
+        entity.category_items.forEach((item) => {
+          if (item.category) {
+            item.category.products_count = countMap.get(item.category.id) || 0
+          }
+        })
+      }
+
+      if (seoFilterIds.length > 0) {
+        const counts = await this.categoryRepo.manager
+          .getRepository('Product')
+          .createQueryBuilder('product')
+          .innerJoin('product.seo_filters', 'sf')
+          .select('sf.id', 'filterId')
+          .addSelect('COUNT(product.id)', 'count')
+          .where('sf.id IN (:...ids)', { ids: seoFilterIds })
+          .groupBy('sf.id')
+          .getRawMany()
+
+        const countMap = new Map<number, number>()
+        counts.forEach((item) => {
+          countMap.set(Number(item.filterId), Number(item.count))
+        })
+
+        entity.category_items.forEach((item) => {
+          if (item.seo_filter) {
+            item.seo_filter.products_count = countMap.get(item.seo_filter.id) || 0
+          }
+        })
+      }
+    }
+
+    return entity.category_items
+  }
+
   async update(id: number, lang: LANG, dto: CategoryUpdateDto): Promise<Category | null> {
     const categoryExist = await this.categoryRepo.findOne({ where: { id } })
 
@@ -498,6 +594,7 @@ export class CategoryService {
         popular_tours_ids,
         recommended_post_ids,
         navigator_subcategory_ids,
+        category_items,
         ...categoryData
       } = dto
       const translations: { lang: LANG; field: string; value: string }[] = []
@@ -542,6 +639,24 @@ export class CategoryService {
         })
         if (categoryToUpdate) {
           categoryToUpdate.navigator_subcategories = navigator_subcategory_ids.map((id) => ({ id }) as SeoFilter)
+          await this.categoryRepo.save(categoryToUpdate)
+        }
+      }
+
+      if (dto.category_items !== undefined) {
+        const categoryToUpdate = await this.categoryRepo.findOne({
+          where: { id },
+          relations: ['category_items'],
+        })
+        if (categoryToUpdate) {
+          categoryToUpdate.category_items = dto.category_items.map((item) => {
+            const newItem = new CategoryCategoryItem()
+            newItem.order = item.order
+            if (item.type) newItem.type = item.type
+            if (item.category_id) newItem.category = { id: item.category_id } as Category
+            else if (item.seo_filter_id) newItem.seo_filter = { id: item.seo_filter_id } as SeoFilter
+            return newItem
+          })
           await this.categoryRepo.save(categoryToUpdate)
         }
       }

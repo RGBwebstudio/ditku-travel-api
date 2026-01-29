@@ -55,4 +55,7 @@ export class PostCategory {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
+
+  meta_title?: string
+  meta_description?: string
 }

@@ -14,6 +14,7 @@ import {
   JoinTable,
 } from 'typeorm'
 
+import { CategoryCategoryItem } from './category-category-item.entity'
 import { CategoryImage } from './category-image.entity'
 import { CategoryTranslate } from './category-translate.entity'
 import { Menu } from '../../menu/entities/menu.entity'
@@ -86,6 +87,12 @@ export class Category {
     inverseJoinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
   })
   navigator_subcategories: SeoFilter[]
+
+  @OneToMany(() => CategoryCategoryItem, (item) => item.category_owner, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
+  category_items: CategoryCategoryItem[]
 
   @Column({ default: 0 })
   order_in_list: number

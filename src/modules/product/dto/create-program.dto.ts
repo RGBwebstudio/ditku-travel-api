@@ -1,17 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 import { Type } from 'class-transformer'
-import { IsNumber, IsOptional, IsString, IsArray, ValidateNested, Min, IsEnum } from 'class-validator'
+import { IsOptional, IsString, IsArray, ValidateNested, IsEnum, IsNumber } from 'class-validator'
 
 import { ProgramImageDto } from './program-image.dto'
 import { ProgramTranslateDto } from './program-translate.dto'
 import { ProductProgramType } from '../entities/product-program.entity'
 
 export class CreateProgramDto {
-  @ApiProperty({ description: 'Day number (1, 2, 3...)', example: 1 })
-  @IsNumber()
-  @Min(1)
-  day: number
+  @ApiProperty({ description: 'Day badge', example: 'День 1' })
+  @IsString()
+  @IsOptional()
+  badge: string
 
   @ApiProperty({ description: 'Day title', example: 'БУКОВЕЛЬ' })
   @IsString()

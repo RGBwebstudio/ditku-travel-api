@@ -15,6 +15,7 @@ import {
   OneToMany,
 } from 'typeorm'
 
+import { SeoFilterCategoryItem } from './seo-filter-category-item.entity'
 import { SeoFilterTranslate } from './seo-filter-translate.entity'
 import { Category } from '../../category/entities/category.entity'
 import { City } from '../../city/entities/city.entity'
@@ -22,7 +23,6 @@ import { Country } from '../../country/entities/country.entity'
 import { Menu } from '../../menu/entities/menu.entity'
 import { Post } from '../../posts/entities/post.entity'
 import { Product } from '../../product/entities/product.entity'
-import { Section } from '../../section/entities/section.entity'
 
 @Entity()
 @Tree('closure-table')
@@ -72,16 +72,6 @@ export class SeoFilter {
   @JoinColumn({ name: 'country_id' })
   country_id: Country
 
-  @ManyToMany(() => Section, (section) => section.seo_filters, {
-    onDelete: 'CASCADE',
-  })
-  @JoinTable({
-    name: 'seo_filter_section',
-    joinColumn: { name: 'seo_filter_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'section_id', referencedColumnName: 'id' },
-  })
-  sections: Section[]
-
   @ManyToMany(() => Menu, (menu) => menu.seo_filters)
   menus: Menu[]
 
@@ -105,6 +95,12 @@ export class SeoFilter {
   })
   recommended_posts: Post[]
 
+  @OneToMany(() => SeoFilterCategoryItem, (item) => item.seo_filter_owner, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
+  category_items: SeoFilterCategoryItem[]
+
   @OneToMany(() => SeoFilterTranslate, (translate) => translate.entity_id)
   translates: SeoFilterTranslate[]
 
@@ -119,4 +115,6 @@ export class SeoFilter {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date
+
+  products_count?: number
 }

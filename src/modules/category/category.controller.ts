@@ -79,6 +79,13 @@ export class CategoryController {
     return this.categoryService.findOne(value, req.lang)
   }
 
+  @Get(':id/category-items')
+  @ApiOperation({ summary: 'Отримати items категорії' })
+  @ApiResponse({ status: 200, description: 'SUCCESS - Items отримано' })
+  getCategoryItems(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    return this.categoryService.getCategoryItems(id, req.lang)
+  }
+
   @Get(':id/additional-filters')
   @ApiResponse({
     status: 200,

@@ -17,7 +17,6 @@ import { PostModule } from 'src/modules/posts/post.module'
 import { PrivacyPolicyModule } from 'src/modules/privacy-policy/privacy-policy.module'
 import { ProductModule } from 'src/modules/product/product.module'
 import { RatingModule } from 'src/modules/product-rating/rating.module'
-import { SectionModule } from 'src/modules/section/section.module'
 import { SeoBlocksModule } from 'src/modules/seo-blocks/seo-blocks.module'
 import { SeoFilterModule } from 'src/modules/seo-filter/seo-filter.module'
 import { TermsOfUseModule } from 'src/modules/terms-of-use/terms-of-use.module'
@@ -39,7 +38,6 @@ import { AdminPostCategoryController } from './post-category.controller'
 import { AdminPostController } from './post.controller'
 import { AdminPrivacyPolicyController } from './privacy-policy.controller'
 import { AdminProductController } from './product.controller'
-import { AdminSectionController } from './section.controller'
 import { AdminSeoBlocksController } from './seo-blocks.controller'
 import { AdminSeoFilterController } from './seo-filter.controller'
 import { AdminTermsOfUseController } from './terms-of-use.controller'
@@ -65,7 +63,7 @@ import { AdminVideoController } from './video.controller'
     SeoBlocksModule,
     SeoFilterModule,
     MenuModule,
-    SectionModule,
+
     TermsOfUseModule,
     PrivacyPolicyModule,
     MainPageModule,
@@ -92,7 +90,7 @@ import { AdminVideoController } from './video.controller'
     AdminSeoFilterController,
     AdminMenuController,
     AdminMainPageController,
-    AdminSectionController,
+
     AdminVideoCategoryController,
     AdminVideoController,
   ],

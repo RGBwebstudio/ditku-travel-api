@@ -1,6 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-import { IsString, IsOptional, IsArray, IsInt, IsNotEmpty, IsNumber } from 'class-validator'
+import { Type } from 'class-transformer'
+import { IsString, IsOptional, IsArray, IsInt, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator'
+
+import { ToursPageCategoryItemDto } from '../../tours-page/dto/update-tours-page.dto'
 
 export class SeoFilterCreateDto {
   @ApiProperty({ example: 'З Харкова' })
@@ -121,5 +124,16 @@ export class SeoFilterCreateDto {
   @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
+  @ApiPropertyOptional({ type: [Number] })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
   recommended_post_ids?: number[]
+
+  @ApiPropertyOptional({ type: [ToursPageCategoryItemDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ToursPageCategoryItemDto)
+  category_items?: ToursPageCategoryItemDto[]
 }
