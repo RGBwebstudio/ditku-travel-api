@@ -21,7 +21,7 @@ export class ToursPageService {
   ) {}
 
   async get(lang: LANG): Promise<ToursPage> {
-    let entity = await this.repo.findOne({
+    const entity = await this.repo.findOne({
       where: { lang },
       relations: [
         'popular_tours',
@@ -37,23 +37,6 @@ export class ToursPageService {
         'recommended_posts.translates',
       ],
     })
-
-    if (!entity && lang !== LANG.UA) {
-      entity = await this.repo.findOne({
-        where: { lang: LANG.UA },
-        relations: [
-          'popular_tours',
-          'popular_tours.category_id',
-          'popular_tours.images',
-          'popular_tours.translates',
-          'navigator_subcategories',
-          'navigator_subcategories.translates',
-          'recommended_posts',
-          'recommended_posts.translates',
-          'recommended_posts.images',
-        ],
-      })
-    }
 
     if (!entity) throw new NotFoundException('tours-page not found')
 

@@ -8,6 +8,7 @@ import { Category } from 'src/modules/category/entities/category.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
 import { SeoFilter } from 'src/modules/seo-filter/entities/seo-filter.entity'
+import { ToursPageCategoryItemType } from 'src/modules/tours-page/enums/tours-page-category-item-type.enum'
 import { Repository, TreeRepository, IsNull, FindOptionsWhere } from 'typeorm'
 
 import { AddCategoryImageDto } from './dto/add-category-image.dto'
@@ -644,6 +645,14 @@ export class CategoryService {
       }
 
       if (dto.category_items !== undefined) {
+        const hasSelfReference = dto.category_items.some(
+          (item) => item.type === ToursPageCategoryItemType.CATEGORY && item.category_id === id
+        )
+
+        if (hasSelfReference) {
+          throw new BadRequestException('SELF_REFERENCE_NOT_ALLOWED')
+        }
+
         const categoryToUpdate = await this.categoryRepo.findOne({
           where: { id },
           relations: ['category_items'],

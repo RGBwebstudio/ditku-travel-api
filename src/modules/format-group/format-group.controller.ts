@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, ParseIntPipe, Body, Query, UseGuards, Req } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+  Patch,
+} from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 import { Request } from 'express'
@@ -67,7 +80,7 @@ export class FormatGroupController {
     return this.service.create(dto)
   }
 
-  @Put(':id')
+  @Patch(':id')
   @UseGuards(AuthAdminGuard)
   @ApiOperation({ summary: 'Оновити формат групу' })
   @ApiResponse({

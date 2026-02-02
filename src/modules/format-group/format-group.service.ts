@@ -65,17 +65,6 @@ export class FormatGroupService {
   }
 
   async create(dto: FormatGroupCreateDto): Promise<FormatGroup> {
-    const exists = await this.repo
-      .createQueryBuilder('fg')
-      .where('LOWER(fg.title) = :title', {
-        title: String(dto.title).toLowerCase(),
-      })
-      .getOne()
-
-    if (exists) {
-      throw new BadRequestException('ALREADY_CREATED')
-    }
-
     const { title_ua, title_en, subtitle_ua, subtitle_en, ...rest } = dto
 
     const data = this.repo.create(rest)
