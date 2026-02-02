@@ -24,7 +24,7 @@ export class Roadmap {
   @Column()
   end_point: boolean
 
-  @ManyToOne(() => Product, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
   product_id: Product | null
 
   @ManyToOne(() => City, (city) => city.roadmaps, {
