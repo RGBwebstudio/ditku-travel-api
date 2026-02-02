@@ -21,6 +21,7 @@ export class SeoFilterCategoryItem {
 
   @ManyToOne(() => SeoFilter, (sf) => sf.category_items, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'seo_filter_owner_id' })
   seo_filter_owner: SeoFilter
