@@ -654,7 +654,6 @@ export class ProductService {
   }
 
   async findOne(id: number, lang: LANG, req: Request): Promise<Product> {
-    // Query 1: Load product with basic relations (no roadmaps)
     const product = await this.productRepo.findOne({
       where: { id },
       relations: [
@@ -680,7 +679,6 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('product is NOT_FOUND')
 
-    // Query 2: Load heavy relations in parallel (roadmaps, programs, reviews, blogs, sections, faqs)
     const [roadmaps, programs, reviews, faqs] = await Promise.all([
       this.productRepo.manager
         .getRepository(Roadmap)
