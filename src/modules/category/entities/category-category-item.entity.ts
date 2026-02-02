@@ -21,6 +21,7 @@ export class CategoryCategoryItem {
 
   @ManyToOne(() => Category, (cat) => cat.category_items, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'category_owner_id' })
   category_owner: Category
