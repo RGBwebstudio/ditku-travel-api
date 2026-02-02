@@ -8,6 +8,7 @@ import { City } from 'src/modules/city/entities/city.entity'
 import { Country } from 'src/modules/country/entities/country.entity'
 import { Post } from 'src/modules/posts/entities/post.entity'
 import { Product } from 'src/modules/product/entities/product.entity'
+import { ToursPageCategoryItemType } from 'src/modules/tours-page/enums/tours-page-category-item-type.enum'
 import { Repository, In } from 'typeorm'
 
 import { SeoFilterCreateTranslateDto } from './dto/seo-filter-create-translate.dto'
@@ -455,6 +456,11 @@ export class SeoFilterService {
     }
 
     if (updateDto.category_items !== undefined) {
+      const hasSelfReference = updateDto.category_items.some(
+        (item) => item.type === ToursPageCategoryItemType.SUBCATEGORY && item.seo_filter_id === id
+      )
+      if (hasSelfReference) throw new BadRequestException('SELF_REFERENCE_NOT_ALLOWED')
+
       relEntity.category_items = updateDto.category_items.map((item) => {
         const newItem = new SeoFilterCategoryItem()
         newItem.order = item.order
