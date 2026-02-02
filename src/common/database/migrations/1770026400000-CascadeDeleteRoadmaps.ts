@@ -12,6 +12,12 @@ export class CascadeDeleteRoadmaps1770026400000 implements MigrationInterface {
     const column = table.columns.find(
       (c) => c.name === 'product_id' || c.name === 'productId' || c.name === 'product_idId'
     )
+    if (!column) {
+      console.log(
+        'Columns found:',
+        table.columns.map((c) => c.name)
+      )
+    }
     const columnName = column ? column.name : 'product_id'
 
     const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf(columnName) !== -1)
