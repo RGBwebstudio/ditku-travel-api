@@ -696,8 +696,7 @@ export class ProductService {
         .leftJoinAndSelect('p.images', 'images')
         .leftJoinAndSelect('p.translates', 'translates')
         .where('p.product_id = :productId', { productId: product.id })
-        .orderBy('p.order_in_list', 'ASC')
-        .addOrderBy('p.order', 'ASC')
+        .orderBy('p.order', 'ASC')
         .getMany(),
       this.ratingRepo
         .createQueryBuilder('r')
@@ -880,8 +879,7 @@ export class ProductService {
         .leftJoinAndSelect('p.images', 'images')
         .leftJoinAndSelect('p.translates', 'translates')
         .where('p.product_id = :productId', { productId: product.id })
-        .orderBy('p.order_in_list', 'ASC')
-        .addOrderBy('p.day', 'ASC')
+        .orderBy('p.order', 'ASC')
         .getMany(),
       // Query 4: Load reviews (approved only)
       this.ratingRepo
