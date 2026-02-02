@@ -183,13 +183,13 @@ export class Product {
   is_popular: boolean
 
   @ManyToOne(() => Product, (product: Product) => product.parent_id, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'parent_id' })
   parent_id: Product
 
   @ManyToOne(() => Category, (category: Category) => category.products, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category
@@ -227,7 +227,9 @@ export class Product {
   })
   recommendedProducts: Product[]
 
-  @ManyToMany(() => Product, (product: Product) => product.recommendedProducts)
+  @ManyToMany(() => Product, (product: Product) => product.recommendedProducts, {
+    onDelete: 'CASCADE',
+  })
   recommendedBy: Product[]
 
   @ManyToMany(() => Product, (product: Product) => product.topTourBy, {
@@ -243,7 +245,9 @@ export class Product {
   })
   topTourProducts: Product[]
 
-  @ManyToMany(() => Product, (product: Product) => product.topTourProducts)
+  @ManyToMany(() => Product, (product: Product) => product.topTourProducts, {
+    onDelete: 'CASCADE',
+  })
   topTourBy: Product[]
 
   @OneToMany(() => ProductTranslate, (translate: ProductTranslate) => translate.entity_id)
@@ -290,7 +294,7 @@ export class Product {
   })
   faqs: Faq[]
 
-  @ManyToMany(() => Post, { cascade: true })
+  @ManyToMany(() => Post, { cascade: true, onDelete: 'CASCADE' })
   @JoinTable({
     name: 'product_posts',
     joinColumn: { name: 'product_id', referencedColumnName: 'id' },
