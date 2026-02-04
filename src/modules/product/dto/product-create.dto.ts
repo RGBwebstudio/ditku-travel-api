@@ -208,6 +208,11 @@ export class ProductCreateDto {
   @IsArray()
   sections?: (number | ProductSectionDto)[]
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  productSections?: any[]
+
   @ApiPropertyOptional({ example: '6-17 років' })
   @IsOptional()
   @IsString()
