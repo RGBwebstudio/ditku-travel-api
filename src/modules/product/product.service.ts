@@ -1162,6 +1162,7 @@ export class ProductService {
 
     const productSectionObjects = (dto.sections || []).filter((s) => typeof s !== 'number')
     if (dto.sections) delete productPayload.sections
+    if (dto.productSections) delete productPayload.productSections
 
     const product = this.productRepo.create(productPayload as DeepPartial<Product>)
 
